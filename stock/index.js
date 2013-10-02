@@ -1,6 +1,6 @@
 var klineio = require("./klineio");
 var klineprocesser = require("./klineprocessor");
-var stockId = "SH600000";
+var stockId = "SH600006";
 console.log("readKLine: "+stockId);
 
 klineio.readKLineBase(stockId, function(kLineJason) {
@@ -12,11 +12,11 @@ klineio.readKLineBase(stockId, function(kLineJason) {
     klineprocesser.average(kLineJason, "volume", 8);
     klineprocesser.average(kLineJason, "volume", 21);
 
-    //klineprocesser.markPeak(kLineJason, "high", 0.005);
-    //klineprocesser.smoothPeak(kLineJason, "high", 2);
+    //klineprocesser.markPeaks(kLineJason, "high", 0.005);
+    //klineprocesser.mergePeaks(kLineJason, "high", 2);
 
-    klineprocesser.markTrough(kLineJason, "low", 0.005);
-    klineprocesser.smoothTrough(kLineJason, "low", 2);
+    klineprocesser.markTroughs(kLineJason, "low", 0.05);
+    //klineprocesser.mergeTroughs(kLineJason, "low", 3);
 
     klineio.writeKLine(stockId, kLineJason, function(err) {
         if(err) {

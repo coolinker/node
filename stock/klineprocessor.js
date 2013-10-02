@@ -1,5 +1,5 @@
 
-function smoothTrough(klineJson, field, interval, threshold) {
+function mergeTroughs(klineJson, field, interval, threshold) {
     var troughField = field+"_trough";
     var lastTroughIdx = -1;
     var peakIdxInBetween = 0;
@@ -27,6 +27,8 @@ function smoothTrough(klineJson, field, interval, threshold) {
                     }
                 }
             
+                if (j===klineJson.length) break;
+
                 if (i - lastTroughIdx <= j-i) {
                     if(klineJson[lastTroughIdx].low <= klineJson[i].low){
                         delete klineJson[i][troughField];
@@ -55,7 +57,7 @@ function smoothTrough(klineJson, field, interval, threshold) {
 
 }
 
-function smoothPeak(klineJson, field, interval, threshold) {
+function mergePeaks(klineJson, field, interval, threshold) {
     var peakField = field+"_peak";
     var lastPeakIdx = -1;
     var troughIdxInBetween = 0;
@@ -81,7 +83,10 @@ function smoothPeak(klineJson, field, interval, threshold) {
                         break;
                     }
                 }
-                 if (i - lastPeakIdx <= j-i) {
+                
+                if (j===klineJson.length) break;
+
+                if (i - lastPeakIdx <= j-i) {
                     if(klineJson[lastPeakIdx].high>=klineJson[i].high){
                         delete klineJson[i][peakField];
                     } else {
@@ -109,8 +114,7 @@ function smoothPeak(klineJson, field, interval, threshold) {
 
 }
 
-function markPeak(klineJson, field, increaseMin, noiseCheckLength) {
-    noiseCheckLength = noiseCheckLength || 1;
+function markPeaks(klineJson, field, increaseMin) {
     var jsonLen = klineJson.length;
     var prePeak = Infinity;
     var prePeakIdx = 0;
@@ -142,8 +146,7 @@ function markPeak(klineJson, field, increaseMin, noiseCheckLength) {
 
 }
 
-function markTrough(klineJson, field, increaseMin, noiseCheckLength) {
-    noiseCheckLength = noiseCheckLength|| 1;
+function markTroughs(klineJson, field, increaseMin) {
     var jsonLen = klineJson.length;
     var preTrough = Infinity;
     var preTroughIdx = 0;
@@ -216,9 +219,9 @@ function exRightsDay(klineJson) {
 }
 
 //exports.markPeakAndTrough = markPeakAndTrough;
-exports.smoothTrough = smoothTrough;
-exports.smoothPeak = smoothPeak;
-exports.markPeak = markPeak;
-exports.markTrough = markTrough;
+exports.mergeTroughs = mergeTroughs;
+exports.mergePeaks = mergePeaks;
+exports.markPeaks = markPeaks;
+exports.markTroughs = markTroughs;
 exports.average = average;
 exports.exRightsDay = exRightsDay;
