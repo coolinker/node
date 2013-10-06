@@ -1,4 +1,5 @@
-
+var klineutil = require("./klineutil");
+var klineio = require("./klineio");
 function mergeTroughs(klineJson, field, interval, threshold) {
     var troughField = field+"_trough";
     var lastTroughIdx = -1;
@@ -119,13 +120,15 @@ function markPeaks(klineJson, field, increaseMin) {
     var prePeak = Infinity;
     var prePeakIdx = 0;
     var highLowIdx = 0;
+    var highLow = Infinity;
     var peakField = field+"_peak";
-    for (var i=1; i<jsonLen; i++) {
+    for (var i=0; i<jsonLen; i++) {
         if (prePeakIdx===-1) {
-            if(klineJson[i-1].high >= klineJson[i].high) {
+            if(highLow >= klineJson[i].high) {
                 highLowIdx = i;
+                highLow = klineJson[i].high;
             } else {
-                if (increase(klineJson[highLowIdx].high, klineJson[i].high)>increaseMin) {
+                if (klineutil.increase(highLow, klineJson[i].high)>increaseMin) {
                     prePeakIdx = i;
                 }
             }
@@ -135,10 +138,11 @@ function markPeaks(klineJson, field, increaseMin) {
         if (klineJson[prePeakIdx].high < klineJson[i].high) {
             prePeakIdx = i;
         } else {
-            if (increase(klineJson[i].high, klineJson[prePeakIdx].high) > increaseMin) {
+            if (klineutil.increase(klineJson[i].high, klineJson[prePeakIdx].high) > increaseMin) {
                 klineJson[prePeakIdx][peakField] = true;
                 prePeakIdx = -1;
                 highLowIdx = i;
+                highLow = klineJson[highLowIdx].high;
             }
         }
 
@@ -151,14 +155,16 @@ function markTroughs(klineJson, field, increaseMin) {
     var preTrough = Infinity;
     var preTroughIdx = 0;
     var lowHighIdx = 0;
+    var lowHigh = 0;
     var troughField = field+"_trough";
-    for (var i=1; i<jsonLen; i++) {
+    for (var i=0; i<jsonLen; i++) {
         if (preTroughIdx===-1) {
-            if(klineJson[i-1].low <= klineJson[i].low) {
+            if(lowHigh <= klineJson[i].low) {
                 //preTroughIdx = i;
+                lowHigh = klineJson[i].low;
                 lowHighIdx = i;
             } else {
-                if (increase(klineJson[i].low, klineJson[lowHighIdx].low)>increaseMin) {
+                if (klineutil.increase(klineJson[i].low, lowHigh)>increaseMin) {
                     preTroughIdx = i;
                 }
             }
@@ -168,17 +174,18 @@ function markTroughs(klineJson, field, increaseMin) {
         if (klineJson[preTroughIdx].low > klineJson[i].low) {
             preTroughIdx = i;
         } else {
-            if (increase(klineJson[preTroughIdx].low, klineJson[i].low) > increaseMin) {
+            if (klineutil.increase(klineJson[preTroughIdx].low, klineJson[i].low) > increaseMin) {
                 klineJson[preTroughIdx][troughField] = true;
                 preTroughIdx = -1;
                 lowHighIdx = i;
+                lowHigh = klineJson[lowHighIdx].low;
             }
         }
 
     }
 
 }
-
+/*
 function increase(val1, val2) {
     try{
         return (val2-val1)/val1;
@@ -187,9 +194,9 @@ function increase(val1, val2) {
         return undefined;
     }
 }
-
+*/
 function average(klineJson, field, scale) {
-    console.log("average:", field, scale);
+    //console.log("average:", field, scale);
     var scaleSum = 0;
     var jsonLen = klineJson.length;
     var aveField = field+"_ave_"+scale;
@@ -210,15 +217,52 @@ function average(klineJson, field, scale) {
 function exRightsDay(klineJson) {
     var jsonLen = klineJson.length;
     for (var i=1; i<jsonLen; i++) {
-        var close = klineJson[i-1].close;
+        var preclose = klineJson[i-1].close;
+        var close = klineJson[i].close;
         var open = klineJson[i].open;
-        if ((close-open)/close > 0.11) {
+        var low = klineJson[i].low;
+        var high = klineJson[i].high;
+
+        var inc = klineutil.increase(preclose, open);
+        if (inc>0.002 && close > open && low>preclose) {
+            klineJson[i].gapUp = klineutil.increase(preclose, open);
+        } else if (inc < -0.11) {
             klineJson[i].exRightsDay = true;
-        }    
+        } else if(inc < -0.002 && close < open && high < preclose) {
+            klineJson[i].gapDown = klineutil.increase(preclose, open);
+        }
+
     }
 }
 
-//exports.markPeakAndTrough = markPeakAndTrough;
+
+function updateKLines(match) {
+    var stocks = klineio.getAllStockIds(match);
+    //stocks = ["SZ300215"];
+    stocks.forEach(
+        function (stockId) {
+            klineio.readKLineBase(stockId, function(kLineJason) {
+            exRightsDay(kLineJason);
+            average(kLineJason, "close", 8);
+            average(kLineJason, "close", 21);
+            average(kLineJason, "close", 55);
+            average(kLineJason, "close", 144);
+            average(kLineJason, "close", 233);
+            average(kLineJason, "volume", 8);
+            average(kLineJason, "volume", 21);
+
+            markPeaks(kLineJason, "high", 0.02);
+    //klineprocesser.mergePeaks(kLineJason, "high", 2);
+
+            markTroughs(kLineJason, "low", 0.02);
+    //klineprocesser.mergeTroughs(kLineJason, "low", 3);
+            klineio.writeKLine(stockId, kLineJason);
+        });
+
+    });
+}
+
+exports.updateKLines = updateKLines;
 exports.mergeTroughs = mergeTroughs;
 exports.mergePeaks = mergePeaks;
 exports.markPeaks = markPeaks;

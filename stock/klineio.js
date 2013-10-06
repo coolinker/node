@@ -1,7 +1,17 @@
 var fs = require("fs");
-        
+function getAllStockIds (match) {
+    var klinefiles = fs.readdirSync("./datasource/klines_base/");
+    var stockIds = [];
+    klinefiles.forEach(function (fileName) {
+        if (match===undefined || fileName.indexOf(match) >= 0) {
+            stockIds.push(fileName.substring(0, fileName.indexOf(".")));
+        }
+    });
+    return stockIds;
+}
+
 function readKLineBase(stockId, callback) {
-  console.log("Read K line data:"+stockId);
+  //console.log("Read K line data:"+stockId);
   var kLineJson = [];
 
   fs.readFile("./datasource/klines_base/"+stockId+".TXT","utf8", function(error, content) {
@@ -28,7 +38,7 @@ function readKLineBase(stockId, callback) {
 }
 
 function readKLine(stockId, callback) {
-  console.log("Read K line data:"+stockId);
+  //console.log("Read K line data:"+stockId);
   var kLineJson = [];
 
   fs.readFile("./datasource/klines/"+stockId+".json","utf8", function(error, content) {
@@ -64,7 +74,7 @@ function writeKLine(stockId, jsonData, callback) {
   var data = "";
   jsonData.forEach(function(line){
     //if (line.high_peak===true) console.log("peak", line.date);
-    if (line.low_trough===true) console.log("trough", line.date);
+    //if (line.low_trough===true) console.log("trough", line.date);
 
     if (data!=="") {
       data = data + "\r\n";
@@ -73,10 +83,20 @@ function writeKLine(stockId, jsonData, callback) {
   });
 
   fs.writeFile("./datasource/klines/"+stockId+".json", data, function(err) {
-      callback(err);
+      if (callback) {
+          callback(err);
+      } else {
+          if(err) {
+              console.log("-=-------------------",err);
+          } else {
+              console.log(stockId+" the file was saved!");
+          }
+      }
+      
   });
 }
 
 exports.readKLineBase = readKLineBase;
+exports.readKLine = readKLine;
 exports.writeKLine = writeKLine;
-//exports.appendKLine = appendKLine;
+exports.getAllStockIds = getAllStockIds;

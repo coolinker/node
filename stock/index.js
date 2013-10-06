@@ -1,28 +1,51 @@
 var klineio = require("./klineio");
 var klineprocesser = require("./klineprocessor");
-var stockId = "SH600006";
-console.log("readKLine: "+stockId);
+var averageanalyer = require("./analysers/averageanalyer");
 
-klineio.readKLineBase(stockId, function(kLineJason) {
-    //console.log(kLineJason);
-    klineprocesser.exRightsDay(kLineJason);
-    klineprocesser.average(kLineJason, "close", 8);
-    klineprocesser.average(kLineJason, "close", 21);
-    klineprocesser.average(kLineJason, "close", 55);
-    klineprocesser.average(kLineJason, "volume", 8);
-    klineprocesser.average(kLineJason, "volume", 21);
+var stockId = "SH600778";//"SH600778";//
 
-    //klineprocesser.markPeaks(kLineJason, "high", 0.005);
-    //klineprocesser.mergePeaks(kLineJason, "high", 2);
+var stocks = klineio.getAllStockIds();
+stocks = ["SH600778", "SH600163", "SH600000"];
 
-    klineprocesser.markTroughs(kLineJason, "low", 0.05);
-    //klineprocesser.mergeTroughs(kLineJason, "low", 3);
+var stockidx=0;
 
-    klineio.writeKLine(stockId, kLineJason, function(err) {
-        if(err) {
-            console.log(err);
-        } else {
-            console.log("The file was saved!");
+totalsample = 0;
+winsample = 0;
+winstocks = 0;
+
+
+doit(stockidx);
+
+//klineprocesser.updateKLines("SZ");
+
+function doit(index) {
+    if (index>=stocks.length) {
+        console.log(winsample+"/"+totalsample+"="+(winsample/totalsample).toFixed(3), winstocks);
+        return;
+    }
+    var stockId = stocks[index];
+
+    klineio.readKLine(stockId, function(kLineJason) {
+        if (stockId.indexOf("SZ300")>=0) {
+            doit(index+1);  
+            return;
         }
+        var result = averageanalyer.on8While21Up(kLineJason, 0.05, 0.05);
+
+        totalsample += result.total;
+        winsample +=result.win;
+        console.log(stockId, result.total>0?(result.win/result.total).toFixed(3):"--", result);
+        console.log("===================");
+        if (result.total > 0 && result.win/result.total < 0.5) {
+            doit(index+1);  
+
+        } else {
+            winstocks++;
+            doit(index+1);
+        }
+
+        
     });
-});
+
+}
+
