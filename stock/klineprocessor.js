@@ -217,19 +217,21 @@ function average(klineJson, field, scale) {
 function exRightsDay(klineJson) {
     var jsonLen = klineJson.length;
     for (var i=1; i<jsonLen; i++) {
-        var preclose = klineJson[i-1].close;
+        var preclose = klineJson[i-1].close;        
+        var prehigh = klineJson[i-1].high;
+        var prelow = klineJson[i-1].low;
+
         var close = klineJson[i].close;
         var open = klineJson[i].open;
         var low = klineJson[i].low;
         var high = klineJson[i].high;
 
-        var inc = klineutil.increase(preclose, open);
-        if (inc>0.002 && close > open && low>preclose) {
-            klineJson[i].gapUp = klineutil.increase(preclose, open);
-        } else if (inc < -0.11) {
+        if (klineutil.increase(prehigh, low) > 0 && open < close) {
+            klineJson[i].gapUp = klineutil.increase(prehigh, low);
+        } else if (klineutil.increase(preclose, open) < -0.11) {
             klineJson[i].exRightsDay = true;
-        } else if(inc < -0.002 && close < open && high < preclose) {
-            klineJson[i].gapDown = klineutil.increase(preclose, open);
+        } else if(klineutil.increase(prelow, high) < 0 && open > close) {
+            klineJson[i].gapDown = klineutil.increase(prelow, high);
         }
 
     }
@@ -239,6 +241,7 @@ function exRightsDay(klineJson) {
 function updateKLines(match) {
     var stocks = klineio.getAllStockIds(match);
     //stocks = ["SZ300215"];
+    
     stocks.forEach(
         function (stockId) {
             klineio.readKLineBase(stockId, function(kLineJason) {
@@ -256,6 +259,7 @@ function updateKLines(match) {
 
             markTroughs(kLineJason, "low", 0.02);
     //klineprocesser.mergeTroughs(kLineJason, "low", 3);
+
             klineio.writeKLine(stockId, kLineJason);
         });
 

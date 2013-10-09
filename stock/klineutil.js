@@ -25,27 +25,35 @@ function detectSupport(klineJson, idx, interval) {
     var hasGapUp = false;
     var price = klineJson[idx].close;
     var lowTrough = Infinity;
-
+    var lowTroughCount = 0;
+    var highPeakCount = 0;
     for (var i=idx; i>=0 && idx-i<interval; i--) {
+        var weight = interval-idx+i;
         if (!hasGapUp 
             && klineJson[i].gapUp
             && lowTrough > klineJson[i-1].close
             && inBetween(increase(klineJson[i-1].close, price), 0, 0.1)) {
             hasGapUp = true;
-            support += 2*Math.max(1, Math.round(increase(klineJson[i-1].close, klineJson[i].open)/0.01));
+            support += interval*Math.max(1, Math.round(increase(klineJson[i-1].close, klineJson[i].open)/0.01));
+
+            console.log(klineJson[i-1].date, interval*Math.max(1, Math.round(-increase(klineJson[i-1].close, klineJson[i].open)/0.01)));
         }
 
         if (klineJson[i].low_trough === true) {
             lowTrough = Math.min(klineJson[i].low, lowTrough);
             
-            if(inBetween(increase(klineJson[i].low, price), 0, 0.1)) {
-                support++;
+            if(lowTroughCount<3 && inBetween(increase(klineJson[i].low, price), 0, 0.1)) {
+                support += weight;
+                lowTroughCount++;
             } 
         } 
             
 
-        if (klineJson[i].high_peak === true 
-            && inBetween(increase(klineJson[i].high, price), 0, 0.05)) support++;
+        if (highPeakCount<3 && klineJson[i].high_peak === true 
+            && inBetween(increase(klineJson[i].high, price), 0, 0.05)) {
+            support += weight;
+            highPeakCount++;
+        }
     }
     
     console.log("support:", support-(hasGapUp?1:0), hasGapUp?1:0);
@@ -60,22 +68,27 @@ function detectStress(klineJson, idx, interval) {
     var highPeak = 0;
     var lowTrough = Infinity;
 
-    for (var i=idx; i>=0 && idx-i<interval; i--) {
+    var lowTroughCount = 0;
+    var highPeakCount = 0;
 
+    for (var i=idx; i>=0 && idx-i<interval; i--) {
+        var weight = interval-idx+i;
         if (!hasGapDown 
             && klineJson[i].gapDown
             && highPeak < klineJson[i-1].close
-            && inBetween(increase(price, klineJson[i-1].close), 0, 0.1)) {
+            && inBetween(increase(price, klineJson[i].open), 0, 0.05)) {
             hasGapDown = true;
-            stress += 2*Math.max(1, Math.round(-increase(klineJson[i-1].close, klineJson[i].open)/0.01));
+            stress += interval*Math.max(1, Math.round(-increase(klineJson[i-1].close, klineJson[i].open)/0.01));
+            console.log(klineJson[i-1].date, interval*Math.max(1, Math.round(-increase(klineJson[i-1].close, klineJson[i].open)/0.01)))
         }
 
         if (klineJson[i].high_peak === true) {
             highPeak = Math.max(klineJson[i].high, highPeak);
 
             
-            if(increase(price, klineJson[i].high) > 0.05 && increase(price, klineJson[i].high) < 0.20) {
-                stress ++;
+            if(highPeakCount<3 && increase(price, klineJson[i].high) > 0.05 && increase(price, klineJson[i].high) < 0.20) {
+                stress += weight;
+                highPeakCount++;
             } /*else if(increase(price, klineJson[i].high) > 0.01 
                 && increase(price, klineJson[i].high) < 0.05
                 && increase(klineJson[i].close, klineJson[i].high) > 0.01) {
@@ -85,9 +98,12 @@ function detectStress(klineJson, idx, interval) {
         } 
             
 
-        if (klineJson[i].low_trough === true 
+        if (lowTroughCount<3 && klineJson[i].low_trough === true 
             && increase(price, klineJson[i].low) > 0
-            && increase(price, klineJson[i].low) < 0.05) stress++;
+            && increase(price, klineJson[i].low) < 0.05) {
+            stress += weight;
+            lowTroughCount++;
+        }
 
     }
 
@@ -113,7 +129,7 @@ function detectStress(klineJson, idx, interval) {
         && (inBetween(increase(high, kLine.close_ave_233), -0.001, 0.001)
         || inBetween(increase(price, kLine.close_ave_233), -0.001, 0.001))) stress++;
     */
-    console.log("stress:", peakStress-(hasGapDown?1:0), hasGapDown?1:0);
+    //console.log("stress:", peakStress-(hasGapDown?1:0), hasGapDown?1:0);
 
     return stress;
 }
