@@ -19,16 +19,17 @@ function readKLineBase(stockId, callback) {
       console.log(error);
     } else {
       content.split("\r\n").forEach(function(line) {
-        var lineEle = line.split(",");
-        if (lineEle.length===7)  {
-            kLineJson.push({date: lineEle[0],
-              open: parseFloat(lineEle[1]), 
-              high: parseFloat(lineEle[2]),
-              low: parseFloat(lineEle[3]), 
-              close: parseFloat(lineEle[4]), 
-              volume: parseFloat(lineEle[5]), 
-              amount: parseFloat(lineEle[6])});
-        }
+          var lineEle = line.split(",");
+
+          if (lineEle.length===7)  {
+                kLineJson.push({date: lineEle[0],
+                  open: parseFloat(lineEle[1]), 
+                  high: parseFloat(lineEle[2]),
+                  low: parseFloat(lineEle[3]), 
+                  close: parseFloat(lineEle[4]), 
+                  volume: parseFloat(lineEle[5]), 
+                  amount: parseFloat(lineEle[6])});
+          }
       });
 
     }
@@ -40,15 +41,18 @@ function readKLineBase(stockId, callback) {
 function readKLine(stockId, callback) {
   //console.log("Read K line data:"+stockId);
   var kLineJson = [];
-
+  var startDate = new Date("01/01/2005");
   fs.readFile("./datasource/klines/"+stockId+".json","utf8", function(error, content) {
     if(error) {
       console.log(error);
     } else {
       content.split("\r\n").forEach(function(line) {
-        if (line.length>0) {
-          kLineJson.push(JSON.parse(line));
-        }
+          if (line.length>0) {
+              var json = JSON.parse(line);
+              if (new Date(json.date) > startDate) {
+                  kLineJson.push(json);       
+              }
+          }
       });
 
     }
@@ -87,7 +91,7 @@ function writeKLine(stockId, jsonData, callback) {
           callback(err);
       } else {
           if(err) {
-              console.log("-=-------------------",err);
+              console.log("--------------------",err);
           } else {
               console.log(stockId+" the file was saved!");
           }

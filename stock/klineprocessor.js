@@ -123,7 +123,9 @@ function markPeaks(klineJson, field, increaseMin) {
     var highLow = Infinity;
     var peakField = field+"_peak";
     for (var i=0; i<jsonLen; i++) {
+        
         if (prePeakIdx===-1) {
+            
             if(highLow >= klineJson[i].high) {
                 highLowIdx = i;
                 highLow = klineJson[i].high;
@@ -185,29 +187,25 @@ function markTroughs(klineJson, field, increaseMin) {
     }
 
 }
-/*
-function increase(val1, val2) {
-    try{
-        return (val2-val1)/val1;
-    } catch(e){
-        console.log("function increase:", e);
-        return undefined;
-    }
-}
-*/
-function average(klineJson, field, scale) {
-    //console.log("average:", field, scale);
+
+function average(klineJson, field, interval, valFun) {
+    //console.log("average:", field, interval);
     var scaleSum = 0;
     var jsonLen = klineJson.length;
-    var aveField = field+"_ave_"+scale;
+    var aveField = field+"_ave_"+interval;
+    if (valFun===undefined) {
+        valFun = function(kl) {
+            return kl[field];
+        }
+    }
     for (var i= jsonLen-1; i>0; i--) {
         var kl = klineJson[i];
-        scaleSum = scaleSum + kl[field];
-        if (jsonLen-i == scale) {
-            klineJson[jsonLen-1][aveField] = Math.round(100*scaleSum/scale)/100;
-        } else if (jsonLen-i > scale) {
-            scaleSum = scaleSum - klineJson[i+scale][field];
-            klineJson[i+scale-1][aveField] = Math.round(100*scaleSum/scale)/100;
+        scaleSum = scaleSum + valFun(kl);
+        if (jsonLen-i === interval) {
+            klineJson[jsonLen-1][aveField] = Math.round(1000*scaleSum/interval)/1000;
+        } else if (jsonLen-i > interval) {
+            scaleSum = scaleSum - valFun(klineJson[i+interval]);
+            klineJson[i+interval-1][aveField] = Math.round(1000*scaleSum/interval)/1000;
         }
 
     }
@@ -225,10 +223,10 @@ function exRightsDay(klineJson) {
         var open = klineJson[i].open;
         var low = klineJson[i].low;
         var high = klineJson[i].high;
-
+        if (klineJson[i].date==='06/20/2006') console.log(preclose, open, klineutil.increase(preclose, open) );
         if (klineutil.increase(prehigh, low) > 0 && open < close) {
             klineJson[i].gapUp = klineutil.increase(prehigh, low);
-        } else if (klineutil.increase(preclose, open) < -0.11) {
+        } else if (klineutil.increase(preclose, open) < -0.105) {
             klineJson[i].exRightsDay = true;
         } else if(klineutil.increase(prelow, high) < 0 && open > close) {
             klineJson[i].gapDown = klineutil.increase(prelow, high);
@@ -254,10 +252,24 @@ function updateKLines(match) {
             average(kLineJason, "volume", 8);
             average(kLineJason, "volume", 21);
 
-            markPeaks(kLineJason, "high", 0.02);
+            average(kLineJason, "amplitude", 8, function (kl) {
+                return klineutil.increase(kl.low, kl.high);
+            });
+
+            average(kLineJason, "amplitude", 55, function (kl) {
+                return klineutil.increase(kl.low, kl.high);
+            });
+
+            //average(kLineJason, "amplitude", 144, function (kl) {
+            //    return klineutil.increase(kl.low, kl.high);
+            //});
+
+            markPeaks(kLineJason, "high", 0.05);
+            
     //klineprocesser.mergePeaks(kLineJason, "high", 2);
 
-            markTroughs(kLineJason, "low", 0.02);
+            markTroughs(kLineJason, "low", 0.05);
+            
     //klineprocesser.mergeTroughs(kLineJason, "low", 3);
 
             klineio.writeKLine(stockId, kLineJason);
