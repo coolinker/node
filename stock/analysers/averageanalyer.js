@@ -29,7 +29,7 @@ function red3(klineJson, i) {
     
     return klineutil.inBetween(klineJson[i].close_ave_8, klineJson[i-2].open, klineJson[i].close)
             && klineutil.increase(klineJson[i].open, klineJson[i].close) > 0
-            && klineutil.increase(klineJson[i].close, klineJson[i].high) < amp          
+            && klineutil.increase(klineJson[i].close, klineJson[i].high) < (amp * 1)
             && klineutil.increase(klineJson[i-1].close, klineJson[i].close) > 0
             && klineutil.increase(klineJson[i-1].close, klineJson[i].open) <= 0
 
@@ -39,8 +39,7 @@ function red3(klineJson, i) {
             && klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) <= 0
 
             && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) > 0
-            && klineutil.increase(klineJson[i-2].close, klineJson[i-2].high) < amp
-            //&& i - klineutil.leftTroughIdx("low", klineJson, i+1) < 4
+            && klineutil.increase(klineJson[i-2].close, klineJson[i-2].high) < amp * 0.6
 }
 
 function on8While21UpVolumeHigh(klineJson, i) {

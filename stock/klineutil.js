@@ -32,10 +32,21 @@ function lowItemIndex(klineJson, from, to, field) {
 
 
 function leftTroughIdx(field, klineJson, idx) {
-    for (var i=idx-1; i>0; i--) {
-        if (klineJson[i][field+"_trough"]) return i;
+    var i;
+    for (i=idx-1; i>0; i--) {
+        if (klineJson[i][field+"_trough"]) {
+            break;
+        }
     }
-    return undefined;
+
+    return i;
+}
+
+function leftTrough(field, klineJson, idx) {
+    var troughIdx =  leftTroughIdx(field, klineJson, idx);
+    if (troughIdx >= 0) {
+        return klineJson[troughIdx][field];
+    }
 }
 
 function winOrLoss(klineJson, start, lossStop, winStop) {
@@ -63,13 +74,13 @@ function findBoxes(klineJson) {
     var len = klineJson.length;
     laststart = 50;
     for (var i=len-1; i>50; i--) {
-        var amp = klineJson[i].amplitude_ave_55;
-
-        var box = inBox(klineJson, i, "high", "low", amp*7);
         
-        if (i - box.startIndex > 30 && laststart !== box.startIndex) {
-            laststart = box.startIndex;
-            console.log(klineJson[box.startIndex].date, box.high, box.low, increase(box.low, box.high).toFixed(2), amp*7, klineJson[i].date);
+        if (klineJson[i].high_peak !== true) continue;
+        var box = ceilBox(klineJson, i, "high");
+        
+        if (box) {            
+            console.log(klineJson[box.start].date, klineJson[box.end].date, box.floor, box.ceil,
+                increase(klineJson[box.start].high, klineJson[box.end].high));
         }
 
        
@@ -77,8 +88,38 @@ function findBoxes(klineJson) {
    
 }
 
+function ceilBox(klineJson, idx, peakField, maxInterval, minDiff) {
+    peakField = peakField || "high";
+    maxInterval = maxInterval || 233;
+    minDiff = minDiff || 0.02;
+    var ceil = klineJson[idx][peakField];
+    var floor = ceil;
+    var startCeilIdx;
+
+    for (var i=idx-1; i>0 && idx-i<maxInterval; i--) {
+        floor = Math.min(floor, klineJson[i].low);
+        if (klineJson[i][peakField+"_peak"] === true) {
+            if ( increase(ceil, klineJson[i][peakField]) > minDiff) {
+                break;
+            }
+
+            
+            if (Math.abs(increase(klineJson[i][peakField], ceil)) < minDiff) {
+                startCeilIdx = i;
+            }
+
+        }
+
+    }
+
+    return startCeilIdx===undefined?undefined:{start: startCeilIdx, floor: floor, ceil:ceil, end: idx};
+}
+
 function inBox(klineJson, idx, peakField, troughField, boxHight) {
-    var box = boxLeft(klineJson, idx, peakField, troughField, boxHight);
+    var box = roughBoxAtLeft(klineJson, idx, peakField, troughField, boxHight);
+
+    if (klineJson[idx].date === '04/11/2013') 
+        console.log("==", klineJson[box.startIndex].date, klineJson[box.endIndex].date, box.low, box);
 
     if (klineJson[idx][peakField] > box.high || klineJson[idx][troughField] < box.low) {
         return {startIndex:idx, endIndex:idx, high:klineJson[idx][peakField], highIdx: idx,
@@ -110,7 +151,7 @@ function inBox(klineJson, idx, peakField, troughField, boxHight) {
 
 }
 
-function boxLeft(klineJson, idx, peakField, troughField, boxHight) {
+function roughBoxAtLeft(klineJson, idx, peakField, troughField, boxHight) {
     boxHight = boxHight || 0.2;    
     var len = klineJson.length;
     var peak = 0;
@@ -135,9 +176,7 @@ function boxLeft(klineJson, idx, peakField, troughField, boxHight) {
                 //if (klineJson[i].date=== "12/04/2012") console.log(klineJson[i][peakField]);
 
             }
-        }
-
-        if (klineJson[i][troughField+"_trough"] === true && klineJson[i][troughField] < trough) {
+        } else if (klineJson[i][troughField+"_trough"] === true && klineJson[i][troughField] < trough) {
             if (increase(klineJson[i][troughField], peak) > boxHight)  {
                 //if (klineJson[idx].date === '08/26/2013') console.log('trough', klineJson[i].date, klineJson[i][troughField]);
                 return {startIndex:i+1, endIndex:idx, high:peak, highIdx: peakIdx, low: trough, lowIdx:troughIdx};
@@ -156,6 +195,7 @@ function boxLeft(klineJson, idx, peakField, troughField, boxHight) {
 exports.findBoxes = findBoxes;
 exports.inBox = inBox;
 exports.leftTroughIdx = leftTroughIdx;
+exports.leftTrough = leftTrough;
 exports.lowItemIndex = lowItemIndex;
 exports.highItemIndex = highItemIndex;
 exports.increase = increase;

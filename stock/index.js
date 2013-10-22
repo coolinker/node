@@ -7,7 +7,7 @@ var stockId = "SH600778";//"SH600778";//
 
 var stocks = klineio.getAllStockIds();
 //stocks = ["SH600778", "SH600163","SH600000"];
-stocks = ["SH600000"];
+//stocks = ["SH600000"];
 
 var stockidx=0;
 
@@ -34,10 +34,12 @@ function doit(index) {
             return;
         }
         
-        klineutil.findBoxes(kLineJason);
+        //klineutil.findBoxes(kLineJason);
+        //result = {total:0, win:0};
+        
         //var result = averageanalyer.on8While21Up(kLineJason, 0.05, 0.05);
-        //var result = averageanalyer.traverse("red3", kLineJason, 0.05, 0.05);
-        result = {total:0, win:0};
+        var result = averageanalyer.traverse("red3", kLineJason, 0.1, 0.1);
+        
 
         totalsample += result.total;
         winsample +=result.win;
