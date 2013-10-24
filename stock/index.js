@@ -14,31 +14,26 @@ var stockidx=0;
 totalsample = 0;
 winsample = 0;
 winstocks = 0;
-var start = new Date();
+console.time("run");
 doit(stockidx);
 
 //klineprocesser.updateKLines("SH600778");
 
 function doit(index) {
     if (index>=stocks.length) {
-        var end = new Date();
-        console.log(winsample+"/"+totalsample+"="+(winsample/totalsample).toFixed(3), winstocks, (end-start)+"ms");
-
+        console.log(winsample+"/"+totalsample+"="+(winsample/totalsample).toFixed(10), winstocks);
+        console.timeEnd("run");
         return;
     }
     var stockId = stocks[index];
 
     klineio.readKLine(stockId, function(kLineJason) {
-        if (stockId.indexOf("SZ300")>=0) {
-            doit(index+1);  
-            return;
-        }
         
         //klineutil.findBoxes(kLineJason);
         //result = {total:0, win:0};
         
         //var result = averageanalyer.on8While21Up(kLineJason, 0.05, 0.05);
-        var result = averageanalyer.traverse("red3", kLineJason, 0.1, 0.1);
+        var result = averageanalyer.traverse("red3", kLineJason, 0.05, 0.05);
         
 
         totalsample += result.total;

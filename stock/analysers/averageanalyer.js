@@ -6,7 +6,6 @@ function traverse(method, klineJson, lossStop, winStop) {
     var result = {total:0, win:0};
     var len = klineJson.length;
     for (var i=50; i<len; i++) {
-
         if (this[method](klineJson, i)) {
                 
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop);
@@ -29,7 +28,7 @@ function red3(klineJson, i) {
     
     return klineutil.inBetween(klineJson[i].close_ave_8, klineJson[i-2].open, klineJson[i].close)
             && klineutil.increase(klineJson[i].open, klineJson[i].close) > 0
-            && klineutil.increase(klineJson[i].close, klineJson[i].high) < (amp * 1)
+            && klineutil.increase(klineJson[i].close, klineJson[i].high) < amp
             && klineutil.increase(klineJson[i-1].close, klineJson[i].close) > 0
             && klineutil.increase(klineJson[i-1].close, klineJson[i].open) <= 0
 
@@ -39,7 +38,7 @@ function red3(klineJson, i) {
             && klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) <= 0
 
             && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) > 0
-            && klineutil.increase(klineJson[i-2].close, klineJson[i-2].high) < amp * 0.6
+            && klineutil.increase(klineJson[i-2].close, klineJson[i-2].high) < amp
 }
 
 function on8While21UpVolumeHigh(klineJson, i) {
