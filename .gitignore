@@ -1,4 +1,5 @@
 datasource/
+node_modules/
 #################
 ## Eclipse
 #################

@@ -8,12 +8,14 @@ if (cluster.isMaster) {
     var stocksLen = stocks.length;
     var masterTotal = 0;
     var masterWins = 0;
+    var funName;
 
     var numCPUs = require('os').cpus().length;
     var forkStocks = Math.ceil(stocksLen/numCPUs);
     var onForkMessage = function(msg){            
             masterTotal += msg.forkTotal;
             masterWins += msg.forkWins;
+            funName = msg.fun;
         }
 
     for (var i = 0; i < numCPUs; i++) {
@@ -25,7 +27,7 @@ if (cluster.isMaster) {
         i--;
         //console.log('worker ' + worker.process.pid + ' exits', code, masterWins, masterTotal);
         if (i==0) {
-            console.log(masterWins+"/"+masterTotal+"="+(masterWins/masterTotal).toFixed(10));
+            console.log(funName, masterWins+"/"+masterTotal+"="+(masterWins/masterTotal).toFixed(10));
             console.timeEnd("run");
         }
     });
@@ -43,15 +45,16 @@ if (cluster.isMaster) {
 
     function processStock(idx) {
         var stockId = stocks[idx];
-
+        var fun = "morningStar";
         klineio.readKLine(stockId, function(kLineJson) {
-            var result = averageanalyer.traverse("red3", kLineJson, 0.05, 0.05);
+            //10=56.14 / 12=58.86 / 15=61.63 / 20=64.22 / 30=66.44 /40=67.17
+            var result = averageanalyer.traverse(fun, kLineJson, -0.1, 0.05, 12, false);
 
             forkTotal += result.total;
             forkWins += result.win; 
             
             if (idx === endIdx) {
-                process.send({forkTotal:forkTotal, forkWins:forkWins});
+                process.send({forkTotal:forkTotal, forkWins:forkWins, fun:fun});
                 process.exit(0);
             } else {
                 processStock(idx+1);
