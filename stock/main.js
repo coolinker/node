@@ -48,7 +48,7 @@ if (cluster.isMaster) {
         var fun = "morningStar";
         klineio.readKLine(stockId, function(kLineJson) {
             //10=56.14 / 12=58.86 / 15=61.63 / 20=64.22 / 30=66.44 /40=67.17
-            var result = averageanalyer.traverse(fun, kLineJson, -0.1, 0.05, 12, false);
+            var result = averageanalyer.traverse(fun, kLineJson, -0.1, 0.05, 10, false);
 
             forkTotal += result.total;
             forkWins += result.win; 

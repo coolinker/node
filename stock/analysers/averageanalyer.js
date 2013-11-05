@@ -24,19 +24,19 @@ function traverse(method, klineJson, lossStop, winStop, daysStop, flag) {
 }
 
 /**
- * (0.05, 0.05) / 58.3%
+ * (-0.1, 0.05, 10) / 64.11%
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
  */
 function morningStar(klineJson, i) {
     var amp = klineJson[i].amplitude_ave_8;
-    return klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -0.03//-amp*0.2
+    return klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -0.03
         //&& klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) <= 0.02
         //&& Math.abs(klineutil.increase(klineJson[i-1].open, klineJson[i-1].close)) < 0.04
         && klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.02
         && klineutil.increase(klineJson[i-2].close, klineJson[i].close) > -0.01
-        && klineutil.increase(klineJson[i-1].low, klineJson[i-2].low) > 0.01
+        //&& klineutil.increase(klineJson[i-1].low, klineJson[i-2].close) > 0.01
 
 }
 /**
