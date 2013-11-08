@@ -16,23 +16,35 @@ function inBetween(val1, val2, val3) {
 
 
 function highItemIndex(klineJson, from, to, field) {
+    from = from<0 ? 0 : from;
     var idx = from;
     var len = klineJson.length;
     for (var i=from+1; i<len && i<=to; i++) {
-        if (klineJson[i][field] > klineJson[i-1][field]) idx = i;
+        if (klineJson[i][field] > klineJson[idx][field]) idx = i;
     }
     return idx;
+}
+
+function highItem(klineJson, from, to, field) {
+    var idx = highItemIndex(klineJson, from, to, field);
+    return klineJson[idx][field];
 }
 
 function lowItemIndex(klineJson, from, to, field) {
+    from = from<0 ? 0 : from;
     var idx = from;
     var len = klineJson.length;
+    
     for (var i=from+1; i<len && i<=to; i++) {
-        if (klineJson[i][field] < klineJson[i-1][field]) idx = i;
+        if (klineJson[i][field] < klineJson[idx][field]) idx = i;        
     }
     return idx;
 }
 
+function lowItem(klineJson, from, to, field) {
+    var idx = lowItemIndex(klineJson, from, to, field);
+    return klineJson[idx][field];
+}
 
 function leftTroughIdx(field, klineJson, idx) {
     var i;
@@ -76,7 +88,9 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop) {
 exports.leftTroughIdx = leftTroughIdx;
 exports.leftTrough = leftTrough;
 exports.lowItemIndex = lowItemIndex;
+exports.lowItem = lowItem;
 exports.highItemIndex = highItemIndex;
+exports.highItem = highItem;
 exports.increase = increase;
 exports.inBetween = inBetween;
 exports.winOrLoss = winOrLoss;

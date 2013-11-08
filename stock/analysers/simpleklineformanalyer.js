@@ -1,8 +1,33 @@
 
 var klineutil = require("../klineutil");
 
+function traverseForAppearance(methods, klineJson, result) {
+    var len = klineJson.length;
+    var me = this;
+    for (var i=50; i<len; i++) {
+        var arr = [];
+        var rel = klineutil.winOrLoss(klineJson, i, -0.1, 0.05, 15);
+        methods.forEach(function(mtd) {
+            if(me[mtd](klineJson, i) === true) {
+                var date = klineJson[i].date;
+                if (result[mtd] === undefined) {
+                    result[mtd] = [];
+                }
 
-function traverse(method, klineJson, lossStop, winStop, daysStop, flag) {
+                result[mtd].push({date:date, inc:rel});
+                arr.push(mtd);
+            }
+        });
+
+        if(false && arr.length>1) {
+            //var rel = klineutil.winOrLoss(klineJson, i, -0.1, 0.05, 10);
+            console.log(klineJson[i].date, arr, rel);
+        }
+    }
+
+}
+
+function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, flag) {
     var result = {total:0, win:0};
     var len = klineJson.length;
     for (var i=50; i<len-daysStop; i++) {
@@ -11,7 +36,8 @@ function traverse(method, klineJson, lossStop, winStop, daysStop, flag) {
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
                 //console.log(klineJson[i].date, rel.toFixed(2));
                 //console.log();
-
+                // '02/20/2013' '03/05/2013'
+                if (klineJson[i].date==='11/01/2012') console.log(klineJson[i].date, rel);
                 if (rel>winStop) {
                     result.win++;
                 }
@@ -24,20 +50,22 @@ function traverse(method, klineJson, lossStop, winStop, daysStop, flag) {
 }
 
 /**
- * (-0.1, 0.05, 10) / 64.11%
+ * (-0.1, 0.05, 10) / 65.35%
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
+ * 07/31/2009, 03/16/2012
  */
 function morningStar(klineJson, i) {
     var amp = klineJson[i].amplitude_ave_8;
+    var lowIdx = klineutil.lowItemIndex(klineJson, i-40, i, "low");
     return klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -0.03
-        //&& klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) <= 0.02
-        //&& Math.abs(klineutil.increase(klineJson[i-1].open, klineJson[i-1].close)) < 0.04
         && klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.02
         && klineutil.increase(klineJson[i-2].close, klineJson[i].close) > -0.01
-        //&& klineutil.increase(klineJson[i-1].low, klineJson[i-2].close) > 0.01
-
+        && klineutil.increase(klineJson[i-2].volume_ave_8, klineJson[i-2].volume) < 0.618
+        && klineutil.increase(klineJson[i-3].volume, klineJson[i-2].volume) < 0.618
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) < 0.618
+        
 }
 /**
  * (-0.1, 0.05, 12) / 65%
@@ -64,7 +92,7 @@ function redNGreenRed(klineJson, i) {
 }
 
 /**
- * (-0.1, 0.05, 15) / 66.49%
+ * (-0.1, 0.05, 15) / 66.45%
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
@@ -74,7 +102,12 @@ function greenInRed(klineJson, i) {
     return klineutil.increase(klineJson[i].open, klineJson[i].close) > amp * 0.8
             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < 0
             && klineutil.increase(klineJson[i-1].close, klineJson[i].open) <= 0.0
+            //&& klineutil.increase(klineJson[i-1].open, klineJson[i].close) > -0.03
             && klineutil.increase(klineJson[i-1].open, klineJson[i].close) > -0.03
+
+            //
+            //&& klineutil.increase(klineJson[i-1].open, klineJson[i].close) < -0.02
+            //&& klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < -0.04
 }
 
 /**
@@ -114,16 +147,11 @@ function red3(klineJson, i) {
             && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) > 0
             && klineutil.increase(klineJson[i-2].close, klineJson[i-2].high) < amp
             && (klineutil.increase(klineJson[i-3].close, klineJson[i-3].close_ave_55) > 0
-              || klineutil.increase(klineJson[i-3].close, klineJson[i-3].close_ave_144) > 0
-              || klineJson[i-4].low_trough===true
-              || klineJson[i-3].low_trough===true
-              || klineJson[i-2].low_trough===true
-              || klineJson[i-1].low_trough===true)
+              || klineutil.increase(klineJson[i-3].close, klineJson[i-3].close_ave_144) > 0)
 }
 
 /**
  * (-0.1, 0.05, 12) / 63.3%
- * (0.05, 0.05, 15) 57%
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
@@ -132,8 +160,9 @@ function on8While21UpVolumeHigh(klineJson, i) {
     return klineutil.inBetween(klineJson[i].close_ave_8, klineJson[i-1].close, klineJson[i].close) === 0
             && klineutil.increase(klineJson[i-1].close_ave_21, klineJson[i].close_ave_21) >= 0.0
             && klineutil.inBetween(klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume), -0.25, 0.5) === 0
-            //&& nearLowTrough(klineJson, i, 80, 0.5);
-            //&& detectGapDownStress(klineJson, i) === undefined;
+           
+            // && klineutil.increase(klineJson[i-2].close_ave_21, klineJson[i-1].close_ave_21) < 0
+            // && klineutil.increase(klineJson[i-10].close_ave_21, klineJson[i-1].close_ave_21) < -0.03
 }
 
 /**
@@ -244,4 +273,5 @@ exports.redGreenRed = redGreenRed;
 exports.red3 = red3;
 exports.on8While21Up = on8While21Up;
 exports.on8While21UpVolumeHigh = on8While21UpVolumeHigh;
-exports.traverse = traverse;
+exports.traverseForWinning = traverseForWinning;
+exports.traverseForAppearance = traverseForAppearance;

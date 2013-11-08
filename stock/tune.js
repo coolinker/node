@@ -3,7 +3,7 @@ var klineio = require("./klineio");
 var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
-
+//stocks = ['SH600778'];
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
     var masterTotal = 0;
@@ -19,6 +19,7 @@ if (cluster.isMaster) {
         }
 
     for (var i = 0; i < numCPUs; i++) {
+        if (i*forkStocks >= stocksLen) break;
         var worker = cluster.fork({startIdx: i*forkStocks, endIdx: Math.min((i+1)*forkStocks, stocksLen)-1});        
         worker.on('message', onForkMessage);
     }
@@ -36,7 +37,7 @@ if (cluster.isMaster) {
 } else if (cluster.isWorker) {
 
     var klineprocesser = require("./klineprocessor");
-    var averageanalyer = require("./analysers/averageanalyer");
+    var simpleklineformanalyer = require("./analysers/simpleklineformanalyer");
     var klineutil = require("./klineutil");
     var forkTotal = 0;
     var forkWins = 0;
@@ -45,10 +46,10 @@ if (cluster.isMaster) {
 
     function processStock(idx) {
         var stockId = stocks[idx];
-        var fun = "morningStar";
+        var fun = "on8While21UpVolumeHigh";
         klineio.readKLine(stockId, function(kLineJson) {
             //10=56.14 / 12=58.86 / 15=61.63 / 20=64.22 / 30=66.44 /40=67.17
-            var result = averageanalyer.traverse(fun, kLineJson, -0.1, 0.05, 10, false);
+            var result = simpleklineformanalyer.traverseForWinning(fun, kLineJson, -0.1, 0.05, 12, false);
 
             forkTotal += result.total;
             forkWins += result.win; 
