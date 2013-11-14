@@ -10,6 +10,30 @@ function getAllStockIds (match) {
     return stockIds;
 }
 
+function readKLineBaseSync(stockId, callback) {
+  
+  var kLineJson = [];
+
+  var content = fs.readFileSync("./datasource/klines_base/"+stockId+".TXT","utf8");
+
+  content.split("\r\n").forEach(function(line) {
+      var lineEle = line.split(",");
+
+      if (lineEle.length===7)  {
+            kLineJson.push({date: lineEle[0],
+              open: parseFloat(lineEle[1]), 
+              high: parseFloat(lineEle[2]),
+              low: parseFloat(lineEle[3]), 
+              close: parseFloat(lineEle[4]), 
+              volume: parseFloat(lineEle[5]), 
+              amount: parseFloat(lineEle[6])});
+      }
+  });
+  
+  //console.log("Read K line data:"+stockId, kLineJson.length);
+  callback(kLineJson);
+  
+}
 function readKLineBase(stockId, callback) {
   //console.log("Read K line data:"+stockId);
   var kLineJson = [];
@@ -33,6 +57,7 @@ function readKLineBase(stockId, callback) {
       });
 
     }
+    console.log(stockId, kLineJson.length)
     callback(kLineJson);
   });
   
@@ -74,6 +99,21 @@ function appendKLine(stockId, jsonData) {
 
 }*/
 
+function writeKLineSync(stockId, jsonData, callback) {
+  var data = "";
+  jsonData.forEach(function(line){
+    //if (line.high_peak===true) console.log("peak", line.date);
+    //if (line.low_trough===true) console.log("trough", line.date);
+
+    if (data!=="") {
+      data = data + "\r\n";
+    }
+    data = data + JSON.stringify(line);    
+  });
+
+  fs.writeFileSync("./datasource/klines/"+stockId+".json", data);
+}
+
 function writeKLine(stockId, jsonData, callback) {
   var data = "";
   jsonData.forEach(function(line){
@@ -99,8 +139,10 @@ function writeKLine(stockId, jsonData, callback) {
       
   });
 }
-
+exports.readKLineBaseSync = readKLineBaseSync;
 exports.readKLineBase = readKLineBase;
 exports.readKLine = readKLine;
+
+exports.writeKLineSync = writeKLineSync;
 exports.writeKLine = writeKLine;
 exports.getAllStockIds = getAllStockIds;

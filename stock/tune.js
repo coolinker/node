@@ -3,7 +3,7 @@ var klineio = require("./klineio");
 var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
-//stocks = ['SH600778'];
+//stocks = ['SZ002127'];
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
     var masterTotal = 0;
@@ -43,13 +43,20 @@ if (cluster.isMaster) {
     var forkWins = 0;
     var startIdx = parseInt(process.env.startIdx, 10);
     var endIdx = parseInt(process.env.endIdx, 10);
-
+    var stocksShowLog = ["SZ002127"];
+    var showLogDates = [];
     function processStock(idx) {
         var stockId = stocks[idx];
-        var fun = "on8While21UpVolumeHigh";
+        
+        var fun = "sidewaysCompression";
+        
+        var showLog = -1 !== stocksShowLog.indexOf(stockId);
         klineio.readKLine(stockId, function(kLineJson) {
             //10=56.14 / 12=58.86 / 15=61.63 / 20=64.22 / 30=66.44 /40=67.17
-            var result = simpleklineformanalyer.traverseForWinning(fun, kLineJson, -0.1, 0.05, 12, false);
+            //console.log("stockId", stockId, kLineJson[kLineJson.length-1].date)
+
+            var result = simpleklineformanalyer.traverseForWinning(fun, kLineJson, -0.1, 0.1, 30, 
+                {passAll:false, showLog:showLog, showLogDates:showLogDates, stockId:stockId});
 
             forkTotal += result.total;
             forkWins += result.win; 

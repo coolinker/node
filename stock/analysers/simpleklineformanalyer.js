@@ -27,17 +27,21 @@ function traverseForAppearance(methods, klineJson, result) {
 
 }
 
-function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, flag) {
+function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, options) {
     var result = {total:0, win:0};
     var len = klineJson.length;
-    for (var i=50; i<len-daysStop; i++) {
-        if (flag || this[method](klineJson, i)) {
+    var showLog = options.showLog;
+    var showLogDates = options.showLogDates
+    for (var i=50; i<len; i++) {
+        if (options.passAll || this[method](klineJson, i)) {
                 
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
-                //console.log(klineJson[i].date, rel.toFixed(2));
+                //console.log(options.stockId, klineJson[i].date, rel.toFixed(2));
                 //console.log();
                 // '02/20/2013' '03/05/2013'
-                if (klineJson[i].date==='11/01/2012') console.log(klineJson[i].date, rel);
+                if (showLog) console.log(options.stockId, klineJson[i].date, rel);
+                else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, rel);
+
                 if (rel>winStop) {
                     result.win++;
                 }
@@ -49,6 +53,42 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, flag
     return result;
 }
 
+function sidewaysCompression (klineJson, i) {
+    var lidx = klineutil.lowItemIndex(klineJson, i-20, i, "low");
+    var lval = klineJson[lidx].low;
+
+    var hidx = klineutil.highItemIndex(klineJson, lidx-30, lidx, "high");
+    var hval = klineJson[hidx].high;
+    
+    var midx = Math.round((hidx + lidx)/2);
+    var plidx = klineutil.lowItemIndex(klineJson, hidx-20, hidx, "low");
+    var plval = klineJson[plidx].low;
+
+    var downhl = klineutil.increase(lval, hval);    
+    var downlpl = klineutil.increase(plval, lval);
+    if (false && klineJson[i].date==="09/30/2013") {
+        console.log(klineJson[hidx].close, klineJson[midx].close_ave_8, klineJson[lidx].close_ave_8);
+        console.log(i, lidx, hidx, downhl, downlpl);
+    }
+    var amp = klineJson[i].amplitude_ave_8;
+
+    return klineutil.increase(klineJson[i].close, klineJson[hidx].high) < 0.0
+        && klineutil.increase(klineJson[i-1].close, klineJson[hidx].high) > 0.0
+        //&& klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.0
+        
+        //&& klineJson[i].volume > 1.5 *klineJson[i].volume_ave_8
+        //&& klineJson[i].volume < klineJson[hidx].volume
+        && hidx < i-20
+        //&& lidx > i-20
+        //&& downhl< 0.3
+        && lval > plval
+        //&& klineJson[hidx].close > 1.02*klineJson[midx].close_ave_8
+        //&& klineJson[midx].close_ave_8 > 1.02*klineJson[lidx].close_ave_8
+
+        //&& klineJson[hidx].volume_ave_8 > 1.1*klineJson[midx].volume_ave_8
+        //&& klineJson[hidx].volume_ave_8 > 1.1*klineJson[lidx].volume_ave_8
+
+}
 /**
  * (-0.1, 0.05, 10) / 65.35%
  * @param  {[type]} klineJson [description]
@@ -102,12 +142,8 @@ function greenInRed(klineJson, i) {
     return klineutil.increase(klineJson[i].open, klineJson[i].close) > amp * 0.8
             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < 0
             && klineutil.increase(klineJson[i-1].close, klineJson[i].open) <= 0.0
-            //&& klineutil.increase(klineJson[i-1].open, klineJson[i].close) > -0.03
             && klineutil.increase(klineJson[i-1].open, klineJson[i].close) > -0.03
 
-            //
-            //&& klineutil.increase(klineJson[i-1].open, klineJson[i].close) < -0.02
-            //&& klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < -0.04
 }
 
 /**
@@ -265,6 +301,7 @@ function detectGapDownStress(klineJson, idx, interval, accuracy) {
     return undefined;
 }
 
+exports.sidewaysCompression = sidewaysCompression;
 
 exports.morningStar = morningStar;
 exports.redNGreenRed = redNGreenRed;

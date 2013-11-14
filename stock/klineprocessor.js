@@ -300,7 +300,7 @@ function updateKLines(match) {
     
     stocks.forEach(
         function (stockId) {
-            klineio.readKLineBase(stockId, function(kLineJason) {
+            klineio.readKLineBaseSync(stockId, function(kLineJason) {
             exRightsDay(kLineJason);
             average(kLineJason, "close", 8);
             average(kLineJason, "close", 21);
@@ -331,12 +331,12 @@ function updateKLines(match) {
            //mergeTroughs(kLineJason, "low", 3);
 
 
-            markBoxs(kLineJason, "high", "high_peak", function highCeilBoxCompareWrapper(json1, json2) {
-                return highCeilBoxCompare(json1, json2, 0, (json1.amplitude_ave_8+json2.amplitude_ave_8)/12);
-            });
+            // markBoxs(kLineJason, "high", "high_peak", function highCeilBoxCompareWrapper(json1, json2) {
+            //     return highCeilBoxCompare(json1, json2, 0, (json1.amplitude_ave_8+json2.amplitude_ave_8)/12);
+            // });
 
 
-            klineio.writeKLine(stockId, kLineJason);
+            klineio.writeKLineSync(stockId, kLineJason);
         });
 
     });
