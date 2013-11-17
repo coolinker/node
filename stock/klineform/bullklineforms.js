@@ -1,57 +1,6 @@
 
 var klineutil = require("../klineutil");
 
-function traverseForAppearance(methods, klineJson, result) {
-    var len = klineJson.length;
-    var me = this;
-    for (var i=50; i<len; i++) {
-        var arr = [];
-        var rel = klineutil.winOrLoss(klineJson, i, -0.1, 0.05, 15);
-        methods.forEach(function(mtd) {
-            if(me[mtd](klineJson, i) === true) {
-                var date = klineJson[i].date;
-                if (result[mtd] === undefined) {
-                    result[mtd] = [];
-                }
-
-                result[mtd].push({date:date, inc:rel});
-                arr.push(mtd);
-            }
-        });
-
-        if(false && arr.length>1) {
-            //var rel = klineutil.winOrLoss(klineJson, i, -0.1, 0.05, 10);
-            console.log(klineJson[i].date, arr, rel);
-        }
-    }
-
-}
-
-function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, options) {
-    var result = {total:0, win:0};
-    var len = klineJson.length;
-    var showLog = options.showLog;
-    var showLogDates = options.showLogDates
-    for (var i=50; i<len; i++) {
-        if (options.passAll || this[method](klineJson, i)) {
-                
-                var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
-                //console.log(options.stockId, klineJson[i].date, rel.toFixed(2));
-                //console.log();
-                // '02/20/2013' '03/05/2013'
-                if (showLog) console.log(options.stockId, klineJson[i].date, rel);
-                else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, rel);
-
-                if (rel>winStop) {
-                    result.win++;
-                }
-                result.total++;
-                
-            }
-
-    }
-    return result;
-}
 /**
  *  (-0.1, 0.05, 12) /66.06%
  * [wBottom description]
@@ -62,11 +11,14 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
 function wBottom (klineJson, i) {
     var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
     var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
-    var leftBottomIdx = klineutil.lowItemIndex(klineJson, midTopIdx-10, midTopIdx, "low");
-    var leftTopIdx = klineutil.highItemIndex(klineJson, leftBottomIdx-30, leftBottomIdx, "high");
 
     return klineutil.increase(klineJson[midTopIdx].high, klineJson[i].close) > 0.0
-        && klineutil.increase(klineJson[midTopIdx].high, klineJson[leftTopIdx].high) > 0.15
+        && (function(){
+            var leftBottomIdx = klineutil.lowItemIndex(klineJson, midTopIdx-10, midTopIdx, "low");
+            var leftTopIdx = klineutil.highItemIndex(klineJson, leftBottomIdx-30, leftBottomIdx, "high");
+            return klineutil.increase(klineJson[midTopIdx].high, klineJson[leftTopIdx].high) > 0.15;
+        })();
+        
         //&& klineutil.increase(klineJson[rightBottomIdx].low, klineJson[leftBottomIdx].low) < klineJson[i].amplitude_ave_55*1.1
         //&& klineutil.increase(klineJson[rightBottomIdx].low, klineJson[leftBottomIdx].low) > -klineJson[i].amplitude_ave_55*1.1
 
@@ -327,5 +279,3 @@ exports.redGreenRed = redGreenRed;
 exports.red3 = red3;
 exports.on8While21Up = on8While21Up;
 exports.on8While21UpVolumeHigh = on8While21UpVolumeHigh;
-exports.traverseForWinning = traverseForWinning;
-exports.traverseForAppearance = traverseForAppearance;

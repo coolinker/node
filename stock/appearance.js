@@ -40,6 +40,7 @@ if (cluster.isMaster) {
         var masterDays = {};
         //console.log('worker ' + worker.process.pid + ' exits', code, masterWins, masterTotal);
         if (i==0) {
+
             for (var mtd in masterResult) {
                 var dates = masterResult[mtd];
                 for (var date in dates) {
@@ -57,7 +58,7 @@ if (cluster.isMaster) {
             var sortedDates = []
             for (var date in masterDays) {
                 if (date.indexOf("win") > -1) continue;
-                if (masterDays[date] >900) {
+                if (masterDays[date] >= process.argv[2]) {
                     sortedDates.push(date);
                 }
 
@@ -74,10 +75,13 @@ if (cluster.isMaster) {
                 var dayTotal = masterDays[date];
 
                 var perStr = "";
-                for (var mtd in masterResult) {
-                    var  mtdtotal = masterResult[mtd][date];
-                    if (mtdtotal === undefined) mtdtotal = 0;
-                    perStr += (mtd + ": " + masterResult[mtd][date+"_win"]+"/"+mtdtotal + "(" + (100*mtdtotal/dayTotal).toFixed(2)+")  ");
+
+                if (process.argv[3]==='info') {
+                    for (var mtd in masterResult) {
+                        var  mtdtotal = masterResult[mtd][date];
+                        if (mtdtotal === undefined) mtdtotal = 0;
+                        perStr += (mtd + ": " + masterResult[mtd][date+"_win"]+"/"+mtdtotal + "(" + (100*mtdtotal/dayTotal).toFixed(2)+")  ");
+                    }
                 }
                 console.log(date,dayTotal, perStr);
                 console.log("");
@@ -91,7 +95,7 @@ if (cluster.isMaster) {
 } else if (cluster.isWorker) {
 
     var klineprocesser = require("./klineprocessor");
-    var simpleklineformanalyer = require("./analysers/simpleklineformanalyer");
+    var klineformanalyser = require("./klineform/analyser");
     var klineutil = require("./klineutil");
     var resultTotal = {};
     var startIdx = parseInt(process.env.startIdx, 10);
@@ -99,10 +103,12 @@ if (cluster.isMaster) {
     
     function processStock(idx) {
         var stockId = stocks[idx];
-        var mtds = ["morningStar", "redNGreenRed", "greenInRed","on8While21UpVolumeHigh", "on8While21Up", "red3"];
+        var mtds = ["morningStar", "redNGreenRed", "greenInRed","on8While21UpVolumeHigh", "on8While21Up", "red3", 
+        "sidewaysCompression", "wBottom"];
+        //mtds = ["sidewaysCompression", "wBottom"];
         klineio.readKLine(stockId, function(kLineJson) {
             var result = {};
-            simpleklineformanalyer.traverseForAppearance(mtds, kLineJson, result);
+            klineformanalyser.traverseForAppearance(mtds, kLineJson, result);
 
              for (var mtd in result) {
                 var dates = result[mtd];
