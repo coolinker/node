@@ -1,8 +1,12 @@
 var klineutil = require("../klineutil");
 var bullklineforms = require("./bullklineforms");
 
-function traverseForAppearance(methods, klineJson, result) {
+function traverseForAppearance(methods, klineJson, result, options) {
     var len = klineJson.length;
+    var displayEveryCase = options.displayEveryCase;
+    var displayInfoToDate = options.displayInfoToDate;
+    var displayInfoFromDate = options.displayInfoFromDate;
+
     for (var i=50; i<len; i++) {
         var arr = [];
         var rel = klineutil.winOrLoss(klineJson, i, -0.1, 0.05, 15);
@@ -15,6 +19,14 @@ function traverseForAppearance(methods, klineJson, result) {
 
                 result[mtd].push({date:date, inc:rel});
                 arr.push(mtd);
+               
+                if (!displayEveryCase) return;
+
+                var dObj = new Date(date);
+                if (dObj >= displayInfoFromDate && dObj <= displayInfoToDate) {
+                    console.log(date, options.stockId);
+                }
+
             }
         });
 
@@ -33,7 +45,7 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
     var showLogDates = options.showLogDates
     for (var i=50; i<len; i++) {
         if (options.passAll || bullklineforms[method](klineJson, i) 
-            || (options.overlap!==undefined && bullklineforms[options.overlap](klineJson, i))) {
+            || (options.overlap && bullklineforms[options.overlap](klineJson, i))) {
                 
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
                 //console.log(options.stockId, klineJson[i].date, rel.toFixed(2));

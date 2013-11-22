@@ -15,6 +15,68 @@ function inBetween(val1, val2, val3) {
 }
 
 
+function entityMiddle(dayJson) {
+    return (dayJson.close+dayJson.open)/2;
+}
+
+function entityCompare(dayJson1, dayJson2) {
+    var high1 = Math.max(dayJson1.close, dayJson1.open);
+    var low1 = Math.min(dayJson1.close, dayJson1.open);
+
+    var high2 = Math.max(dayJson2.close, dayJson2.open);
+    var low2 = Math.min(dayJson2.close, dayJson2.open);
+
+    if (high1>high2 && low1>low2) {
+        return 1;
+    } else if (high1< high2 && low1<low2) {
+        return -1;
+    } else if (entityMiddle(dayJson1) > entityMiddle(dayJson2)){
+        return 1;
+    } else if(entityMiddle(dayJson1) < entityMiddle(dayJson2)) {
+        return -1
+    } else return 0;
+}
+
+function lowIndexOfUpTrend(klineJson, from){
+    var idx = from;
+    for (var idx = from; idx>=3; idx--) {
+        var cp01 = entityCompare(klineJson[idx], klineJson[idx-1]);
+        var cp12 = entityCompare(klineJson[idx-1], klineJson[idx-2]);
+        if (cp01>0 && cp12>0) {
+            continue;
+        } else if (cp01<0 && cp12<0) { 
+            return idx;
+        } else if (cp01>0) {
+            continue;
+        } else if (cp01<=0){
+            var cp02 = entityCompare(klineJson[idx], klineJson[idx-2]);
+            if (cp02>0) continue;
+            else return idx;
+        }
+
+    }
+}
+
+function highIndexOfDownTrend(klineJson, from){
+    var idx = from;
+    for (var idx = from; idx>=3; idx--) {
+        var cp01 = entityCompare(klineJson[idx], klineJson[idx-1]);
+        var cp12 = entityCompare(klineJson[idx-1], klineJson[idx-2]);
+        if (cp01<0 && cp12<0) {
+            continue;
+        } else if (cp01>0 && cp12>0) { 
+            return idx;
+        } else if (cp01<0) {
+            continue;
+        } else if (cp01>=0){
+            var cp02 = entityCompare(klineJson[idx], klineJson[idx-2]);
+            if (cp02<0) continue;
+            else return idx;
+        }
+
+    }
+}
+
 function highItemIndex(klineJson, from, to, field) {
     from = from<0 ? 0 : from;
     var idx = from;
@@ -94,3 +156,6 @@ exports.highItem = highItem;
 exports.increase = increase;
 exports.inBetween = inBetween;
 exports.winOrLoss = winOrLoss;
+
+exports.highIndexOfDownTrend = highIndexOfDownTrend;
+exports.lowIndexOfUpTrend = lowIndexOfUpTrend;

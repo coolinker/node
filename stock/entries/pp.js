@@ -1,4 +1,4 @@
-var klineprocesser = require("./klineprocessor");
+var klineprocesser = require("../klineprocessor");
 
 console.time("run");
 

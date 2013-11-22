@@ -1,16 +1,20 @@
 console.time("run");
-var klineio = require("./klineio");
+var klineio = require("../klineio");
 var cluster = require('cluster');
 
+var klineForm = "headShoulderBottom";
+var overlapKLineForm  = "";//"headShoulderBottom";
+var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
+var showLogDates = [];//["05/29/2013"];
+
 var stocks = klineio.getAllStockIds();
-//stocks = ["SZ300072"]//['SZ002127'];
+//stocks = ["SH600061",/*"SZ002158"*/]//['SZ002127'];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
     var masterTotal = 0;
     var masterWins = 0;
     var funName;
-    
 
 
     var numCPUs = require('os').cpus().length;
@@ -39,20 +43,19 @@ if (cluster.isMaster) {
       
 } else if (cluster.isWorker) {
 
-    var klineprocesser = require("./klineprocessor");
-    var klineformanalyser = require("./klineform/analyser");
-    var klineutil = require("./klineutil");
+    var klineprocesser = require("../klineprocessor");
+    var klineformanalyser = require("../klineform/analyser");
+    var klineutil = require("../klineutil");
     var forkTotal = 0;
     var forkWins = 0;
     var startIdx = parseInt(process.env.startIdx, 10);
     var endIdx = parseInt(process.env.endIdx, 10);
-    var stocksShowLog = [];//["SH600987"];//["SZ002127"];
-    var showLogDates = [];//["05/29/2013"];
+    
     function processStock(idx) {
         var stockId = stocks[idx];
         
-        var fun = process.argv[2];
-        var overlap = process.argv[3];
+        var fun = klineForm;
+        var overlap = overlapKLineForm;
         
         var showLog = -1 !== stocksShowLog.indexOf(stockId);
         klineio.readKLine(stockId, function(kLineJson) {
@@ -60,7 +63,7 @@ if (cluster.isMaster) {
             // 30=52.5 / 50=58.3
             //console.log("stockId", stockId, kLineJson[kLineJson.length-1].date)
 
-            var result = klineformanalyser.traverseForWinning(fun, kLineJson, -0.1, 0.05, 30, 
+            var result = klineformanalyser.traverseForWinning(fun, kLineJson, -0.1, 0.05, 12, 
                 {passAll:false, showLog:showLog, showLogDates:showLogDates, stockId:stockId,
                     overlap:overlap});
 

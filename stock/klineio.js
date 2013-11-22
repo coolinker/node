@@ -1,6 +1,6 @@
 var fs = require("fs");
 function getAllStockIds (match) {
-    var klinefiles = fs.readdirSync("./datasource/klines_base/");
+    var klinefiles = fs.readdirSync("../datasource/klines_base/");
     var stockIds = [];
     klinefiles.forEach(function (fileName) {
         if (match===undefined || fileName.indexOf(match) >= 0) {
@@ -14,7 +14,7 @@ function readKLineBaseSync(stockId, callback) {
   
   var kLineJson = [];
 
-  var content = fs.readFileSync("./datasource/klines_base/"+stockId+".TXT","utf8");
+  var content = fs.readFileSync("../datasource/klines_base/"+stockId+".TXT","utf8");
 
   content.split("\r\n").forEach(function(line) {
       var lineEle = line.split(",");
@@ -38,7 +38,7 @@ function readKLineBase(stockId, callback) {
   //console.log("Read K line data:"+stockId);
   var kLineJson = [];
 
-  fs.readFile("./datasource/klines_base/"+stockId+".TXT","utf8", function(error, content) {
+  fs.readFile("../datasource/klines_base/"+stockId+".TXT","utf8", function(error, content) {
     if(error) {
       console.log(error);
     } else {
@@ -67,7 +67,7 @@ function readKLine(stockId, callback) {
   //console.log("Read K line data:"+stockId);
   var kLineJson = [];
   var startDate = new Date("01/01/2005");
-  fs.readFile("./datasource/klines/"+stockId+".json","utf8", function(error, content) {
+  fs.readFile("../datasource/klines/"+stockId+".json","utf8", function(error, content) {
     if(error) {
       console.log(error);
     } else {
@@ -111,7 +111,7 @@ function writeKLineSync(stockId, jsonData, callback) {
     data = data + JSON.stringify(line);    
   });
 
-  fs.writeFileSync("./datasource/klines/"+stockId+".json", data);
+  fs.writeFileSync("../datasource/klines/"+stockId+".json", data);
 }
 
 function writeKLine(stockId, jsonData, callback) {
@@ -126,7 +126,7 @@ function writeKLine(stockId, jsonData, callback) {
     data = data + JSON.stringify(line);    
   });
 
-  fs.writeFile("./datasource/klines/"+stockId+".json", data, function(err) {
+  fs.writeFile("../datasource/klines/"+stockId+".json", data, function(err) {
       if (callback) {
           callback(err);
       } else {

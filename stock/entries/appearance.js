@@ -1,9 +1,18 @@
+
+var displayMinCount = 0;
+var displayInfoFromDate = new Date("10/18/2013")
+var displayInfoToDate = new Date("11/19/2013");
+var displayEveryCase = true;
+var displayInfo = "info";
+var klineForms = "sidewaysCompression";
+
 console.time("run");
-var klineio = require("./klineio");
+var klineio = require("../klineio");
 var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
-//stocks = ["SH600777","SH600778"];
+stocks = ["SZ002563","SH600089"];
+
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
     var masterResult = {};
@@ -17,7 +26,6 @@ if (cluster.isMaster) {
             if (masterResult[mtd] === undefined) {
                 masterResult[mtd] = {};
             }
-
 
             for(var date in dates) {
                 if (masterResult[mtd][date] === undefined) {
@@ -43,6 +51,7 @@ if (cluster.isMaster) {
 
             for (var mtd in masterResult) {
                 var dates = masterResult[mtd];
+
                 for (var date in dates) {
                     if (date.indexOf("win") > -1) continue;
                     if (masterDays[date]===undefined) {
@@ -58,7 +67,7 @@ if (cluster.isMaster) {
             var sortedDates = []
             for (var date in masterDays) {
                 if (date.indexOf("win") > -1) continue;
-                if (masterDays[date] >= process.argv[2]) {
+                if (masterDays[date] >= displayMinCount) {
                     sortedDates.push(date);
                 }
 
@@ -72,19 +81,24 @@ if (cluster.isMaster) {
             });
 
             sortedDates.forEach(function(date){
+                var dObj = new Date(date);                
+                if (dObj < displayInfoFromDate || dObj > displayInfoToDate) return;
+
                 var dayTotal = masterDays[date];
-
                 var perStr = "";
-
-                if (process.argv[3]==='info') {
+                if (displayInfo==='moreinfo') {
                     for (var mtd in masterResult) {
                         var  mtdtotal = masterResult[mtd][date];
                         if (mtdtotal === undefined) mtdtotal = 0;
                         perStr += (mtd + ": " + masterResult[mtd][date+"_win"]+"/"+mtdtotal + "(" + (100*mtdtotal/dayTotal).toFixed(2)+")  ");
                     }
+                    
                 }
-                console.log(date,dayTotal, perStr);
-                console.log("");
+
+                 if (displayInfo !== undefined) {
+                    console.log(date,dayTotal, perStr);
+                    console.log("");
+                }
             });
             
             console.timeEnd("run");
@@ -94,21 +108,32 @@ if (cluster.isMaster) {
       
 } else if (cluster.isWorker) {
 
-    var klineprocesser = require("./klineprocessor");
-    var klineformanalyser = require("./klineform/analyser");
-    var klineutil = require("./klineutil");
+    var klineprocesser = require("../klineprocessor");
+    var klineformanalyser = require("../klineform/analyser");
+    var klineutil = require("../klineutil");
     var resultTotal = {};
     var startIdx = parseInt(process.env.startIdx, 10);
     var endIdx = parseInt(process.env.endIdx, 10);
     
     function processStock(idx) {
         var stockId = stocks[idx];
-        var mtds = ["morningStar", "redNGreenRed", "greenInRed","on8While21UpVolumeHigh", "on8While21Up", "red3", 
-        "sidewaysCompression", "wBottom"];
+        var mtds;        
+        if (!klineForms) {
+            mtds = ["morningStar", "redNGreenRed", "greenInRed","on8While21UpVolumeHigh", "on8While21Up", "red3", 
+            "sidewaysCompression", "wBottom"];
+        } else {
+            mtds = klineForms.split(",");
+        }
+
         //mtds = ["sidewaysCompression", "wBottom"];
         klineio.readKLine(stockId, function(kLineJson) {
             var result = {};
-            klineformanalyser.traverseForAppearance(mtds, kLineJson, result);
+            klineformanalyser.traverseForAppearance(mtds, kLineJson, result, {
+                displayInfoFromDate: displayInfoFromDate,
+                displayInfoToDate: displayInfoToDate,
+                displayEveryCase: displayEveryCase,
+                stockId:stockId
+            });
 
              for (var mtd in result) {
                 var dates = result[mtd];
