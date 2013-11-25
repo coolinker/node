@@ -2,6 +2,30 @@
 var klineutil = require("../klineutil");
 
 /**
+ *  (-0.1, 0.05, 12) / 69.02%
+ * [wBottomA description]
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function wBottomA (klineJson, i) {
+
+    if (klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 1) return false
+
+    var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
+    var middleTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
+    if (klineutil.increase(klineJson[middleTop].high, klineJson[i].close)<-0.03) return false
+
+    var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, middleTop);
+    if (0!==klineutil.inBetween(klineutil.increase(klineJson[leftBottom].low, klineJson[rightBottom].low), 0.05, 0.15)) {
+        return false;    
+    }   
+
+    var outerHigh = klineutil.highItem(klineJson, leftBottom-30, leftBottom, "high");
+    return klineutil.increase(klineJson[leftBottom].high, outerHigh)>0.2;
+}
+
+/**
  *  (-0.1, 0.05, 12) /68.04%
  * [wBottom description]
  * @param  {[type]} klineJson [description]
@@ -22,13 +46,10 @@ function headShoulderBottom (klineJson, i) {
 
     if (klineutil.increase(klineJson[leftBottom].high, klineJson[rightTop].high)>-0.02) return false;
 
-    var outerLefTop = klineutil.highIndexOfDownTrend(klineJson, leftBottom);
     var outerHigh = klineutil.highItem(klineJson, leftBottom-30, leftBottom, "high");
 
-    var re = klineutil.increase(klineJson[leftTop].high, outerHigh)>0.15;
+    return klineutil.increase(klineJson[leftTop].high, outerHigh)>0.15;
    
-     return re;
-
 }
 
 /**
@@ -301,9 +322,12 @@ function detectGapDownStress(klineJson, idx, interval, accuracy) {
     return undefined;
 }
 
+
+
 exports.headShoulderBottom = headShoulderBottom;
 exports.sidewaysCompression = sidewaysCompression;
 exports.wBottom = wBottom;
+exports.wBottomA = wBottomA;
 
 exports.morningStar = morningStar;
 exports.redNGreenRed = redNGreenRed;

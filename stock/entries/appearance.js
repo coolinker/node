@@ -1,17 +1,17 @@
 
-var displayMinCount = 0;
-var displayInfoFromDate = new Date("10/18/2013")
-var displayInfoToDate = new Date("11/19/2013");
-var displayEveryCase = true;
-var displayInfo = "info";
-var klineForms = "sidewaysCompression";
+var displayMinCount = 1000;
+var displayInfoFromDate = new Date("01/01/2013")
+var displayInfoToDate = new Date("01/01/2014");
+var displayEveryCase = false;
+var displayInfo = "moreinfo";
+var klineForms = ""//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
 var klineio = require("../klineio");
 var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
-stocks = ["SZ002563","SH600089"];
+//stocks = ["SZ002563","SH600089"];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
@@ -97,7 +97,6 @@ if (cluster.isMaster) {
 
                  if (displayInfo !== undefined) {
                     console.log(date,dayTotal, perStr);
-                    console.log("");
                 }
             });
             
@@ -110,6 +109,7 @@ if (cluster.isMaster) {
 
     var klineprocesser = require("../klineprocessor");
     var klineformanalyser = require("../klineform/analyser");
+
     var klineutil = require("../klineutil");
     var resultTotal = {};
     var startIdx = parseInt(process.env.startIdx, 10);
@@ -119,8 +119,7 @@ if (cluster.isMaster) {
         var stockId = stocks[idx];
         var mtds;        
         if (!klineForms) {
-            mtds = ["morningStar", "redNGreenRed", "greenInRed","on8While21UpVolumeHigh", "on8While21Up", "red3", 
-            "sidewaysCompression", "wBottom"];
+            mtds = klineformanalyser.bullKLineFromMethods();
         } else {
             mtds = klineForms.split(",");
         }

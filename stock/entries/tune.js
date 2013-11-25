@@ -2,8 +2,8 @@ console.time("run");
 var klineio = require("../klineio");
 var cluster = require('cluster');
 
-var klineForm = "headShoulderBottom";
-var overlapKLineForm  = "";//"headShoulderBottom";
+var klineForm = "wBottom";
+var overlapKLineForm  = "wBottom";//"headShoulderBottom";
 var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates = [];//["05/29/2013"];
 

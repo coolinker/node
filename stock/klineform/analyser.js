@@ -65,9 +65,16 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
     return result;
 }
 
-function formOverlaps() {
+function bullKLineFromMethods() {
+    var methods = [];
+    for (var attr in bullklineforms) {
+        methods.push(attr);
+    }
 
+    return methods;
 }
+
+exports.bullKLineFromMethods = bullKLineFromMethods;
 
 exports.traverseForWinning = traverseForWinning;
 exports.traverseForAppearance = traverseForAppearance;
