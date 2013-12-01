@@ -1,4 +1,6 @@
 var fs = require("fs");
+var startDate = new Date("01/01/2005"); 
+
 function getAllStockIds (match) {
     var klinefiles = fs.readdirSync("../datasource/klines_base/");
     var stockIds = [];
@@ -66,7 +68,7 @@ function readKLineBase(stockId, callback) {
 function readKLine(stockId, callback) {
   //console.log("Read K line data:"+stockId);
   var kLineJson = [];
-  var startDate = new Date("01/01/2005");
+  
   fs.readFile("../datasource/klines/"+stockId+".json","utf8", function(error, content) {
     if(error) {
       console.log(error);

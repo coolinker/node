@@ -9,8 +9,8 @@ function increase(val1, val2) {
 }
 
 function inBetween(val1, val2, val3) {
-    if (val1 < val2) return -1;
-    if (val1 > val3) return 1;
+    if (val1 < val2) return increase(val2,val1);
+    if (val1 > val3) return increase(val3,val1);
     if (val1 >= val2 && val1 <= val3) return 0;
 }
 
@@ -55,6 +55,8 @@ function lowIndexOfUpTrend(klineJson, from){
         }
 
     }
+    
+    return 0;
 }
 
 function highIndexOfDownTrend(klineJson, from){
@@ -75,6 +77,19 @@ function highIndexOfDownTrend(klineJson, from){
         }
 
     }
+
+    return 0;
+}
+
+function higherItemsIndex(klineJson, from, to, field, value) {
+    from = from<0 ? 0 : from;
+    var len = klineJson.length;
+    var items = [];
+    for (var i=from; i<len && i<=to; i++) {
+        if (klineJson[i][field] > value) items.push(i);
+    }
+
+    return items;
 }
 
 function highItemIndex(klineJson, from, to, field) {
@@ -88,7 +103,7 @@ function highItemIndex(klineJson, from, to, field) {
 }
 
 function highItem(klineJson, from, to, field) {
-    var idx = highItemIndex(klineJson, from, to, field);
+    var idx = highItemIndex(klineJson, from, to, field);    
     return klineJson[idx][field];
 }
 
@@ -131,6 +146,26 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop) {
     winStop = winStop || 0.05;
     daysStop = daysStop || 200;
     var price = klineJson[start].close;
+    var stoplossprice = price * (1+lossStop);
+    var stopwinprice = price * (1+winStop);
+
+    for (var i=start+1; i<klineJson.length && (i-start)<=daysStop ; i++) {
+        var close = klineJson[i].close;
+        if (close >= stopwinprice) {
+            return increase(price, close);
+        } else if (close <= stoplossprice) {
+            return increase(price, close);
+        }
+    }
+
+    return increase(price, klineJson[i-1].close);
+}
+
+function winOrLossA(klineJson, start, lossStop, winStop, daysStop) {
+    lossStop = lossStop||-0.05;
+    winStop = winStop || 0.05;
+    daysStop = daysStop || 200;
+    var price = klineJson[start].close;
     var stopprice = price * (1+lossStop);
     var maxwin = 0;
     for (var i=start+1; i<klineJson.length && (i-start)<=daysStop ; i++) {
@@ -154,6 +189,9 @@ exports.lowItem = lowItem;
 exports.highItemIndex = highItemIndex;
 exports.highItem = highItem;
 exports.increase = increase;
+
+exports.higherItemsIndex = higherItemsIndex;
+
 exports.inBetween = inBetween;
 exports.winOrLoss = winOrLoss;
 

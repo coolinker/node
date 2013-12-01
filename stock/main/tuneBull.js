@@ -3,7 +3,7 @@ var klineio = require("../klineio");
 var cluster = require('cluster');
 
 var klineForm = "wBottom";
-var overlapKLineForm  = "wBottom";//"headShoulderBottom";
+var overlapKLineForm  = "";//"headShoulderBottom";
 var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates = [];//["05/29/2013"];
 
@@ -63,8 +63,8 @@ if (cluster.isMaster) {
             // 30=52.5 / 50=58.3
             //console.log("stockId", stockId, kLineJson[kLineJson.length-1].date)
 
-            var result = klineformanalyser.traverseForWinning(fun, kLineJson, -0.1, 0.05, 12, 
-                {passAll:false, showLog:showLog, showLogDates:showLogDates, stockId:stockId,
+            var result = klineformanalyser.traverseForWinning(fun, kLineJson, -0.05, 0.05, 12, 
+                {passAll:true, showLog:showLog, showLogDates:showLogDates, stockId:stockId,
                     overlap:overlap});
 
             forkTotal += result.total;

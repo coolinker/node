@@ -12,11 +12,7 @@ function highCeilBoxCompare(json1, json2, midValue, offset) {
     var hc = klineutil.inBetween(klineutil.increase(json1.high, entityHigh2), low, high);
     var cc = klineutil.inBetween(klineutil.increase(entityHigh1, entityHigh2), low, high);
 
-    if (json2.date=="05/08/2013") {
-        console.log(hh,ch,hc,cc, offset);
-        console.log(json2.date, klineutil.increase(entityHigh1, entityHigh2), low, high, entityHigh1, entityHigh2);
-        console.log(json1.date, json1.close, json1.open, json2.date, json2.close, json2.open);
-    }
+  
     if (hh===0 || ch ===0 || hc===0 || cc === 0) return 0;
     if (hh>0) return 1;
     return -1;

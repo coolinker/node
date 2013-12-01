@@ -1,6 +1,6 @@
 
-var displayMinCount = 1000;
-var displayInfoFromDate = new Date("01/01/2013")
+var displayMinCount = 500;
+var displayInfoFromDate = new Date("10/01/2013")
 var displayInfoToDate = new Date("01/01/2014");
 var displayEveryCase = false;
 var displayInfo = "moreinfo";
