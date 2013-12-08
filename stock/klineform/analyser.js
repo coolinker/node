@@ -45,8 +45,10 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
     var showLog = options.showLog;
     var showLogDates = options.showLogDates
     for (var i=50; i<len; i++) {
-        if (options.passAll || bullklineforms[method](klineJson, i) 
-            || (options.overlap && bullklineforms[options.overlap](klineJson, i))) {
+         if (options.passAll || 
+            (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
+            && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))
+            ) {
                 
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
                 //console.log(options.stockId, klineJson[i].date, rel.toFixed(2));

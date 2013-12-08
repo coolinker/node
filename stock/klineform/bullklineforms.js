@@ -26,6 +26,32 @@ function wBottomA (klineJson, i) {
 }
 
 /**
+ *  (-0.1, 0.05, 12) /70.06%
+ * [wBottom description]
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function wBottom (klineJson, i) {
+    var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
+    var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
+
+    return klineutil.increase(klineJson[midTopIdx].high, klineJson[i].close) > 0.0
+        && klineutil.increase(klineJson[i].close_ave_21,klineJson[i].close_ave_8) > 0.03
+        && klineutil.increase(klineJson[i].close_ave_8, klineJson[i].close) < 0.035
+        && (function(){
+            var leftBottomIdx = klineutil.lowItemIndex(klineJson, midTopIdx-10, midTopIdx, "low");
+            var leftTopIdx = klineutil.highItemIndex(klineJson, leftBottomIdx-30, leftBottomIdx, "high");
+            return klineutil.increase(klineJson[midTopIdx].high, klineJson[leftTopIdx].high) > 0.15;
+        })();
+        
+        //&& klineutil.increase(klineJson[rightBottomIdx].low, klineJson[leftBottomIdx].low) < klineJson[i].amplitude_ave_55*1.1
+        //&& klineutil.increase(klineJson[rightBottomIdx].low, klineJson[leftBottomIdx].low) > -klineJson[i].amplitude_ave_55*1.1
+
+}
+
+
+/**
  *  (-0.1, 0.05, 12) /68.04%
  * [wBottom description]
  * @param  {[type]} klineJson [description]
@@ -50,31 +76,6 @@ function headShoulderBottom (klineJson, i) {
 
     return klineutil.increase(klineJson[leftTop].high, outerHigh)>0.15;
    
-}
-
-/**
- *  (-0.1, 0.05, 12) /70.06%
- * [wBottom description]
- * @param  {[type]} klineJson [description]
- * @param  {[type]} i         [description]
- * @return {[type]}           [description]
- */
-function wBottom (klineJson, i) {
-    var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
-    var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
-
-    return klineutil.increase(klineJson[midTopIdx].high, klineJson[i].close) > 0.0
-        && klineutil.increase(klineJson[i].close_ave_21,klineJson[i].close_ave_8) > 0.03
-        && klineutil.increase(klineJson[i].close_ave_8, klineJson[i].close) < 0.035
-        && (function(){
-            var leftBottomIdx = klineutil.lowItemIndex(klineJson, midTopIdx-10, midTopIdx, "low");
-            var leftTopIdx = klineutil.highItemIndex(klineJson, leftBottomIdx-30, leftBottomIdx, "high");
-            return klineutil.increase(klineJson[midTopIdx].high, klineJson[leftTopIdx].high) > 0.15;
-        })();
-        
-        //&& klineutil.increase(klineJson[rightBottomIdx].low, klineJson[leftBottomIdx].low) < klineJson[i].amplitude_ave_55*1.1
-        //&& klineutil.increase(klineJson[rightBottomIdx].low, klineJson[leftBottomIdx].low) > -klineJson[i].amplitude_ave_55*1.1
-
 }
 
 /**

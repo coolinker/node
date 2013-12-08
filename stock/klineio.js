@@ -1,6 +1,6 @@
 var fs = require("fs");
 var startDate = new Date("01/01/2005"); 
-
+var endDate = new Date("12/01/2013"); 
 function getAllStockIds (match) {
     var klinefiles = fs.readdirSync("../datasource/klines_base/");
     var stockIds = [];
@@ -76,7 +76,8 @@ function readKLine(stockId, callback) {
       content.split("\r\n").forEach(function(line) {
           if (line.length>0) {
               var json = JSON.parse(line);
-              if (new Date(json.date) > startDate) {
+              var date = new Date(json.date);
+              if (date > startDate && date < endDate) {
                   kLineJson.push(json);       
               }
           }

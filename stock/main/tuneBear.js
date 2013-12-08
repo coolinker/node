@@ -2,15 +2,15 @@ console.time("run");
 var klineio = require("../klineio");
 var cluster = require('cluster');
 
-var klineForm = "darkCloud";
+var klineForm = "shootStar";
 var unionKLineForm = "";//"headShoulderBottom";
-var intersectionKLineForm = "redInGreen";
+var intersectionKLineForm = "";
 var stocksShowLog = [];
-//stocksShowLog = ["SZ002040"];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
+//stocksShowLog = ["SZ000510"];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates = [];//["12/23/2010"];
 
 var stocks = klineio.getAllStockIds();
-//stocks = ["SZ002040",/*"SZ002158"*/]//['SZ002127'];
+//stocks = ["SZ000510",/*"SZ002158"*/]//['SZ002127'];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
