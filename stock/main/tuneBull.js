@@ -2,7 +2,7 @@ console.time("run");
 var klineio = require("../klineio");
 var cluster = require('cluster');
 
-var klineForm = "wBottom";
+var klineForm = "red3";
 var unionKLineForm = "";//"headShoulderBottom";
 var intersectionKLineForm = "";
 var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
@@ -59,10 +59,11 @@ if (cluster.isMaster) {
         klineio.readKLine(stockId, function(kLineJson) {
             //10=56.14 / 12=58.86 / 15=61.63 / 20=64.22 / 30=66.44 /40=67.17
             // 30=52.5 / 50=58.3
+            // 12=45.16
             //console.log("stockId", stockId, kLineJson[kLineJson.length-1].date)
 
-            var result = klineformanalyser.traverseForWinning(fun, kLineJson, -0.1, 0.05, 12, 
-                 {passAll:true, showLog:showLog, showLogDates:showLogDates, stockId:stockId,
+            var result = klineformanalyser.traverseForWinning(fun, kLineJson, -0.05, 0.05, 12, 
+                 {passAll:false, showLog:showLog, showLogDates:showLogDates, stockId:stockId,
                     union:unionKLineForm,
                     intersection:intersectionKLineForm});
 

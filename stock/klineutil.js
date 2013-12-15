@@ -92,6 +92,18 @@ function higherItemsIndex(klineJson, from, to, field, value) {
     return items;
 }
 
+function lowerItemsIndex(klineJson, from, to, field, value) {
+    from = from<0 ? 0 : from;
+    var len = klineJson.length;
+    var items = [];
+    for (var i=from; i<len && i<=to; i++) {
+        if (klineJson[i][field] < value) items.push(i);
+    }
+
+    return items;
+}
+
+
 function highItemIndex(klineJson, from, to, field) {
     from = from<0 ? 0 : from;
     var idx = from;
@@ -191,6 +203,7 @@ exports.highItem = highItem;
 exports.increase = increase;
 
 exports.higherItemsIndex = higherItemsIndex;
+exports.lowerItemsIndex = lowerItemsIndex;
 
 exports.inBetween = inBetween;
 exports.winOrLoss = winOrLoss;
