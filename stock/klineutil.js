@@ -193,6 +193,25 @@ function winOrLossA(klineJson, start, lossStop, winStop, daysStop) {
 
 }
 
+function belowAve(aveField, field, klineJson, idx, count, accuracy) {
+    accuracy = accuracy || 0;
+    for (var i=idx; i<idx+count; i++) {
+        if (increase(klineJson[i][aveField], klineJson[i][field]) > accuracy) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function aboveAve(aveField, field, klineJson, idx, count, accuracy) {
+    accuracy = accuracy || 0;
+    for (var i=idx; i<idx+count; i++) {
+        if (increase(klineJson[i][aveField], klineJson[i][field]) < -accuracy) {
+            return false;
+        }
+    }
+    return true;
+}
 
 exports.leftTroughIdx = leftTroughIdx;
 exports.leftTrough = leftTrough;
@@ -210,3 +229,6 @@ exports.winOrLoss = winOrLoss;
 
 exports.highIndexOfDownTrend = highIndexOfDownTrend;
 exports.lowIndexOfUpTrend = lowIndexOfUpTrend;
+
+exports.belowAve = belowAve;
+exports.aboveAve = aboveAve;

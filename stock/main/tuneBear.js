@@ -2,7 +2,7 @@ console.time("run");
 var klineio = require("../klineio");
 var cluster = require('cluster');
 
-var klineForm = "shootStar";
+var klineForm = "below8While21Down";
 var unionKLineForm = "";//"headShoulderBottom";
 var intersectionKLineForm = "";
 var stocksShowLog = [];

@@ -121,24 +121,18 @@ function greenRedGreenB (klineJson, i) {
 function below8While21Down (klineJson, i) {
     var fun = function(targetDay) {
         var higherItems = klineutil.higherItemsIndex(klineJson, targetDay-30, targetDay, "close", klineJson[targetDay].high);
-         // if (klineJson[targetDay].date=='09/15/2010')
-         //    console.log(targetDay , higherItems,
-         //        klineutil.inBetween(klineJson[targetDay].close_ave_8, klineJson[targetDay].close, klineJson[targetDay].open)
-         //        , klineutil.increase(klineJson[i-1].close_ave_21, klineJson[i].close_ave_21)
-         //        , klineutil.increase(klineJson[targetDay].close_ave_21, klineJson[i].close_ave_21))
-     
         return 0 === klineutil.inBetween(klineJson[targetDay].close_ave_8, klineJson[targetDay].close, klineJson[targetDay].open)
             && klineutil.increase(klineJson[targetDay].open, klineJson[targetDay].close) < -0.03
             && klineutil.increase(klineJson[targetDay-1].close_ave_21, klineJson[i].close_ave_21) < 0.005
-            //&& klineutil.increase(klineJson[i-1].close_ave_21, klineJson[i].close_ave_21) < 0.01
-            //&& klineutil.increase(klineJson[i-1].close_ave_21, klineJson[i].close_ave_21) < klineutil.increase(klineJson[targetDay].close_ave_21, klineJson[i].close_ave_21)
             && 0 === klineutil.inBetween(targetDay - higherItems[higherItems.length-1], 5, 10)
-            && belowAve("close_ave_8", "close", klineJson, targetDay+1, i-targetDay, 0.01)
+            && klineutil.belowAve("close_ave_8", "close", klineJson, targetDay+1, i-targetDay, 0.01)
         
     }
       
       return fun(i-2) || fun(i-3) || fun(i-4);  
 }
+
+
 /**
  * (-0.05, 0.05, 12) / 47.38%
  * @param  {[type]} klineJson [description]
@@ -223,8 +217,7 @@ function darkCloud(klineJson, i) {
 function green3(klineJson, i) {
     var amp = klineJson[i].amplitude_ave_8;
     
-    return klineutil.increase(klineJson[i].open, klineJson[i].close) < 0
-            && klineutil.increase(klineJson[i].open, klineJson[i].close) < -amp
+    return klineutil.increase(klineJson[i].open, klineJson[i].close) < -amp
             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < 0
             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) >-amp
             && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < 0
