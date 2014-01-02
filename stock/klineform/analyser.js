@@ -1,18 +1,28 @@
 var klineutil = require("../klineutil");
+var startDate = new Date("01/01/2005"); 
+var endDate = new Date("01/01/2014"); 
+
+
 var bullklineforms = require("./bullklineforms");
 var bearklineforms = require("./bearklineforms");
+
+var klineforms = undefined;
 
 function traverseForAppearance(methods, klineJson, result, options) {
     var len = klineJson.length;
     var displayEveryCase = options.displayEveryCase;
     var displayInfoToDate = options.displayInfoToDate;
     var displayInfoFromDate = options.displayInfoFromDate;
-
     for (var i=50; i<len; i++) {
+        var date = new Date(klineJson[i].date);
+        if (date < startDate) continue;
+        if (date > endDate) break;
+
         var arr = [];
-        var rel = klineutil.winOrLoss(klineJson, i, -0.1, 0.05, 15);
+        
+        var rel = klineutil.winOrLoss(klineJson, i, -0.05, 0.05, 100);
         methods.forEach(function(mtd) {
-            if(bullklineforms[mtd](klineJson, i) === true) {
+            if(klineforms[mtd](klineJson, i) === true) {
                 var date = klineJson[i].date;
                 if (result[mtd] === undefined) {
                     result[mtd] = [];
@@ -20,7 +30,7 @@ function traverseForAppearance(methods, klineJson, result, options) {
 
                 result[mtd].push({date:date, inc:rel});
                 arr.push(mtd);
-               
+
                 if (!displayEveryCase) return;
 
                 var dObj = new Date(date);
@@ -44,24 +54,43 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
     var len = klineJson.length;
     var showLog = options.showLog;
     var showLogDates = options.showLogDates
+    
     for (var i=50; i<len; i++) {
-         if (options.passAll || 
+        var date = new Date(klineJson[i].date);
+        if (date < startDate) continue;
+        if (date > endDate) break;
+        
+        if (options.passAll || 
             (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))
             ) {
-                
+                var amp = klineJson[i].amplitude_ave_8;
+                winStop = 1.25*amp;
+                lossStop = -1.25*amp;
+
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
                 //console.log(options.stockId, klineJson[i].date, rel.toFixed(2));
                 //console.log();
                 // '02/20/2013' '03/05/2013'
                 if (showLog) console.log(options.stockId, klineJson[i].date, rel);
                 else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, rel);
-
+                
                 if (rel>winStop) {
                     result.win++;
+
                 }
                 result.total++;
                 
+                if (options.injection) options.injection(method, options.stockId, date, rel>winStop);
+                // if (dateSections !== undefined) {
+                //     var sec = getDateSection(date, dateSections);
+                //     result['total_'+sec]++;
+                    
+                //     if (rel>winStop) {
+                //         result['win_'+sec]++;
+                //     }
+
+                // }
             }
 
     }
@@ -75,8 +104,13 @@ function traverseForLosing(method, klineJson, lossStop, winStop, daysStop, optio
     var showLogDates = options.showLogDates
 
     for (var i=50; i<len; i++) {
+        var date = new Date(klineJson[i].date);
+        if (date < startDate) continue;
+        if (date > endDate) break;
+
         if (options.passAll || 
-            (bearklineforms[method](klineJson, i) || (options.union && unionResult(bearklineforms, options.union.split(","), klineJson, i))) 
+            (bearklineforms[method](klineJson, i) 
+            || (options.union && unionResult(bearklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bearklineforms, options.intersection.split(","), klineJson, i))
             ) {
                 
@@ -113,7 +147,7 @@ function intersectionResult (klineforms, methods, klineJson, idx) {
     return true;
 }
 
-function bullKLineFromMethods() {
+function bullKLineFormMethods() {
     var methods = [];
     for (var attr in bullklineforms) {
         methods.push(attr);
@@ -122,7 +156,7 @@ function bullKLineFromMethods() {
     return methods;
 }
 
-function bearKLineFromMethods() {
+function bearKLineFormMethods() {
     var methods = [];
     for (var attr in bearklineforms) {
         methods.push(attr);
@@ -131,8 +165,33 @@ function bearKLineFromMethods() {
     return methods;
 }
 
-exports.bullKLineFromMethods = bullKLineFromMethods;
-exports.bearKLineFromMethods = bearKLineFromMethods;
+function kLineFormMethods() {
+    var methods = [];
+    for (var attr in klineforms) {
+        methods.push(attr);
+    }
+
+    return methods;
+}
+
+function config(options){  
+    if (options.bullorbear==="bear") {
+        klineforms = bearklineforms;
+    } else {
+        klineforms = bullklineforms;
+    }
+
+    if (options.startDate) startDate = options.startDate;
+    if (options.endDate) endDate = options.endDate;
+
+    return this;
+}
+
+exports.config = config;
+
+exports.bullKLineFormMethods = bullKLineFormMethods;
+exports.bearKLineFormMethods = bearKLineFormMethods;
+exports.kLineFormMethods = kLineFormMethods;
 
 exports.traverseForWinning = traverseForWinning;
 exports.traverseForLosing = traverseForLosing;

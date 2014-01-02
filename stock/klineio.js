@@ -1,6 +1,13 @@
 var fs = require("fs");
 var startDate = new Date("01/01/2005"); 
 var endDate = new Date("12/01/2013"); 
+
+function config(start, end){
+  startDate = start;
+  endDate = end;
+  return this;
+}
+
 function getAllStockIds (match) {
     var klinefiles = fs.readdirSync("../datasource/klines_base/");
     var stockIds = [];
@@ -142,6 +149,9 @@ function writeKLine(stockId, jsonData, callback) {
       
   });
 }
+
+exports.config = config;
+
 exports.readKLineBaseSync = readKLineBaseSync;
 exports.readKLineBase = readKLineBase;
 exports.readKLine = readKLine;

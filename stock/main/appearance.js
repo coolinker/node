@@ -1,10 +1,13 @@
+var bullOrBear = "bear";
+var startDate = new Date("11/01/2011");
+var endDate = new Date("12/01/2011");
 
 var displayMinCount = 500;
-var displayInfoFromDate = new Date("10/01/2013")
-var displayInfoToDate = new Date("01/01/2014");
+var displayInfoFromDate = new Date("03/14/2004")
+var displayInfoToDate = new Date("03/17/2014");
 var displayEveryCase = false;
 var displayInfo = "moreinfo";
-var klineForms = ""//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
+var klineForms = "";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
 var klineio = require("../klineio");
@@ -20,7 +23,8 @@ if (cluster.isMaster) {
 
     var numCPUs = require('os').cpus().length;
     var forkStocks = Math.ceil(stocksLen/numCPUs);
-    var onForkMessage = function(result){            
+    var onForkMessage = function(result){   
+        
         for (var mtd in result) {
             var dates = result[mtd];
             if (masterResult[mtd] === undefined) {
@@ -61,12 +65,14 @@ if (cluster.isMaster) {
                     //if (dates[date] < 0) delete dates[date];
 
                 }
-                //console.log(mtd, dates);
+                console.log(mtd);
             }
 
             var sortedDates = []
+
             for (var date in masterDays) {
                 if (date.indexOf("win") > -1) continue;
+
                 if (masterDays[date] >= displayMinCount) {
                     sortedDates.push(date);
                 }
@@ -108,7 +114,9 @@ if (cluster.isMaster) {
 } else if (cluster.isWorker) {
 
     var klineprocesser = require("../klineprocessor");
-    var klineformanalyser = require("../klineform/analyser");
+    var klineformanalyser = require("../klineform/analyser").config({bullorbear:bullOrBear, 
+        startDate: startDate, 
+        endDate: endDate});
 
     var klineutil = require("../klineutil");
     var resultTotal = {};
@@ -119,7 +127,7 @@ if (cluster.isMaster) {
         var stockId = stocks[idx];
         var mtds;        
         if (!klineForms) {
-            mtds = klineformanalyser.bullKLineFromMethods();
+            mtds = klineformanalyser.kLineFormMethods();
         } else {
             mtds = klineForms.split(",");
         }
@@ -150,7 +158,7 @@ if (cluster.isMaster) {
                     }
 
                      resultTotal[mtd][date]++;
-                     if (dayObj.inc>=0.05) {
+                     if (bullOrBear==="bull" && dayObj.inc>=0.05 || bullOrBear==="bear" && dayObj.inc<=-0.05) {
                         resultTotal[mtd][date+"_win"]++;
                      }
                 });

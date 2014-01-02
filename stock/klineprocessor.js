@@ -1,5 +1,10 @@
 var klineutil = require("./klineutil");
-var klineio = require("./klineio");
+var klineio;
+
+function config(start, end){
+    klineio  = require("./klineio").config(start, end);
+    return this;
+}
 
 function highCeilBoxCompare(json1, json2, midValue, offset) {
     var low = midValue - offset;
@@ -248,17 +253,17 @@ function average(klineJson, field, interval, valFun) {
     var jsonLen = klineJson.length;
     var aveField = field+"_ave_"+interval;
     if (valFun===undefined) {
-        valFun = function(kl) {
-            return kl[field];
+        valFun = function(klj, n) {
+            return klj[n][field];
         }
     }
     for (var i= jsonLen-1; i>0; i--) {
-        var kl = klineJson[i];
-        scaleSum = scaleSum + valFun(kl);
+        //var kl = klineJson[i];
+        scaleSum = scaleSum + valFun(klineJson, i);
         if (jsonLen-i === interval) {
             klineJson[jsonLen-1][aveField] = Math.round(1000*scaleSum/interval)/1000;
         } else if (jsonLen-i > interval) {
-            scaleSum = scaleSum - valFun(klineJson[i+interval]);
+            scaleSum = scaleSum - valFun(klineJson, i+interval);
             klineJson[i+interval-1][aveField] = Math.round(1000*scaleSum/interval)/1000;
         }
 
@@ -306,23 +311,39 @@ function updateKLines(match) {
             average(kLineJason, "volume", 8);
             average(kLineJason, "volume", 21);
 
-            average(kLineJason, "amplitude", 8, function (kl) {
+            average(kLineJason, "amplitude", 8, function (klj, n) {
+                var kl = klj[n];
                 return klineutil.increase(kl.low, kl.high);
             });
 
-            average(kLineJason, "amplitude", 55, function (kl) {
+            average(kLineJason, "amplitude", 55, function (klj, n) {
+                var kl = klj[n];
                 return klineutil.increase(kl.low, kl.high);
+            });
+
+            average(kLineJason, "inc", 8, function (klj, n) {
+                if (n===0) return 0;
+                var klc = klj[n].close;
+                var klc1 = klj[n-1].close;
+                return Math.abs(klineutil.increase(klc1, klc));
+            });
+
+            average(kLineJason, "inc", 21, function (klj, n) {
+                if (n===0) return 0;
+                var klc = klj[n].close;
+                var klc1 = klj[n-1].close;
+                return Math.abs(klineutil.increase(klc1, klc));
             });
 
             //average(kLineJason, "amplitude", 144, function (kl) {
             //    return klineutil.increase(kl.low, kl.high);
             //});
 
-            markPeaks(kLineJason, "high", 0.02, 3);
+            //markPeaks(kLineJason, "high", 0.02, 3);
             
             //mergePeaks(kLineJason, "high", 3);
 
-            markTroughs(kLineJason, "low", 0.02, 3);
+            //markTroughs(kLineJason, "low", 0.02, 3);
             
            //mergeTroughs(kLineJason, "low", 3);
 
@@ -338,6 +359,7 @@ function updateKLines(match) {
     });
 }
 
+exports.config = config;
 exports.updateKLines = updateKLines;
 exports.mergeTroughs = mergeTroughs;
 exports.mergePeaks = mergePeaks;

@@ -1,3 +1,4 @@
+ var ignoreEx = true;
 
 function increase(val1, val2) {
     try{
@@ -108,8 +109,17 @@ function highItemIndex(klineJson, from, to, field) {
     from = from<0 ? 0 : from;
     var idx = from;
     var len = klineJson.length;
+    var exRight = 1;
+    var exRightIdx;
     for (var i=from+1; i<len && i<=to; i++) {
-        if (klineJson[i][field] > klineJson[idx][field]) idx = i;
+        if (klineJson[i].exRightsDay) {
+            exRight = klineJson[i].open/klineJson[i-1].close;
+            exRightIdx = i;
+        }
+
+        if (!ignoreEx && exRightIdx!==undefined) {
+            if (klineJson[i][field]/exRight > klineJson[idx][field] / (idx >= exRightIdx ? exRight : 1)) idx = i;
+        } else if (klineJson[i][field] > klineJson[idx][field]) idx = i;
     }
     return idx;
 }
@@ -123,9 +133,18 @@ function lowItemIndex(klineJson, from, to, field) {
     from = from<0 ? 0 : from;
     var idx = from;
     var len = klineJson.length;
-    
+    var exRight = 1;
+    var exRightIdx;
+
     for (var i=from+1; i<len && i<=to; i++) {
-        if (klineJson[i][field] < klineJson[idx][field]) idx = i;        
+        if (klineJson[i].exRightsDay) {
+            exRight = klineJson[i].open/klineJson[i-1].close;
+            exRightIdx = i;
+        }
+
+        if (!ignoreEx && exRightIdx!==undefined) {
+            if (klineJson[i][field]/exRight < klineJson[idx][field] / (idx >= exRightIdx ? exRight : 1)) idx = i;
+        } else if (klineJson[i][field] < klineJson[idx][field]) idx = i;        
     }
     return idx;
 }
@@ -153,6 +172,13 @@ function leftTrough(field, klineJson, idx) {
     }
 }
 
+function noExRight(klineJson, from, to) {
+    for (var i=Math.max(0,from); i<=to; i++) {
+        if (klineJson[i].exRightsDay) return false;
+    }
+    return true;
+}
+
 function winOrLoss(klineJson, start, lossStop, winStop, daysStop) {
     lossStop = lossStop||-0.05;
     winStop = winStop || 0.05;
@@ -160,9 +186,12 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop) {
     var price = klineJson[start].close;
     var stoplossprice = price * (1+lossStop);
     var stopwinprice = price * (1+winStop);
-
+    var exRight = 1;
     for (var i=start+1; i<klineJson.length && (i-start)<=daysStop ; i++) {
-        var close = klineJson[i].close;
+        if (klineJson[i].exRightsDay) {
+            exRight = klineJson[i].open/klineJson[i-1].close;
+        }
+        var close = klineJson[i].close/exRight;
         if (close >= stopwinprice) {
             return increase(price, close);
         } else if (close <= stoplossprice) {
@@ -213,6 +242,29 @@ function aboveAve(aveField, field, klineJson, idx, count, accuracy) {
     return true;
 }
 
+
+function detectGapDownStress(klineJson, idx, interval, accuracy) {
+    interval = interval || 100;
+    accuracy = accuracy || 0.05;
+    var price = klineJson[idx].close;
+    var highPeak = klineJson[idx].high;
+
+    for (var i=idx; i>=0 && idx-i<interval; i--) {
+        if (klineJson[i].gapDown !== undefined
+            //&& klineJson[i].gapDown < -0.02
+            && highPeak < klineJson[i-1].low
+            && klineutil.inBetween(klineutil.increase(price, klineJson[i-1].close), 0.01, accuracy) === 0) {
+            return klineJson[i].gapDown;            
+        }
+
+        if (klineJson[i].high_peak === true) {
+            highPeak = Math.max(klineJson[i].high, highPeak);
+        }
+    }
+
+    return undefined;
+}
+
 exports.leftTroughIdx = leftTroughIdx;
 exports.leftTrough = leftTrough;
 exports.lowItemIndex = lowItemIndex;
@@ -232,3 +284,5 @@ exports.lowIndexOfUpTrend = lowIndexOfUpTrend;
 
 exports.belowAve = belowAve;
 exports.aboveAve = aboveAve;
+
+exports.noExRight = noExRight;
