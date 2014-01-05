@@ -1,4 +1,4 @@
- var ignoreEx = true;
+ var ignoreEx = false;
 
 function increase(val1, val2) {
     try{

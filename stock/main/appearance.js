@@ -2,9 +2,9 @@ var bullOrBear = "bear";
 var startDate = new Date("11/01/2011");
 var endDate = new Date("12/01/2011");
 
-var displayMinCount = 500;
-var displayInfoFromDate = new Date("03/14/2004")
-var displayInfoToDate = new Date("03/17/2014");
+var displayMinCount = 200;
+var displayInfoFromDate = new Date("11/03/2011")
+var displayInfoToDate = new Date("11/16/2011");
 var displayEveryCase = false;
 var displayInfo = "moreinfo";
 var klineForms = "";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";

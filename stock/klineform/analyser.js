@@ -64,9 +64,13 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
             (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))
             ) {
-                var amp = klineJson[i].amplitude_ave_8;
-                winStop = 1.25*amp;
-                lossStop = -1.25*amp;
+                // var amp = klineJson[i].amplitude_ave_8;
+                // winStop = 1.25*amp;
+                // lossStop = -1.25*amp;
+
+                var inc_ave_8 = klineJson[i].inc_ave_8;
+                winStop = 3.7*inc_ave_8;
+                lossStop = -3.7*inc_ave_8;
 
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
                 //console.log(options.stockId, klineJson[i].date, rel.toFixed(2));
@@ -75,13 +79,13 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
                 if (showLog) console.log(options.stockId, klineJson[i].date, rel);
                 else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, rel);
                 
-                if (rel>winStop) {
+                if (rel>=winStop) {
                     result.win++;
 
                 }
                 result.total++;
                 
-                if (options.injection) options.injection(method, options.stockId, date, rel>winStop);
+                if (options.injection) options.injection(method, options.stockId, date, rel>=winStop);
                 // if (dateSections !== undefined) {
                 //     var sec = getDateSection(date, dateSections);
                 //     result['total_'+sec]++;
@@ -114,17 +118,40 @@ function traverseForLosing(method, klineJson, lossStop, winStop, daysStop, optio
             && (!options.intersection|| intersectionResult(bearklineforms, options.intersection.split(","), klineJson, i))
             ) {
                 
+
+                var inc_ave_8 = klineJson[i].inc_ave_8;
+                winStop = 1.3*inc_ave_8;
+                lossStop = -1.3*inc_ave_8;
+
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
                 if (showLog) console.log(options.stockId, klineJson[i].date, rel);
                 else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, rel);
 
-                if (rel<lossStop) {
+                if (rel<=lossStop) {
                     result.lost++;
                 }
                 result.total++;
                 
+                if (options.injection) options.injection(method, options.stockId, date, rel<=lossStop);
             }
 
+    }
+    return result;
+}
+
+function validateForm(formMethod, klineJson) {
+    var result = {total:0, valid: 0}
+    var len = klineJson.length;
+    var mtds = kLineFormMethods();
+    var mtdsidx = mtds.indexOf(formMethod);
+    mtds.splice(mtdsidx,1);
+    for (var i=50; i<len; i++) {
+        if (klineforms[formMethod](klineJson, i)) {
+            result.total++;
+            if(!unionResult(klineforms, mtds, klineJson, i)) {
+                result.valid++;
+            }
+        }
     }
     return result;
 }
@@ -197,3 +224,5 @@ exports.traverseForWinning = traverseForWinning;
 exports.traverseForLosing = traverseForLosing;
 
 exports.traverseForAppearance = traverseForAppearance;
+
+exports.validateForm = validateForm;

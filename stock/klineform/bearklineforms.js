@@ -2,6 +2,15 @@
 var klineutil = require("../klineutil");
 
 /**
+ * [mTop description]
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function mTop (klineJson, i) {
+
+}
+/**
  *  (-0.05, 0.05, 15) / 50.45%
  *  (-0.1, 0.1, 20)=45.51%
  * [mTop description]
@@ -119,6 +128,7 @@ function greenRedGreenB (klineJson, i) {
  * @return {[type]}           [description]
  */
 function below8While21Down (klineJson, i) {
+    
     var fun = function(targetDay) {
         var higherItems = klineutil.higherItemsIndex(klineJson, targetDay-30, targetDay, "close", klineJson[targetDay].high);
         return 0 === klineutil.inBetween(klineJson[targetDay].close_ave_8, klineJson[targetDay].close, klineJson[targetDay].open)
@@ -266,6 +276,64 @@ function duskStarB(klineJson, i) {
             && klineutil.increase(klineJson[i].open, klineJson[i].close) < -0.03
 }
 
+function lightningRod(klineJson, i){
+    return lightningRodA(klineJson, i) || lightningRodB(klineJson, i) || lightningRodB(klineJson, i);
+}
+/**
+ * (-0.05, 0.05, 100) /52.53%
+ * [shootStar description]
+ * @return {[type]} [description]
+ */
+function lightningRodA(klineJson, i){
+    var inc_ave_8 = klineJson[i].inc_ave_8;
+    var needle =klineutil.increase(Math.max(klineJson[i].open, klineJson[i].close), klineJson[i].high);
+    var higherItems = klineutil.higherItemsIndex(klineJson, i-20, i, "close", klineJson[i].high);
+    return needle > inc_ave_8*0.8
+        && higherItems.length <18
+        && higherItems.length >5
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 0.3
+        //&& klineutil.increase(klineJson[i-1].close, klineJson[i].open) > inc_ave_8*0.2
+}
+
+/**
+ * * (-0.05, 0.05, 100) /52.32%
+ * [lightningRodB description]
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function lightningRodB(klineJson, i){
+    var inc_ave_8 = klineJson[i].inc_ave_8;
+    
+    return klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 0.6
+        && klineutil.increase(klineJson[i-1].close, klineJson[i].open) > inc_ave_8*0
+        && klineutil.increase(klineJson[i-1].close, klineJson[i-1].open) > -inc_ave_8*1
+        && (function(){
+            var needle =klineutil.increase(Math.max(klineJson[i].open, klineJson[i].close), klineJson[i].high);
+            return needle > inc_ave_8*0;
+        })()
+        && (function(){
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-20, i, "high", klineJson[i].high);
+            return lowerItems.length > 15
+        })()
+        
+}
+
+function lightningRodC(klineJson, i){
+    var inc_ave_8 = klineJson[i].inc_ave_8;
+    var needle =klineutil.increase(Math.max(klineJson[i].open, klineJson[i].close), klineJson[i].high);
+    
+    var lowerItems = klineutil.lowerItemsIndex(klineJson, i-20, i, "high", klineJson[i].high);
+    return needle > inc_ave_8*0
+        && lowerItems.length > 15
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 1
+        && klineutil.increase(klineJson[i-1].volume_ave_8, klineJson[i-1].volume) > 0.1
+        
+        //&& klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) < -inc_ave_8*0.1
+        //&& klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) > inc_ave_8*1.2
+}
+
+
 /**
  * (-0.05, 0.05, 12) /47.85%
  * [shootStar description]
@@ -274,6 +342,7 @@ function duskStarB(klineJson, i) {
 function shootStar(klineJson, i){
     var entity = Math.abs(klineJson[i].open - klineJson[i].close);
     var needle = klineJson[i].high-Math.max(klineJson[i].open, klineJson[i].close);
+    var inc_ave_8 = klineJson[i].inc_ave_8;
     //var higherItems = klineutil.higherItemsIndex(klineJson, i-30, i-1, "low", klineJson[i].close);
     return  klineutil.increase(klineJson[i-1].close, klineJson[i].open) > 0.01
             && klineutil.increase(klineJson[i-1].close, klineJson[i-1].open) < -0.0
@@ -317,3 +386,7 @@ exports.green3 = green3;
 exports.duskStar = duskStar;
 exports.shootStar = shootStar;
 exports.hangNeck = hangNeck;
+
+exports.lightningRod = lightningRod;
+// exports.lightningRodB = lightningRodB;
+// exports.lightningRodC = lightningRodC;
