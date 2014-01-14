@@ -5,7 +5,7 @@ var cluster = require('cluster');
 var startDate = new Date("01/01/2005"); 
 var endDate = new Date("12/01/2013"); 
 
-var klineForm = "lightningRod";
+var klineForm = "wBottomA";
 
 var stocks = klineio.getAllStockIds();
 
@@ -45,7 +45,7 @@ if (cluster.isMaster) {
     var klineformanalyser = require("../klineform/analyser").config({
         startDate: startDate,
         endDate: endDate,
-        bullorbear: "bear"
+        bullorbear: "bull"
     });
 
     var klineutil = require("../klineutil");

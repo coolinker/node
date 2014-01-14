@@ -2,13 +2,23 @@
 var klineutil = require("../klineutil");
 
 /**
+ * *  (-0.05, 0.05, 100) / 52.15%
  * [mTop description]
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
  */
 function mTop (klineJson, i) {
+    var ave = klineJson[i].inc_ave_8;
+    return klineutil.increase(klineJson[i].open, klineJson[i].close) < -ave*1.5
+            && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 0.2
+            && (function(){
+                var hval = klineutil.highItem(klineJson, i-20, i-1, "high");
+                return klineutil.increase(klineJson[i].high, hval) > ave*0.5;
+            })()
 
+            
+            
 }
 /**
  *  (-0.05, 0.05, 15) / 50.45%
@@ -18,7 +28,7 @@ function mTop (klineJson, i) {
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
  */
-function mTop (klineJson, i) {
+function mTopA (klineJson, i) {
 
     var rightTop = klineutil.highIndexOfDownTrend(klineJson, i);
     var middleBottom = klineutil.lowIndexOfUpTrend(klineJson, rightTop);
@@ -388,5 +398,7 @@ exports.shootStar = shootStar;
 exports.hangNeck = hangNeck;
 
 exports.lightningRod = lightningRod;
+exports.mTop = mTop;
+exports.mTopA = mTopA;
 // exports.lightningRodB = lightningRodB;
 // exports.lightningRodC = lightningRodC;

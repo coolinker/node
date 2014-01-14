@@ -3,7 +3,7 @@ var klineutil = require("../klineutil");
 var bearklineforms = require("./bearklineforms");
 /**
  *  (-0.05, 0.05, 12) / 55.32%
- *  (-0.05, 0.05, 30) / 65.10%
+ *  (-0.05, 0.05, 100) / 66.00%
  * [wBottomA description]
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
@@ -27,23 +27,6 @@ function wBottomA (klineJson, i) {
     return klineutil.increase(klineJson[leftBottom].high, outerHigh)> amp*8
 }
 
-function wBottomA1 (klineJson, i) {
-    var amp = klineJson[i].amplitude_ave_8;
-    if (klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 1) return false
-
-    var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
-    var middleTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
-    if (klineutil.increase(klineJson[middleTop].high, klineJson[i].close)<-0.03) return false
-    
-    var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, middleTop);
-    if (0!==klineutil.inBetween(klineutil.increase(klineJson[leftBottom].low, klineJson[rightBottom].low), 0.05, 0.15)) {
-        return false;    
-    }
-
-    if (!klineutil.noExRight(klineJson, leftBottom-30, i)) return false;
-    var outerHigh = klineutil.highItem(klineJson, leftBottom-30, leftBottom, "high");
-    return klineutil.increase(klineJson[leftBottom].high, outerHigh)> amp*8
-}
 /**
  *  (-0.05, 0.05, 12) /55.09%
  *  (-0.05, 0.05, 30) /64.71%
@@ -142,7 +125,7 @@ function sidewaysCompression (klineJson, i) {
  * @return {[type]}           [description]
  * 07/31/2009, 03/16/2012
  */
-function morningStar(klineJson, i) {
+function morningStar1(klineJson, i) {
     return klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -0.03
         && klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.025
         && klineutil.increase(klineJson[i-2].volume_ave_8, klineJson[i-2].volume) < 0.618
@@ -150,10 +133,45 @@ function morningStar(klineJson, i) {
         && function (){
             var lowerItems = klineutil.lowerItemsIndex(klineJson, i-33, i-3, "low", klineJson[i-2].open);
             return lowerItems.length > 8
+            
         }()
         && !bearklineforms.below8WhileVolumeHigh(klineJson, i-2);
         // && !(klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -klineJson[i-2].amplitude_ave_8
         // && klineutil.increase(klineJson[i-2].volume_ave_8, klineJson[i-2].volume) > 0.2)
+}
+
+function morningStarA(klineJson, i) {
+    var inc_ave = klineJson[i].inc_ave_8;
+    return klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -inc_ave*1
+        && klineutil.increase(klineJson[i].open, klineJson[i].close) > inc_ave*1
+        && klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) <  inc_ave*0.1
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) < 0.5
+        && function (){
+            var lower = klineutil.lowerItemsIndex(klineJson, i-33, i-3, "close", klineJson[i].close);
+             return i - lower[0]>10 && i - lower[0] < 22
+        }()
+}
+
+function morningStar(klineJson, i) {
+    var inc_ave = klineJson[i].inc_ave_8;
+    var midhigh = Math.max(klineJson[i-1].open, klineJson[i-1].close);
+    var low = Math.min(klineJson[i-1].low, klineJson[i-2].low);
+
+    return klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -inc_ave*0.8
+        && klineutil.increase(klineJson[i].open, klineJson[i].close) > inc_ave*0.8
+
+        //&& klineutil.increase(midhigh, klineJson[i-2].close) <  inc_ave*1
+        && klineutil.increase(midhigh, klineJson[i-2].close) > inc_ave*0.1
+        // && klineutil.increase(klineJson[i-2].low, klineJson[i-2].close) > inc_ave*0
+        //&& klineutil.increase(klineJson[i-1].low, Math.min(klineJson[i-1].open, klineJson[i-1].close)) > inc_ave*0
+        && klineutil.increase(midhigh, klineJson[i].open) >=  -inc_ave*0.3
+        //&& klineutil.increase(klineJson[i-2].volume_ave_8 , klineJson[i-2].volume) < 0
+        //&& klineutil.increase(klineJson[i-1].volume_ave_8 , klineJson[i-1].volume) < 0
+        && klineutil.increase(klineJson[i].volume_ave_8 , klineJson[i].volume) < 0.1
+        && function (){
+            var higher = klineutil.higherItemsIndex(klineJson, i-33, i-3, "close", low);
+             return i - higher[0] < 23
+        }()
 }
 
 /**

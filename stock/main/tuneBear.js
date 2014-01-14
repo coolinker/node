@@ -2,10 +2,12 @@ console.time("run");
 var klineio = require("../klineio");
 var cluster = require('cluster');
 
+/*****************/
 var startDate = new Date("01/01/2005"); 
 var endDate = new Date("12/01/2013"); 
+/*****************/
 
-var klineForm = "lightningRod";
+var klineForm = "mTop";
 var unionKLineForm = "";//"headShoulderBottom";
 var intersectionKLineForm = ""; //shootStar
 var stocksShowLog = [];
@@ -16,8 +18,8 @@ var stocks = klineio.getAllStockIds();
 //stocks = ["SZ000510",/*"SZ002158"*/]//['SZ002127'];
 
 var masterCounter = 0;
-var countingDateFrom = new Date("11/03/2011");
-var countingDateTo = new Date("11/16/2011");
+var countingDateFrom = new Date("11/15/2011");
+var countingDateTo = new Date("11/17/2011");
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
     var masterTotal = 0;
