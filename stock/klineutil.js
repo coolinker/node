@@ -192,10 +192,12 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop) {
             exRight = klineJson[i].open/klineJson[i-1].close;
         }
         var close = klineJson[i].close/exRight;
-        if (close >= stopwinprice) {
-            return increase(price, close);
-        } else if (close <= stoplossprice) {
-            return increase(price, close);
+        var high = klineJson[i].high/exRight;
+        var low = klineJson[i].low/exRight;
+        if (high >= stopwinprice) {
+            return increase(price, high);
+        } else if (low <= stoplossprice) {
+            return increase(price, low);
         }
     }
 
