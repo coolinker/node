@@ -186,53 +186,80 @@ function redNGreenRed (klineJson, i) {
 }
 
 /**
- * (-0.05, 0.05, 12) / 55.61%
- * (-0.05, 0.05, 100) / 60.21%
+ * (-0.05, 0.05, 100) / 66.22%
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
  */
-function greenInRed(klineJson, i) {
+function greenInRedA(klineJson, i) {
     var inc_ave = klineJson[i].inc_ave_8;
     return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.025
             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < 0.0
             && klineutil.increase(klineJson[i].volume, klineJson[i].volume_ave_8) > 0
-            && klineutil.increase(klineJson[i-1].volume, klineJson[i].volume) < -0.3
+            && klineutil.increase(klineJson[i-1].volume, klineJson[i].volume) < -0.2
             && (function(){
-                var lowerItems = klineutil.lowerItemsIndex(klineJson, i-30, i, "high", klineJson[i].low);
-                return  lowerItems.length > 3 && lowerItems.length < 25;
-            }())
-
-}
-
-function greenInRedA(klineJson, i) {
-    return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.025
-            && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < 0.0
-            && klineutil.increase(klineJson[i].volume, klineJson[i].volume_ave_8) > 0
-            && (function(){
-                var lowerItems = klineutil.lowerItemsIndex(klineJson, i-30, i, "close", klineJson[i].low);
-                return  lowerItems.length > 3 && lowerItems.length < 25;
+                var lowerItems = klineutil.lowerItemsIndex(klineJson, i-45, i, "high", klineJson[i].low);
+                return  lowerItems.length > 13 && lowerItems.length < 40;
             }())
 
 }
 /**
- * (-0.05, 0.05, 12) / 55.79%
+ * (-0.05, 0.05, 100) / 66.18%
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
  */
-function redGreenRed(klineJson, i) {
-    return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.018
+function greenInRedB(klineJson, i) {
+    
+    return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.02
             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < 0.0
-            && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) > -0.0
-            //&& klineutil.increase(klineJson[i-2].close, klineJson[i].close) > -0.05
-            && klineutil.increase(klineJson[i-2].open, klineJson[i-1].close) < 0.0
-            && klineutil.increase(klineJson[i].volume, klineJson[i].volume_ave_8) > -0
+            && klineutil.increase(klineJson[i].volume, klineJson[i].volume_ave_8) > 0
+            && klineutil.increase(klineJson[i-1].volume, klineJson[i].volume) < -0.1
             && (function(){
-                var lowerItems = klineutil.lowerItemsIndex(klineJson, i-30, i, "close", klineJson[i].low);
-                return  lowerItems.length > 3 && lowerItems.length < 25;
+                var higherItems = klineutil.higherItemsIndex(klineJson, i-100, i, "low", klineJson[i].high);
+                return  i-higherItems[0] < 30;
+            }())
+
+}
+
+/**
+ * (-0.05, 0.05, 100) / 66.40%
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function redGreenRedB(klineJson, i) {
+    //var inc_ave = klineJson[i].inc_ave_8;
+    return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.018
+            && klineutil.increase(klineJson[i-1].open, klineJson[i].close) < 0.00
+            //&& klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) > -0.05
+            && klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) > -0.02
+            && klineutil.increase(klineJson[i].volume, klineJson[i].volume_ave_8) > -0.1
+            
+            && (function(){
+                var higherItems = klineutil.higherItemsIndex(klineJson, i-100, i, "low", klineJson[i].high);
+                return  i-higherItems[0] < 30;
             }())
 }
+/**
+ * (-0.05, 0.05, 100) / 66.25%
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function redGreenRedA(klineJson, i) {
+    return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.018
+            && klineutil.increase(klineJson[i-1].open, klineJson[i].close) < 0.0
+            && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) > -0.02
+            && klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) > -0.005
+            && klineutil.increase(klineJson[i].volume, klineJson[i].volume_ave_8) > 0.0
+            
+            && (function(){
+                var lowerItems = klineutil.lowerItemsIndex(klineJson, i-50, i, "high", klineJson[i].low);
+                return  lowerItems.length > 12 && lowerItems.length < 40;
+            }())
+}
+
 /**
  * (-0.05, 0.05, 12) / 55.21%
  * (-0.05, 0.05, 100) / 61.89%
@@ -241,6 +268,22 @@ function redGreenRed(klineJson, i) {
  * @return {[type]}           [description]
  */
 function red3(klineJson, i) {
+    var inc_ave = klineJson[i].inc_ave_8;
+    return klineutil.increase(klineJson[i].open, klineJson[i].close) > -inc_ave
+            && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) > -inc_ave
+            && klineutil.increase(klineJson[i-2].open, klineJson[i].close) > 0.06
+
+            && klineutil.increase(klineJson[i-1].close, klineJson[i].open) >= -0.0
+            && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close_ave_8) > -0.0
+            && klineutil.increase(klineJson[i].volume, klineJson[i].volume_ave_8) > -0.15
+            && klineutil.increase(klineJson[i].volume_ave_21, klineJson[i].volume_ave_8) < -0.1
+            && (function(){
+                var lowerItems = klineutil.lowerItemsIndex(klineJson, i-200, i-2, "high", klineJson[i-2].low);
+                return lowerItems.length > 50;
+            }())
+}
+
+function red31(klineJson, i) {
     return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.0
             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) > 0
             && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) > 0
@@ -254,8 +297,6 @@ function red3(klineJson, i) {
                 return lowerItems.length > 3;
             }())
 }
-
-
 /**
  * (-0.05, 0.05, 12) / 55.30%
  * (-0.05, 0.05, 100) / 60.08%
@@ -308,8 +349,10 @@ exports.wBottomA = wBottomA;
 exports.morningStarB = morningStarB;
 exports.morningStarA = morningStarA;
 exports.redNGreenRed = redNGreenRed;
-exports.greenInRed = greenInRed;
-exports.redGreenRed = redGreenRed;
+exports.greenInRedA = greenInRedA;
+exports.greenInRedB = greenInRedB;
+exports.redGreenRedA = redGreenRedA;
+exports.redGreenRedB = redGreenRedB;
 exports.red3 = red3;
 exports.on8While21Up = on8While21Up;
 exports.on8While21UpVolumeHigh = on8While21UpVolumeHigh;
