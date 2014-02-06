@@ -9,7 +9,7 @@ var endDate = new Date("12/01/2013");
 var dateSections = []; 
 var dateSections = [new Date("01/01/2008"),new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "red3";
+var klineForm = "on8While21UpVolumeHigh";
 var intersectionKLineForm = "";
 var unionKLineForm = "";
 
