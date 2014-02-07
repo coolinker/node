@@ -5,7 +5,7 @@ var cluster = require('cluster');
 var startDate = new Date("01/01/2005"); 
 var endDate = new Date("12/01/2013"); 
 
-var klineForm = "on8While21UpVolumeHigh";
+var klineForm = "dawn";
 
 var stocks = klineio.getAllStockIds();
 
