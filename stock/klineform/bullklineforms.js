@@ -404,28 +404,6 @@ function dawnB(klineJson, i) {
 
 }
 
-/**
- * (0.5, 0.5, 100) / 66.24%
- * @param  {[type]} klineJson [description]
- * @param  {[type]} i         [description]
- * @return {[type]}           [description]
- */
-function hammer(klineJson, i) {
-    var linehigh = klineJson[i].high - Math.max(klineJson[i].close, klineJson[i].open);
-    var linelow = Math.min(klineJson[i].close, klineJson[i].open) - klineJson[i].low;
-    var entity = Math.abs(klineJson[i].close - klineJson[i].open);
-    var inc_ave = klineJson[i].inc_ave_8;
-    return linelow< 0.05
-        && Math.abs(entity - linehigh) < klineJson[i].close*inc_ave*0.3
-        && klineutil.increase(klineJson[i].volume_ave_21, klineJson[i].volume_ave_8) > -0
-        //&& klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 0.1
-        //&& klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) < 1
-        //&& klineutil.increase(klineJson[i-1].volume, klineJson[i].volume) > 0.5
-        && function() {
-                var higherItems = klineutil.higherItemsIndex(klineJson, i-20, i, "high", klineJson[i].low);
-                return higherItems.length<2;
-            }()
-}
 
 function hammerA(klineJson, i) {
     var linehigh = klineJson[i].high - Math.max(klineJson[i].close, klineJson[i].open);
@@ -444,7 +422,54 @@ function hammerA(klineJson, i) {
             }()
 }
 
-exports.hammer = hammer;
+/**
+ * (0.5, 0.5, 100) / 66.23%
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function hammerB(klineJson, i) {
+    var linehigh = klineJson[i].high - Math.max(klineJson[i].close, klineJson[i].open);
+    var linelow = Math.min(klineJson[i].close, klineJson[i].open) - klineJson[i].low;
+    var entity = Math.abs(klineJson[i].close - klineJson[i].open);
+    var inc_ave = klineJson[i].inc_ave_8;
+    return linelow< 0.05
+        && linehigh < klineJson[i].close*inc_ave*1.5
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 0.1
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) < 1
+        && klineutil.increase(klineJson[i-1].volume, klineJson[i].volume) < 0.5
+        && function() {
+                var higherItems = klineutil.higherItemsIndex(klineJson, i-15, i, "close", klineJson[i].low);
+                return higherItems.length>1 && higherItems.length<5;
+            }()
+        && function() {
+                var hidx = klineutil.highItemIndex(klineJson, i-60, i, "close");
+                return klineutil.increase(klineJson[i].high, klineJson[hidx].close) > inc_ave*0.6
+            }()
+}
+
+/**
+ * (0.5, 0.5, 100) / 66.56%
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function hammerC(klineJson, i) {
+    var linehigh = klineJson[i].high - Math.max(klineJson[i].close, klineJson[i].open);
+    var linelow = Math.min(klineJson[i].close, klineJson[i].open) - klineJson[i].low;
+    var entity = Math.abs(klineJson[i].close - klineJson[i].open);
+    var inc_ave = klineJson[i].inc_ave_8;
+    return linelow< 0.3
+        && Math.abs(entity - linehigh) < klineJson[i].close*inc_ave*0.3
+        && function() {
+                var higherItems = klineutil.higherItemsIndex(klineJson, i-20, i, "close", klineJson[i].low);
+                return higherItems.length<2;
+            }()
+}
+
+exports.hammerA = hammerA;
+exports.hammerB = hammerB;
+exports.hammerC = hammerC;
 
 exports.dawnA = dawnA;
 exports.dawnB = dawnB;
