@@ -73,7 +73,7 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
                 lossStop = -3.7*inc_ave_8;
 
                 var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
-                //console.log(options.stockId, klineJson[i].date, rel.toFixed(2));
+                
                 //console.log();
                 // '02/20/2013' '03/05/2013'
                 if (showLog) console.log(options.stockId, klineJson[i].date, rel);
