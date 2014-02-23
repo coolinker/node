@@ -9,7 +9,7 @@ var endDate = new Date("12/01/2013");
 var dateSections = []; 
 var dateSections = [new Date("01/01/2008"),new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "towerBottom";
+var klineForm = "lowRedDouble";
 var intersectionKLineForm = "";
 var unionKLineForm = "";
 
@@ -99,6 +99,7 @@ if (cluster.isMaster) {
         var stockId = stocks[idx];
         var fun = klineForm;
         var showLog = -1 !== stocksShowLog.indexOf(stockId);
+
         klineio.readKLine(stockId, function(kLineJson) {
             //10=56.14 / 12=58.86 / 15=61.63 / 20=64.22 / 30=66.44 /40=67.17
             // 30=52.5 / 50=58.3

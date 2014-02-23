@@ -2,12 +2,12 @@ var bullOrBear = "bull";
 var startDate = new Date("01/01/2008");
 var endDate = new Date("01/01/2014");
 
-var displayMinCount = 100;
-var displayInfoFromDate = new Date("01/01/2008");
-var displayInfoToDate = new Date("01/01/2009");
+var displayMinCount = 20;
+var displayInfoFromDate = new Date("01/01/2011");
+var displayInfoToDate = new Date("01/01/2012");
 var displayEveryCase = false;
 var displayInfo = "moreinfo";
-var klineForms = "towerBottom";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
+var klineForms = "lowRedDouble";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
 var klineio = require("../klineio");
