@@ -73,7 +73,7 @@ function readKLineBase(stockId, callback) {
 }
 
 function readKLine(stockId, callback) {
-  //console.log("Read K line data:"+stockId);
+  //console.log("Read K line data:"+stockId, startDate, endDate);
   var kLineJson = [];
   
   fs.readFile("../datasource/klines/"+stockId+".json","utf8", function(error, content) {
@@ -84,6 +84,7 @@ function readKLine(stockId, callback) {
           if (line.length>0) {
               var json = JSON.parse(line);
               var date = new Date(json.date);
+              
               if (date > startDate && date < endDate) {
                   kLineJson.push(json);       
               }

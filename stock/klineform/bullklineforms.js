@@ -717,14 +717,15 @@ function lowRedDoubleC(klineJson, i) {
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
  */
-function lowReds(klineJson, i) {
+function lowRedsA(klineJson, i) {
     var fun = function() {
         var n=i;
         for (; n>1; n--) {
             var inc_ave = klineJson[n].inc_ave_8;
             if (klineutil.increase(klineJson[n].open, klineJson[n].close) < 0) {
                 break;
-            } else if (klineutil.increase(klineJson[n].low, klineJson[n].high)>inc_ave*2){
+            } else if (klineutil.increase(klineJson[n].open, klineJson[n].close)>inc_ave*1
+                && klineutil.increase(klineJson[n].volume_ave_8, klineJson[n].volume)>0.2){
                 return false;
             } 
         }
@@ -733,17 +734,78 @@ function lowReds(klineJson, i) {
     }
     var inc_ave = klineJson[i].inc_ave_8;
     return fun()
-        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) < 0.5
-        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > -0.2
-        //&& klineutil.increase(klineJson[i-1].volume_ave_8, klineJson[i-1].volume) < 0.3
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) < 1
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > -0.3
         && function () {
             var lidx = klineutil.lowItemIndex(klineJson, i-180, i, "low");
-            return i-lidx>150;
+            return i-lidx>135;
+        }()
+        && function () {
+            var higherItems = klineutil.higherItemsIndex(klineJson, i-60, i, "low", klineJson[i].high);
+            return higherItems.length>20;
         }()
 }
 
+/**
+ * (0.5, 0.5, 100) / 66.51%
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function lowRedsB(klineJson, i) {
+    var fun = function() {
+        var n=i;
+        for (; n>1; n--) {
+            var inc_ave = klineJson[n].inc_ave_8;
+            if (klineutil.increase(klineJson[n].open, klineJson[n].close) < 0) {
+                break;
+            } 
+        }
 
-exports.lowReds = lowReds;
+        return i-n>=4;
+    }
+    var inc_ave = klineJson[i].inc_ave_8;
+    return fun()
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) < 1.5
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > -0.3
+        && klineutil.increase(klineJson[i-1].volume_ave_8, klineJson[i-1].volume_ave_21) > 0.05
+        && function () {
+            var lidx = klineutil.lowItemIndex(klineJson, i-180, i, "low");
+            return i-lidx>135 && klineutil.increase(klineJson[lidx].low, klineJson[i].close)> inc_ave*1.5;
+        }()
+        && function () {
+            var higherItems = klineutil.higherItemsIndex(klineJson, i-60, i, "low", klineJson[i].high);
+            return i-higherItems[higherItems.length-1] > 10 && higherItems.length>10;
+        }()
+}
+
+/**
+ * (0.5, 0.5, 100) / 66.51%
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function threeGreenWithGap(klineJson, i) {
+    var inc_ave = klineJson[i].inc_ave_8;
+    return klineutil.increase(klineJson[i].open, klineJson[i].close) < -inc_ave*0
+        && klineutil.increase(klineJson[i-1].close, klineJson[i].open) < -inc_ave*0
+        && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < -inc_ave*0
+        && klineutil.increase(klineJson[i-2].close, klineJson[i-1].open) < -inc_ave*0
+        && klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -inc_ave*0
+        && function () {
+            var lidx = klineutil.lowItemIndex(klineJson, i-180, i, "low");
+            return i-lidx>140
+        }()
+        && function () {
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-60, i, "high", klineJson[i].low);
+            return lowerItems.length<20; //i-lowerItems[lowerItems.length-1] > 10 && 
+        }()
+}
+
+exports.threeGreenWithGap = threeGreenWithGap;
+
+exports.lowRedsB = lowRedsB;
+exports.lowRedsA = lowRedsA;
 
 exports.lowRedDoubleC = lowRedDoubleC;
 exports.lowRedDoubleB = lowRedDoubleB;

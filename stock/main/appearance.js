@@ -1,16 +1,16 @@
 var bullOrBear = "bull";
-var startDate = new Date("01/01/2008");
-var endDate = new Date("01/01/2014");
+var startDate = new Date("05/01/2013");
+var endDate = new Date("01/01/2015");
 
-var displayMinCount = 30
-var displayInfoFromDate = new Date("01/01/2008");
-var displayInfoToDate = new Date("01/01/2009");
+var displayMinCount = 100
+var displayInfoFromDate = new Date("10/01/2013");
+var displayInfoToDate = new Date("01/01/2015");
 var displayEveryCase = false;
-var displayInfo = "moreinfo";
-var klineForms = "lowReds";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
+var displayInfo = "moreinfo1";
+var klineForms = "";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
-var klineio = require("../klineio");
+var klineio = require("../klineio").config(startDate, endDate);
 var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
@@ -95,7 +95,7 @@ if (cluster.isMaster) {
                 if (displayInfo==='moreinfo') {
                     for (var mtd in masterResult) {
                         var  mtdtotal = masterResult[mtd][date];
-                        if (mtdtotal === undefined) mtdtotal = 0;
+                        if (mtdtotal === undefined) continue;
                         perStr += (mtd + ": " + masterResult[mtd][date+"_win"]+"/"+mtdtotal + "(" + (100*mtdtotal/dayTotal).toFixed(2)+")  ");
                     }
                     
@@ -114,6 +114,7 @@ if (cluster.isMaster) {
 } else if (cluster.isWorker) {
 
     var klineprocesser = require("../klineprocessor");
+
     var klineformanalyser = require("../klineform/analyser").config({bullorbear:bullOrBear, 
         startDate: startDate, 
         endDate: endDate});

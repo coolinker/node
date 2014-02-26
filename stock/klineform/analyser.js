@@ -13,11 +13,14 @@ function traverseForAppearance(methods, klineJson, result, options) {
     var displayEveryCase = options.displayEveryCase;
     var displayInfoToDate = options.displayInfoToDate;
     var displayInfoFromDate = options.displayInfoFromDate;
+    
     for (var i=50; i<len; i++) {
         var date = new Date(klineJson[i].date);
+
         if (date < startDate) continue;
         if (date > endDate) break;
 
+                
         var arr = [];
         
         var rel = klineutil.winOrLoss(klineJson, i, -0.05, 0.05, 100);
@@ -27,7 +30,6 @@ function traverseForAppearance(methods, klineJson, result, options) {
                 if (result[mtd] === undefined) {
                     result[mtd] = [];
                 }
-
                 result[mtd].push({date:date, inc:rel});
                 arr.push(mtd);
 
