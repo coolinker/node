@@ -1,13 +1,13 @@
 var bullOrBear = "bull";
-var startDate = new Date("05/01/2013");
+var startDate = new Date("05/01/2000");
 var endDate = new Date("01/01/2015");
 
 var displayMinCount = 100
-var displayInfoFromDate = new Date("10/01/2013");
-var displayInfoToDate = new Date("01/01/2015");
+var displayInfoFromDate = new Date("01/01/2008");
+var displayInfoToDate = new Date("01/01/2009");
 var displayEveryCase = false;
-var displayInfo = "moreinfo1";
-var klineForms = "";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
+var displayInfo = "moreinfo";
+var klineForms = "smallRedsAndGreens";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
 var klineio = require("../klineio").config(startDate, endDate);
