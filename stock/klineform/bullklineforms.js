@@ -780,7 +780,7 @@ function lowRedsB(klineJson, i) {
 }
 
 /**
- * (0.5, 0.5, 100) / 66.51%
+ * (0.5, 0.5, 100) / 66.18%
  * @param  {[type]} klineJson [description]
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
