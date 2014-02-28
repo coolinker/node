@@ -785,7 +785,7 @@ function lowRedsB(klineJson, i) {
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
  */
-function smallRedsAndGreens(klineJson, i) {
+function smallRedsAndGreensA(klineJson, i) {
     var fun = function() {
         var n=i;
         for (; n>1; n--) {
@@ -809,7 +809,44 @@ function smallRedsAndGreens(klineJson, i) {
         }()
 }
 
+/**
+ * (0.5, 0.5, 100) / 66.43%
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function smallRedsAndGreens(klineJson, i) {
+    var fun = function() {
+        var n=i;
+        for (; n>1; n--) {
+            var inc_ave = klineJson[n].inc_ave_21;
+            if (Math.abs(klineutil.increase(klineJson[n].open, klineJson[n].close)) > inc_ave*2) {
+                break;
+            } 
+        }
+        return i-n>= 5
+            && klineutil.increase(klineJson[i-4].close_ave_8, klineJson[i].close_ave_8) > 0//-klineJson[i].inc_ave_8*0.8
+    }
+
+    var inc_ave = klineJson[i].inc_ave_8;
+    return fun()
+        //&& klineutil.increase(klineJson[i].open, klineJson[i].close) <-inc_ave*0.0
+        && klineutil.increase(klineJson[i-1].close, klineJson[i].open) <inc_ave*0.2
+        && klineutil.increase(klineJson[i-1].close, klineJson[i].open) >-inc_ave*0.5
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume_ave_21) > -0.5
+        && klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > -0.2  
+        && function () {
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-80, i, "high", klineJson[i].low);
+            var lidx = klineutil.lowItem(klineJson, i-80, i, "low");
+
+            return i-lowerItems[0] <40 && klineutil.increase(lidx, klineJson[i].close) > inc_ave*4
+            //var lidx = klineutil.lowItemIndex(klineJson, i-60, i, "low");
+            //return i-lidx<35 &&  i-lidx>9//&& klineutil.increase(klineJson[lidx].low, klineJson[i].close)> inc_ave*1.5;
+        }()
+}
+
 exports.smallRedsAndGreens = smallRedsAndGreens;
+exports.smallRedsAndGreensA = smallRedsAndGreensA;
 
 exports.lowRedsB = lowRedsB;
 exports.lowRedsA = lowRedsA;
