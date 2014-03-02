@@ -22,15 +22,25 @@ function traverseForAppearance(methods, klineJson, result, options) {
 
                 
         var arr = [];
-        
-        var rel = klineutil.winOrLoss(klineJson, i, -0.05, 0.05, 100);
+        var inc_ave_8 = klineJson[i].inc_ave_8;
+        winStop = 3.7*inc_ave_8;
+        lossStop = -3.7*inc_ave_8;
+
+        var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 100);
+
+        var mtdsNumber = 0;
         methods.forEach(function(mtd) {
             if(klineforms[mtd](klineJson, i) === true) {
+                /*******************/
+                if (mtdsNumber>0) return;
+                /******************/
+                mtdsNumber ++;
+
                 var date = klineJson[i].date;
                 if (result[mtd] === undefined) {
                     result[mtd] = [];
                 }
-                result[mtd].push({date:date, inc:rel});
+                result[mtd].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
                 arr.push(mtd);
 
                 if (!displayEveryCase) return;
@@ -42,6 +52,7 @@ function traverseForAppearance(methods, klineJson, result, options) {
 
             }
         });
+
 
         if(false && arr.length>1) {
             //var rel = klineutil.winOrLoss(klineJson, i, -0.1, 0.05, 10);

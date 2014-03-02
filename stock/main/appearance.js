@@ -2,12 +2,12 @@ var bullOrBear = "bull";
 var startDate = new Date("05/01/2000");
 var endDate = new Date("01/01/2015");
 
-var displayMinCount = 100
-var displayInfoFromDate = new Date("01/01/2008");
-var displayInfoToDate = new Date("01/01/2009");
+var displayMinCount = -1
+var displayInfoFromDate = new Date("01/01/2010");
+var displayInfoToDate = new Date("11/16/2015");
 var displayEveryCase = false;
-var displayInfo = "moreinfo";
-var klineForms = "smallRedsAndGreens";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
+var displayInfo = "moreinfo1";
+var klineForms = "";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
 var klineio = require("../klineio").config(startDate, endDate);
@@ -159,7 +159,7 @@ if (cluster.isMaster) {
                     }
 
                      resultTotal[mtd][date]++;
-                     if (bullOrBear==="bull" && dayObj.inc>=0.05 || bullOrBear==="bear" && dayObj.inc<=-0.05) {
+                     if (bullOrBear==="bull" && dayObj.win || bullOrBear==="bear" && dayObj.inc<=-0.05) {
                         resultTotal[mtd][date+"_win"]++;
                      }
                 });
