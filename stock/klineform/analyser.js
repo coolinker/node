@@ -8,6 +8,40 @@ var bearklineforms = require("./bearklineforms");
 
 var klineforms = undefined;
 
+function traverseForIntersection(methods, klineJson, result) {
+    var len = klineJson.length;
+    var mthsStr = methods.toString();
+    if (!result[mthsStr])  {
+        result[mthsStr] = {total:0, win:0, lose:0, pending:0};
+    }
+
+    var mthsObj = result[mthsStr];
+
+    for (var i=50; i<len; i++) {
+        var date = new Date(klineJson[i].date);
+
+        if (date < startDate) continue;
+        if (date > endDate) break;
+
+                
+        var arr = [];
+        var inc_ave_8 = klineJson[i].inc_ave_8;
+        winStop = 3.7*inc_ave_8;
+        lossStop = -3.7*inc_ave_8;
+
+        if (intersectionResult(bullklineforms, methods, klineJson, i)) {
+            var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 100);
+            mthsObj.total++;
+            if (rel >= winStop) mthsObj.win++;
+            else if (rel <= lossStop) mthsObj.lose++;
+            else  mthsObj.pending++;
+        }
+
+
+    }
+
+}
+
 function traverseForAppearance(methods, klineJson, result, options) {
     var len = klineJson.length;
     var displayEveryCase = options.displayEveryCase;
@@ -187,6 +221,19 @@ function intersectionResult (klineforms, methods, klineJson, idx) {
     return true;
 }
 
+function selectedBullKLineFormMethods(arr) {
+    var methods = [];
+    for (var attr in bullklineforms) {
+        methods.push(attr);
+    }
+
+    var re = []; 
+    for (var i=0; i<arr.length; i++) {
+        re.push(methods[arr[i]]);
+    }
+    return re;
+}
+
 function bullKLineFormMethods() {
     var methods = [];
     for (var attr in bullklineforms) {
@@ -195,6 +242,7 @@ function bullKLineFormMethods() {
 
     return methods;
 }
+
 
 function bearKLineFormMethods() {
     var methods = [];
@@ -228,6 +276,10 @@ function config(options){
 }
 
 exports.config = config;
+
+exports.traverseForIntersection = traverseForIntersection;
+
+exports.selectedBullKLineFormMethods = selectedBullKLineFormMethods;
 
 exports.bullKLineFormMethods = bullKLineFormMethods;
 exports.bearKLineFormMethods = bearKLineFormMethods;

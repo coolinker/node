@@ -9,8 +9,9 @@ var endDate = new Date("12/01/2013");
 var dateSections = []; 
 var dateSections = [new Date("01/01/2008"),new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
+
 var klineForm = "smallRedsAndGreens";
-var intersectionKLineForm = "";
+var intersectionKLineForm = "lowRedsB";
 var unionKLineForm = "";
 
 //"wBottom, wBottomA, headShoulderBottom, on8While21UpVolumeHigh, on8While21Up, 
