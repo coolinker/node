@@ -15,7 +15,7 @@ var klineformanalyser = require("../klineform/analyser").config({
     });
 
 var  formsLen = klineformanalyser.bullKLineFormMethods().length;
-
+//formsLen = 3;
 var intersetionArray = math.CArr(formsLen,2);
 var currentForms = [];
 
@@ -59,8 +59,8 @@ if (cluster.isMaster) {
         
         if (i==0) {            
             if (intersetionArrayIndex<intersetionArray.length) {
-                console.log(intersetionArrayIndex);
-                fun(++intersetionArrayIndex);
+                fun(intersetionArrayIndex++);
+
             } else {
                 console.log(masterResult);
                 console.timeEnd("run");
@@ -71,7 +71,7 @@ if (cluster.isMaster) {
 
     });   
 
-     fun(intersetionArrayIndex);
+     fun(intersetionArrayIndex++);
 } else if (cluster.isWorker) {
 
     // var klineformanalyser = require("../klineform/analyser").config({
@@ -85,6 +85,7 @@ if (cluster.isMaster) {
     var endIdx = parseInt(process.env.endIdx, 10);
     
     var currentIndexs = intersetionArray[parseInt(process.env.intersetionArrayIndex, 10)];
+    
     var klineForms = klineformanalyser.selectedBullKLineFormMethods(currentIndexs);
     function processStock(idx) {
         var stockId = stocks[idx];

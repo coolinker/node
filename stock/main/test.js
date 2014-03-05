@@ -1,12 +1,3 @@
-var a = 1;
-var _obj = {
-    method1: function(){
-        console.log("a=",a);
-    }
-
-}
-
-module.exports = function(opts){
-    a = opts;
-    return _obj;
-}
+var math = require("../mathutil");
+var intersetionArray = math.CArr(45,3);
+console.log(intersetionArray.length)

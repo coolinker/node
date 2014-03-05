@@ -60,7 +60,7 @@ function traverseForAppearance(methods, klineJson, result, options) {
         winStop = 3.7*inc_ave_8;
         lossStop = -3.7*inc_ave_8;
 
-        var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 100);
+        //var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 100);
 
         var mtdsNumber = 0;
         methods.forEach(function(mtd) {
@@ -74,7 +74,8 @@ function traverseForAppearance(methods, klineJson, result, options) {
                 if (result[mtd] === undefined) {
                     result[mtd] = [];
                 }
-                result[mtd].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
+                //result[mtd].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
+                result[mtd].push({date:date, inc:klineJson[i].incStop, win: klineJson[i].winOrLose=="win", lose: klineJson[i].winOrLose=="lose"});
                 arr.push(mtd);
 
                 if (!displayEveryCase) return;
@@ -87,11 +88,6 @@ function traverseForAppearance(methods, klineJson, result, options) {
             }
         });
 
-
-        if(false && arr.length>1) {
-            //var rel = klineutil.winOrLoss(klineJson, i, -0.1, 0.05, 10);
-            console.log(klineJson[i].date, arr, rel);
-        }
     }
 
 }
@@ -119,13 +115,13 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
                 winStop = 3.7*inc_ave_8;
                 lossStop = -3.7*inc_ave_8;
 
-                var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
-                
-                //console.log();
+                //var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
+                var rel = klineJson[i].incStop;
+               
                 // '02/20/2013' '03/05/2013'
                 if (showLog) console.log(options.stockId, klineJson[i].date, rel);
                 else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, rel);
-                
+
                 if (rel>=winStop) {
                     result.win++;
 
@@ -240,7 +236,7 @@ function bullKLineFormMethods() {
         methods.push(attr);
     }
 
-    return methods;
+    return methods.sort();
 }
 
 

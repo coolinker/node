@@ -1,17 +1,18 @@
 console.time("run");
-var klineio = require("../klineio");
-var cluster = require('cluster');
-
 /**********************/
 var startDate = new Date("01/01/2005"); 
 var endDate = new Date("12/01/2013"); 
 /**********************/
+
+var klineio =  require("../klineio").config(startDate, endDate);
+var cluster = require('cluster');
+
 var dateSections = []; 
 var dateSections = [new Date("01/01/2008"),new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
 
 var klineForm = "smallRedsAndGreens";
-var intersectionKLineForm = "lowRedsB";
+var intersectionKLineForm = "";
 var unionKLineForm = "";
 
 //"wBottom, wBottomA, headShoulderBottom, on8While21UpVolumeHigh, on8While21Up, 
@@ -22,7 +23,7 @@ var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates = [];//["05/29/2013"];
 
 var stocks = klineio.getAllStockIds();
-//stocks = ['SZ000970'];
+//stocks = ['SZ002482'];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;

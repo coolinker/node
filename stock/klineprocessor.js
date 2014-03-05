@@ -294,66 +294,82 @@ function exRightsDay(klineJson) {
     }
 }
 
+function winOrLose(kLineJson) {
+    var jsonLen = kLineJson.length;
+    for (var i=0; i<jsonLen; i++) {
+        var inc_ave_8 = kLineJson[i].inc_ave_8;
+        if (!inc_ave_8) continue;
+
+        var winStop = 3.7*inc_ave_8;
+        var lossStop = -3.7*inc_ave_8;
+        var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100);
+
+        kLineJson[i].incStop = rel;
+        kLineJson[i].winOrLose = rel>=winStop ? "win" : (rel<=lossStop?"lose":"pending");
+    }
+}
 
 function updateKLines(match) {
     var stocks = klineio.getAllStockIds(match);
-    //stocks = ["SZ300215"];
+    //stocks = ["SZ002482"];
     
     stocks.forEach(
         function (stockId) {
-            klineio.readKLineBaseSync(stockId, function(kLineJason) {
-            exRightsDay(kLineJason);
-            average(kLineJason, "close", 8);
-            average(kLineJason, "close", 21);
-            average(kLineJason, "close", 55);
-            average(kLineJason, "close", 144);
-            average(kLineJason, "close", 233);
-            average(kLineJason, "volume", 8);
-            average(kLineJason, "volume", 21);
+            klineio.readKLineBaseSync(stockId, function(kLineJson) {
+            exRightsDay(kLineJson);
+            average(kLineJson, "close", 8);
+            average(kLineJson, "close", 21);
+            average(kLineJson, "close", 55);
+            average(kLineJson, "close", 144);
+            average(kLineJson, "close", 233);
+            average(kLineJson, "volume", 8);
+            average(kLineJson, "volume", 21);
 
-            average(kLineJason, "amplitude", 8, function (klj, n) {
+            average(kLineJson, "amplitude", 8, function (klj, n) {
                 var kl = klj[n];
                 return klineutil.increase(kl.low, kl.high);
             });
 
-            average(kLineJason, "amplitude", 55, function (klj, n) {
+            average(kLineJson, "amplitude", 55, function (klj, n) {
                 var kl = klj[n];
                 return klineutil.increase(kl.low, kl.high);
             });
 
-            average(kLineJason, "inc", 8, function (klj, n) {
+            average(kLineJson, "inc", 8, function (klj, n) {
                 if (n===0) return 0;
                 var klc = klj[n].close;
                 var klc1 = klj[n-1].close;
                 return Math.abs(klineutil.increase(klc1, klc));
             });
 
-            average(kLineJason, "inc", 21, function (klj, n) {
+            average(kLineJson, "inc", 21, function (klj, n) {
                 if (n===0) return 0;
                 var klc = klj[n].close;
                 var klc1 = klj[n-1].close;
                 return Math.abs(klineutil.increase(klc1, klc));
             });
 
-            //average(kLineJason, "amplitude", 144, function (kl) {
+            winOrLose(kLineJson);
+
+            //average(kLineJson, "amplitude", 144, function (kl) {
             //    return klineutil.increase(kl.low, kl.high);
             //});
 
-            //markPeaks(kLineJason, "high", 0.02, 3);
+            //markPeaks(kLineJson, "high", 0.02, 3);
             
-            //mergePeaks(kLineJason, "high", 3);
+            //mergePeaks(kLineJson, "high", 3);
 
-            //markTroughs(kLineJason, "low", 0.02, 3);
+            //markTroughs(kLineJson, "low", 0.02, 3);
             
-           //mergeTroughs(kLineJason, "low", 3);
+           //mergeTroughs(kLineJson, "low", 3);
 
 
-            // markBoxs(kLineJason, "high", "high_peak", function highCeilBoxCompareWrapper(json1, json2) {
+            // markBoxs(kLineJson, "high", "high_peak", function highCeilBoxCompareWrapper(json1, json2) {
             //     return highCeilBoxCompare(json1, json2, 0, (json1.amplitude_ave_8+json2.amplitude_ave_8)/12);
             // });
 
 
-            klineio.writeKLineSync(stockId, kLineJason);
+            klineio.writeKLineSync(stockId, kLineJson);
         });
 
     });
