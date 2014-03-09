@@ -1,6 +1,6 @@
 var klineutil = require("../klineutil");
 var startDate = new Date("01/01/2005"); 
-var endDate = new Date("01/01/2014"); 
+var endDate = new Date("01/01/2015"); 
 
 
 var bullklineforms = require("./bullklineforms");
@@ -218,11 +218,7 @@ function intersectionResult (klineforms, methods, klineJson, idx) {
 }
 
 function selectedBullKLineFormMethods(arr) {
-    var methods = [];
-    for (var attr in bullklineforms) {
-        methods.push(attr);
-    }
-
+    var methods = bullKLineFormMethods();
     var re = []; 
     for (var i=0; i<arr.length; i++) {
         re.push(methods[arr[i]]);
@@ -246,7 +242,7 @@ function bearKLineFormMethods() {
         methods.push(attr);
     }
 
-    return methods;
+    return methods.sort();
 }
 
 function kLineFormMethods() {
@@ -255,7 +251,7 @@ function kLineFormMethods() {
         methods.push(attr);
     }
 
-    return methods;
+    return methods.sort();
 }
 
 function config(options){  

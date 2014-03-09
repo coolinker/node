@@ -3,28 +3,24 @@ console.time("run");
 var startDate = new Date("01/01/2005"); 
 var endDate = new Date("12/01/2015"); 
 
+var cluster = require('cluster');
+
 var klineio = require("../klineio");
 var math = require("../mathutil");
-var cluster = require('cluster');
 var klineutil = require("../klineutil");
 
-var klineprocesser = require("../klineprocessor");
+var intersectionprocessor = require("../klineform/intersectionprocessor").config(2);
 var klineformanalyser = require("../klineform/analyser").config({
         startDate: startDate,
         endDate: endDate
     });
 
-var  formsLen = klineformanalyser.bullKLineFormMethods().length;
-//formsLen = 3;
-var intersetionArray = math.CArr(formsLen,2);
-var currentForms = [];
 
 var stocks = klineio.getAllStockIds();
 //stocks = ['SZ000970'];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
-    var intersetionArrayIndex = 0;
     var masterResult = {};
 
     var numCPUs = require('os').cpus().length;
@@ -45,9 +41,21 @@ if (cluster.isMaster) {
             //console.log("onForkMessage", msg, masterResult);
     }
     var i = 0;
-    var fun = function(idx) {
+    var fun = function() {
+        var klineForms = intersectionprocessor.getFormsCombination();
+        if (intersectionprocessor.has(klineForms)) {
+            if (intersectionprocessor.next()) {
+                process.nextTick(fun);
+            } else {
+                intersectionprocessor.merge(masterResult);
+                intersectionprocessor.writeJson();
+                console.timeEnd("run");
+            }
+            return;
+        }
+        console.log(klineForms);
         for (i = 0; i < numCPUs; i++) {
-            var worker = cluster.fork({intersetionArrayIndex: idx,
+            var worker = cluster.fork({combinationArrayIndex: intersectionprocessor.getIndex(),
                 startIdx: i*forkStocks, endIdx: Math.min((i+1)*forkStocks, stocksLen)-1});
             worker.on('message', onForkMessage);
         }
@@ -58,11 +66,12 @@ if (cluster.isMaster) {
         i--;
         
         if (i==0) {            
-            if (intersetionArrayIndex<intersetionArray.length) {
-                fun(intersetionArrayIndex++);
-
+            if (intersectionprocessor.next()) {
+                process.nextTick(fun);
+                //fun();
             } else {
-                console.log(masterResult);
+                intersectionprocessor.merge(masterResult);
+                intersectionprocessor.writeJson();
                 console.timeEnd("run");
             }
         } else {
@@ -71,22 +80,17 @@ if (cluster.isMaster) {
 
     });   
 
-     fun(intersetionArrayIndex++);
+     fun();
 } else if (cluster.isWorker) {
 
-    // var klineformanalyser = require("../klineform/analyser").config({
-    //     startDate: startDate,
-    //     endDate: endDate
-    // });
-    
     var forkResult = {};
 
     var startIdx = parseInt(process.env.startIdx, 10);
     var endIdx = parseInt(process.env.endIdx, 10);
-    
-    var currentIndexs = intersetionArray[parseInt(process.env.intersetionArrayIndex, 10)];
-    
-    var klineForms = klineformanalyser.selectedBullKLineFormMethods(currentIndexs);
+    var cmbidx = parseInt(process.env.combinationArrayIndex, 10);
+
+    var klineForms = intersectionprocessor.getFormsCombinationAt(cmbidx);
+ 
     function processStock(idx) {
         var stockId = stocks[idx];
 
