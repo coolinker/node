@@ -1,9 +1,9 @@
 var bullOrBear = "bull";
-var startDate = new Date("05/01/2000");
+var startDate = new Date("01/01/2005");
 var endDate = new Date("01/01/2015");
 
 var displayMinCount = -1
-var displayInfoFromDate = new Date("01/01/2010");
+var displayInfoFromDate = new Date("01/01/2013");
 var displayInfoToDate = new Date("11/16/2015");
 var displayEveryCase = false;
 var displayInfo = "moreinfo1";
@@ -19,14 +19,15 @@ var stocks = klineio.getAllStockIds();
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
     var masterResult = {};
+    var masterRatioResult = {};
     var funName;
 
     var numCPUs = require('os').cpus().length;
     var forkStocks = Math.ceil(stocksLen/numCPUs);
     var onForkMessage = function(result){   
-        
-        for (var mtd in result) {
-            var dates = result[mtd];
+        var incResult = result.incResult;
+        for (var mtd in incResult) {
+            var dates = incResult[mtd];
             if (masterResult[mtd] === undefined) {
                 masterResult[mtd] = {};
             }
@@ -36,6 +37,16 @@ if (cluster.isMaster) {
                     masterResult[mtd][date] = 0;
                 }
                  masterResult[mtd][date] += dates[date];
+            }
+         }
+
+         var formsRatio = result.formsRatio;
+         for (var date in formsRatio) {
+            var ratioObj = formsRatio[date];
+            if (!masterRatioResult[date]) masterRatioResult[date] = ratioObj;
+            else {
+                masterRatioResult[date].stockNumber += ratioObj.stockNumber;
+                masterRatioResult[date].ratioSum += ratioObj.ratioSum;
             }
          }
 
@@ -65,7 +76,7 @@ if (cluster.isMaster) {
                     //if (dates[date] < 0) delete dates[date];
 
                 }
-                console.log(mtd);
+                //console.log(mtd);
             }
 
             var sortedDates = []
@@ -102,7 +113,8 @@ if (cluster.isMaster) {
                 }
 
                  if (displayInfo !== undefined) {
-                    console.log(date,dayTotal, perStr);
+                    console.log(date,masterRatioResult[date].stockNumber+"/"+dayTotal, perStr,
+                        (masterRatioResult[date].ratioSum/masterRatioResult[date].stockNumber).toFixed(4));
                 }
             });
             
@@ -119,8 +131,11 @@ if (cluster.isMaster) {
         startDate: startDate, 
         endDate: endDate});
 
+    var intersectionprocessor = require("../klineform/intersectionprocessor").config(3);
+
     var klineutil = require("../klineutil");
     var resultTotal = {};
+    var formsResultTotal= {};
     var startIdx = parseInt(process.env.startIdx, 10);
     var endIdx = parseInt(process.env.endIdx, 10);
     
@@ -135,16 +150,17 @@ if (cluster.isMaster) {
 
         //mtds = ["sidewaysCompression", "wBottom"];
         klineio.readKLine(stockId, function(kLineJson) {
-            var result = {};
-            klineformanalyser.traverseForAppearance(mtds, kLineJson, result, {
+            var incResult = {};
+            
+            klineformanalyser.traverseForAppearance(mtds, kLineJson, {
                 displayInfoFromDate: displayInfoFromDate,
                 displayInfoToDate: displayInfoToDate,
                 displayEveryCase: displayEveryCase,
                 stockId:stockId
-            });
+            }, incResult, formsResultTotal);
 
-             for (var mtd in result) {
-                var dates = result[mtd];
+             for (var mtd in incResult) {
+                var dates = incResult[mtd];
                 if (resultTotal[mtd] === undefined) {
                     resultTotal[mtd] = {};
                 }
@@ -167,7 +183,21 @@ if (cluster.isMaster) {
             }
 
             if (idx === endIdx) {
-                process.send(resultTotal);
+                var formsRatio = {};
+                for (var dt in formsResultTotal) {
+                    var stocks = formsResultTotal[dt];
+                    var counter = 0;
+                    var ratioSum = 0;
+                    for (var sid in stocks) {
+                        counter++;
+                        var sforms = stocks[sid];
+                        var ratio = intersectionprocessor.matchRatio(sforms);
+                        ratioSum += ratio;
+                    }
+                    formsRatio[dt] = {stockNumber: counter, ratioSum: ratioSum};
+                }
+
+                process.send({incResult:resultTotal, formsRatio: formsRatio});
                 process.exit(0);
             } else {
                 processStock(idx+1);

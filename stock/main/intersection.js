@@ -5,9 +5,14 @@ var endDate = new Date("12/01/2015");
 
 var cluster = require('cluster');
 
-var klineio = require("../klineio");
+var klineio = require("../klineio").config(startDate, endDate);
 var math = require("../mathutil");
 var klineutil = require("../klineutil");
+
+
+//var intersetionArray = math.CArr(35,3);
+//console.log(intersetionArray.length)
+
 
 var intersectionprocessor = require("../klineform/intersectionprocessor").config(2);
 var klineformanalyser = require("../klineform/analyser").config({
@@ -43,17 +48,7 @@ if (cluster.isMaster) {
     var i = 0;
     var fun = function() {
         var klineForms = intersectionprocessor.getFormsCombination();
-        if (intersectionprocessor.has(klineForms)) {
-            if (intersectionprocessor.next()) {
-                process.nextTick(fun);
-            } else {
-                intersectionprocessor.merge(masterResult);
-                intersectionprocessor.writeJson();
-                console.timeEnd("run");
-            }
-            return;
-        }
-        console.log(klineForms);
+        console.log("klineForms",klineForms);
         for (i = 0; i < numCPUs; i++) {
             var worker = cluster.fork({combinationArrayIndex: intersectionprocessor.getIndex(),
                 startIdx: i*forkStocks, endIdx: Math.min((i+1)*forkStocks, stocksLen)-1});
@@ -67,9 +62,10 @@ if (cluster.isMaster) {
         
         if (i==0) {            
             if (intersectionprocessor.next()) {
-                process.nextTick(fun);
+                setImmediate(fun);
                 //fun();
             } else {
+
                 intersectionprocessor.merge(masterResult);
                 intersectionprocessor.writeJson();
                 console.timeEnd("run");
@@ -79,8 +75,9 @@ if (cluster.isMaster) {
         }
 
     });   
-
-     fun();
+    if (intersectionprocessor.next()) {
+        fun();
+    }
 } else if (cluster.isWorker) {
 
     var forkResult = {};

@@ -1,6 +1,6 @@
 var klineutil = require("../klineutil");
 var startDate = new Date("01/01/2005"); 
-var endDate = new Date("01/01/2015"); 
+var endDate = new Date("12/01/2015"); 
 
 
 var bullklineforms = require("./bullklineforms");
@@ -32,8 +32,10 @@ function traverseForIntersection(methods, klineJson, result) {
         if (intersectionResult(bullklineforms, methods, klineJson, i)) {
             var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 100);
             mthsObj.total++;
-            if (rel >= winStop) mthsObj.win++;
-            else if (rel <= lossStop) mthsObj.lose++;
+            // if (klineJson[i].winOrLose=="win") mthsObj.win++;
+            // else if (klineJson[i].winOrLose=="lose") mthsObj.lose++;
+             if (rel>=winStop) mthsObj.win++;
+            else if (rel<=lossStop) mthsObj.lose++;
             else  mthsObj.pending++;
         }
 
@@ -42,7 +44,7 @@ function traverseForIntersection(methods, klineJson, result) {
 
 }
 
-function traverseForAppearance(methods, klineJson, result, options) {
+function traverseForAppearance(methods, klineJson, options, incResult, formsResult) {
     var len = klineJson.length;
     var displayEveryCase = options.displayEveryCase;
     var displayInfoToDate = options.displayInfoToDate;
@@ -61,21 +63,22 @@ function traverseForAppearance(methods, klineJson, result, options) {
         lossStop = -3.7*inc_ave_8;
 
         //var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 100);
-
+        var date = klineJson[i].date;
         var mtdsNumber = 0;
+        var matchForms = [];
         methods.forEach(function(mtd) {
             if(klineforms[mtd](klineJson, i) === true) {
                 /*******************/
-                if (mtdsNumber>0) return;
+                //if (mtdsNumber>0) return;
                 /******************/
                 mtdsNumber ++;
-
-                var date = klineJson[i].date;
-                if (result[mtd] === undefined) {
-                    result[mtd] = [];
+                matchForms.push(mtd);
+                
+                if (incResult[mtd] === undefined) {
+                    incResult[mtd] = [];
                 }
-                //result[mtd].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
-                result[mtd].push({date:date, inc:klineJson[i].incStop, win: klineJson[i].winOrLose=="win", lose: klineJson[i].winOrLose=="lose"});
+                //incResult[mtd].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
+                incResult[mtd].push({date:date, inc:klineJson[i].incStop, win: klineJson[i].winOrLose=="win", lose: klineJson[i].winOrLose=="lose"});
                 arr.push(mtd);
 
                 if (!displayEveryCase) return;
@@ -88,7 +91,16 @@ function traverseForAppearance(methods, klineJson, result, options) {
             }
         });
 
+        if (matchForms.length>0) {
+            if (!formsResult[date]) {
+                formsResult[date] = {};
+                formsResult[date][options.stockId] =  matchForms
+            } else formsResult[date][options.stockId] =  matchForms;
+        }
+
     }
+    
+
 
 }
 
@@ -116,19 +128,24 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
                 lossStop = -3.7*inc_ave_8;
 
                 //var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
-                var rel = klineJson[i].incStop;
+                //var rel = klineJson[i].incStop;
                
                 // '02/20/2013' '03/05/2013'
                 if (showLog) console.log(options.stockId, klineJson[i].date, rel);
                 else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, rel);
+                
+                /*if (klineJson[i].winOrLose=="win" && rel<winStop) {
+                    console.log(klineJson[i].date, options.stockId, rel, lossStop, winStop)
 
-                if (rel>=winStop) {
+                }*/
+
+                if (klineJson[i].winOrLose=="win"/*rel>=winStop*/) {
                     result.win++;
 
                 }
                 result.total++;
                 
-                if (options.injection) options.injection(method, options.stockId, date, rel>=winStop);
+                if (options.injection) options.injection(method, options.stockId, date, klineJson[i].winOrLose=="win");
                 // if (dateSections !== undefined) {
                 //     var sec = getDateSection(date, dateSections);
                 //     result['total_'+sec]++;

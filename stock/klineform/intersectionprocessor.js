@@ -13,8 +13,9 @@ var endDate = new Date("01/01/2014");
 
 var intersectionsMap = {};
 var intersetionArray = [];
-var combinationArrayIndex = 0;
+var combinationArrayIndex = -1;
 var allForms = klineformanalyser.bullKLineFormMethods();
+
 function config(r){  
   var formsLen = allForms.length;
   intersetionArray = math.CArr(formsLen,r);
@@ -29,13 +30,52 @@ function getIndex() {
 function next() {
   combinationArrayIndex++;
   if (combinationArrayIndex>=intersetionArray.length) return false;
-  //if (combinationArrayIndex>2) return false;
+
+  if (combinationArrayIndex>3000) return false;
+
+  if (this.has(this.getFormsCombination())) return this.next();
+
   return true;
 }
 
 function has(forms) {
   var key = forms.toString();
   return !!intersectionsMap[key];
+}
+
+function matchRatio(forms) {
+
+  var maxRatio = 0;
+  var mRatioForms;
+  for (var i=3; i>0; i--) {
+    var len = forms.length;
+    if (len<i)  continue;
+    var idxArr = math.CArr(len,i);
+    
+    for (var j=0; j<idxArr.length; j++) {
+      var formsStr = itemsAtIndexs(forms, idxArr[j]).toString();
+
+      var obj = intersectionsMap[formsStr];
+      //console.log(formsStr, obj)
+      if (obj && obj.ratio>maxRatio) {
+          maxRatio = obj.ratio;
+          mRatioForms = formsStr;
+      }
+
+    }
+
+  }
+  //if (forms.length>3)
+  //console.log(maxRatio, mRatioForms, " of ", forms);
+  return maxRatio;
+}
+
+function itemsAtIndexs(forms, idxs) {
+  var items = [];
+  for (var i=0; i<idxs.length; i++) {
+    items.push(forms[idxs[i]])
+  }
+  return items;
 }
 
 function getFormsCombination() {
@@ -68,6 +108,13 @@ function readJson() {
   if(fs.existsSync("../datasource/intersection.json")) {
     var content = fs.readFileSync("../datasource/intersection" + ".json")
     intersectionsMap = JSON.parse(content);
+
+    for (var att in intersectionsMap) {
+      var obj = intersectionsMap[att];
+      obj.ratio = Number((obj.win/obj.total).toFixed(4));
+      // if(obj.ratio>0.8 && obj.total<10)
+      //   console.log("readJson:",att,  JSON.stringify(obj));
+    }
   }
 }
 
@@ -81,6 +128,8 @@ exports.config = config;
 exports.getIndex = getIndex;
 exports.readJson = readJson;
 exports.writeJson = writeJson;
+
+exports .matchRatio = matchRatio;
 
 exports.has = has;
 exports.next = next;
