@@ -74,7 +74,6 @@ if (cluster.isMaster) {
       
 } else if (cluster.isWorker) {
 
-    var klineprocesser = require("../klineprocessor");
     var klineformanalyser = require("../klineform/analyser").config({
         startDate: startDate,
         endDate: endDate

@@ -14,7 +14,7 @@ var klineutil = require("../klineutil");
 //console.log(intersetionArray.length)
 
 
-var intersectionprocessor = require("../klineform/intersectionprocessor").config(2);
+var intersectionprocessor = require("../klineform/intersectionprocessor").config(3);
 var klineformanalyser = require("../klineform/analyser").config({
         startDate: startDate,
         endDate: endDate

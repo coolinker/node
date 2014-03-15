@@ -7,7 +7,7 @@ var displayInfoFromDate = new Date("01/01/2013");
 var displayInfoToDate = new Date("11/16/2015");
 var displayEveryCase = false;
 var displayInfo = "moreinfo1";
-var klineForms = "";//"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
+var klineForms = ""; //"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
 var klineio = require("../klineio").config(startDate, endDate);
@@ -23,8 +23,8 @@ if (cluster.isMaster) {
     var funName;
 
     var numCPUs = require('os').cpus().length;
-    var forkStocks = Math.ceil(stocksLen/numCPUs);
-    var onForkMessage = function(result){   
+    var forkStocks = Math.ceil(stocksLen / numCPUs);
+    var onForkMessage = function(result) {
         var incResult = result.incResult;
         for (var mtd in incResult) {
             var dates = incResult[mtd];
@@ -32,29 +32,32 @@ if (cluster.isMaster) {
                 masterResult[mtd] = {};
             }
 
-            for(var date in dates) {
+            for (var date in dates) {
                 if (masterResult[mtd][date] === undefined) {
                     masterResult[mtd][date] = 0;
                 }
-                 masterResult[mtd][date] += dates[date];
+                masterResult[mtd][date] += dates[date];
             }
-         }
+        }
 
-         var formsRatio = result.formsRatio;
-         for (var date in formsRatio) {
+        var formsRatio = result.formsRatio;
+        for (var date in formsRatio) {
             var ratioObj = formsRatio[date];
             if (!masterRatioResult[date]) masterRatioResult[date] = ratioObj;
             else {
                 masterRatioResult[date].stockNumber += ratioObj.stockNumber;
                 masterRatioResult[date].ratioSum += ratioObj.ratioSum;
             }
-         }
+        }
 
     }
 
     for (var i = 0; i < numCPUs; i++) {
-        if (i*forkStocks >= stocksLen) break;
-        var worker = cluster.fork({startIdx: i*forkStocks, endIdx: Math.min((i+1)*forkStocks, stocksLen)-1});        
+        if (i * forkStocks >= stocksLen) break;
+        var worker = cluster.fork({
+            startIdx: i * forkStocks,
+            endIdx: Math.min((i + 1) * forkStocks, stocksLen) - 1
+        });
         worker.on('message', onForkMessage);
     }
 
@@ -62,14 +65,14 @@ if (cluster.isMaster) {
         i--;
         var masterDays = {};
         //console.log('worker ' + worker.process.pid + ' exits', code, masterWins, masterTotal);
-        if (i==0) {
+        if (i == 0) {
 
             for (var mtd in masterResult) {
                 var dates = masterResult[mtd];
 
                 for (var date in dates) {
                     if (date.indexOf("win") > -1) continue;
-                    if (masterDays[date]===undefined) {
+                    if (masterDays[date] === undefined) {
                         masterDays[date] = 0;
                     }
                     masterDays[date] += dates[date];
@@ -91,93 +94,122 @@ if (cluster.isMaster) {
                 //if (date.indexOf("2013")<0) delete masterDays[date];
             }
 
-            sortedDates.sort(function(d1,d2) {
+            sortedDates.sort(function(d1, d2) {
                 var dt1 = new Date(d1);
                 var dt2 = new Date(d2);
-                return dt1>dt2?1:(dt1<dt2?-1:0);
+                return dt1 > dt2 ? 1 : (dt1 < dt2 ? -1 : 0);
             });
 
-            sortedDates.forEach(function(date){
-                var dObj = new Date(date);                
+            sortedDates.forEach(function(date) {
+                var dObj = new Date(date);
                 if (dObj < displayInfoFromDate || dObj > displayInfoToDate) return;
 
                 var dayTotal = masterDays[date];
                 var perStr = "";
-                if (displayInfo==='moreinfo') {
+                if (displayInfo === 'moreinfo') {
                     for (var mtd in masterResult) {
-                        var  mtdtotal = masterResult[mtd][date];
+                        var mtdtotal = masterResult[mtd][date];
                         if (mtdtotal === undefined) continue;
-                        perStr += (mtd + ": " + masterResult[mtd][date+"_win"]+"/"+mtdtotal + "(" + (100*mtdtotal/dayTotal).toFixed(2)+")  ");
+                        perStr += (mtd + ": " + masterResult[mtd][date + "_win"] + "/" + mtdtotal + "(" + (100 * mtdtotal / dayTotal).toFixed(2) + ")  ");
                     }
-                    
+
                 }
 
-                 if (displayInfo !== undefined) {
-                    console.log(date,masterRatioResult[date].stockNumber+"/"+dayTotal, perStr,
-                        (masterRatioResult[date].ratioSum/masterRatioResult[date].stockNumber).toFixed(4));
+                if (displayInfo !== undefined) {
+                    console.log(date, masterRatioResult[date].stockNumber + "/" + dayTotal, perStr, (masterRatioResult[date].ratioSum / masterRatioResult[date].stockNumber).toFixed(4));
                 }
             });
-            
+
             console.timeEnd("run");
         }
     });
 
-      
+
 } else if (cluster.isWorker) {
 
-    var klineprocesser = require("../klineprocessor");
-
-    var klineformanalyser = require("../klineform/analyser").config({bullorbear:bullOrBear, 
-        startDate: startDate, 
-        endDate: endDate});
+    var klineformanalyser = require("../klineform/analyser").config({
+        bullorbear: bullOrBear,
+        startDate: startDate,
+        endDate: endDate
+    });
 
     var intersectionprocessor = require("../klineform/intersectionprocessor").config(3);
 
     var klineutil = require("../klineutil");
     var resultTotal = {};
-    var formsResultTotal= {};
+    var formsResultTotal = {};
     var startIdx = parseInt(process.env.startIdx, 10);
     var endIdx = parseInt(process.env.endIdx, 10);
-    
+    var mtds;
+    if (!klineForms) {
+        mtds = klineformanalyser.kLineFormMethods();
+    } else {
+        mtds = klineForms.split(",");
+    }
+
     function processStock(idx) {
         var stockId = stocks[idx];
-        var mtds;        
-        if (!klineForms) {
-            mtds = klineformanalyser.kLineFormMethods();
-        } else {
-            mtds = klineForms.split(",");
-        }
-
+        
         //mtds = ["sidewaysCompression", "wBottom"];
         klineio.readKLine(stockId, function(kLineJson) {
-            var incResult = {};
-            
-            klineformanalyser.traverseForAppearance(mtds, kLineJson, {
-                displayInfoFromDate: displayInfoFromDate,
-                displayInfoToDate: displayInfoToDate,
-                displayEveryCase: displayEveryCase,
-                stockId:stockId
-            }, incResult, formsResultTotal);
 
-             for (var mtd in incResult) {
+            var incResult = {};
+
+            klineformanalyser.traverseForAppearance(mtds, kLineJson, {
+                formHandler: function(form, klineJson) {
+                    var date = klineJson.date;
+                    if (incResult[form] === undefined) {
+                        incResult[form] = [];
+                    }
+                    //incResult[form].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
+                    incResult[form].push({
+                        date: date,
+                        inc: klineJson.incStop,
+                        win: klineJson.winOrLose == "win",
+                        lose: klineJson.winOrLose == "lose"
+                    });
+
+                    if (!displayEveryCase) return;
+
+                    var dObj = new Date(date);
+                    if (dObj >= displayInfoFromDate && dObj <= displayInfoToDate) {
+                        console.log(date, stockId);
+                    }
+
+                },
+                formsHandler: function(forms, klineJson) {
+                    var date = klineJson.date;
+                    if (forms.length > 0) {
+                        if (!formsResultTotal[date]) {
+                            formsResultTotal[date] = {};
+                        }
+
+                        formsResultTotal[date][stockId] = forms;
+                    }
+                }
+            });
+
+
+
+            for (var mtd in incResult) {
                 var dates = incResult[mtd];
                 if (resultTotal[mtd] === undefined) {
                     resultTotal[mtd] = {};
                 }
-                
-                dates.forEach(function (dayObj) {
+
+                dates.forEach(function(dayObj) {
                     var date = dayObj.date;
                     if (resultTotal[mtd][date] === undefined) {
                         resultTotal[mtd][date] = 0;
                     }
-                    if (resultTotal[mtd][date+"_win"] === undefined) {
-                        resultTotal[mtd][date+"_win"] = 0;
+                    if (resultTotal[mtd][date + "_win"] === undefined) {
+                        resultTotal[mtd][date + "_win"] = 0;
                     }
 
-                     resultTotal[mtd][date]++;
-                     if (bullOrBear==="bull" && dayObj.win || bullOrBear==="bear" && dayObj.inc<=-0.05) {
-                        resultTotal[mtd][date+"_win"]++;
-                     }
+                    resultTotal[mtd][date]++;
+                    if (bullOrBear === "bull" && dayObj.win || bullOrBear === "bear" && dayObj.inc <= -0.05) {
+                        resultTotal[mtd][date + "_win"]++;
+                    }
                 });
 
             }
@@ -194,18 +226,24 @@ if (cluster.isMaster) {
                         var ratio = intersectionprocessor.matchRatio(sforms);
                         ratioSum += ratio;
                     }
-                    formsRatio[dt] = {stockNumber: counter, ratioSum: ratioSum};
+                    formsRatio[dt] = {
+                        stockNumber: counter,
+                        ratioSum: ratioSum
+                    };
                 }
 
-                process.send({incResult:resultTotal, formsRatio: formsRatio});
+                process.send({
+                    incResult: resultTotal,
+                    formsRatio: formsRatio
+                });
                 process.exit(0);
             } else {
-                processStock(idx+1);
+                processStock(idx + 1);
             }
-            
+
         });
 
     }
-    
-    processStock(startIdx);    
+
+    processStock(startIdx);
 }

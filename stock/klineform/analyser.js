@@ -44,7 +44,7 @@ function traverseForIntersection(methods, klineJson, result) {
 
 }
 
-function traverseForAppearance(methods, klineJson, options, incResult, formsResult) {
+function ___traverseForAppearance(methods, klineJson, options, incResult, formsResult) {
     var len = klineJson.length;
     var displayEveryCase = options.displayEveryCase;
     var displayInfoToDate = options.displayInfoToDate;
@@ -56,8 +56,6 @@ function traverseForAppearance(methods, klineJson, options, incResult, formsResu
         if (date < startDate) continue;
         if (date > endDate) break;
 
-                
-        var arr = [];
         var inc_ave_8 = klineJson[i].inc_ave_8;
         winStop = 3.7*inc_ave_8;
         lossStop = -3.7*inc_ave_8;
@@ -79,8 +77,7 @@ function traverseForAppearance(methods, klineJson, options, incResult, formsResu
                 }
                 //incResult[mtd].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
                 incResult[mtd].push({date:date, inc:klineJson[i].incStop, win: klineJson[i].winOrLose=="win", lose: klineJson[i].winOrLose=="lose"});
-                arr.push(mtd);
-
+                
                 if (!displayEveryCase) return;
 
                 var dObj = new Date(date);
@@ -94,14 +91,45 @@ function traverseForAppearance(methods, klineJson, options, incResult, formsResu
         if (matchForms.length>0) {
             if (!formsResult[date]) {
                 formsResult[date] = {};
-                formsResult[date][options.stockId] =  matchForms
-            } else formsResult[date][options.stockId] =  matchForms;
+            }
+
+            formsResult[date][options.stockId] =  matchForms;
         }
 
     }
     
+}
 
 
+function traverseForAppearance(methods, klineJson, intersections) {
+    var len = klineJson.length;
+    for (var i=50; i<len; i++) {
+        var date = new Date(klineJson[i].date);
+
+        if (date < startDate) continue;
+        if (date > endDate) break;
+
+        var inc_ave_8 = klineJson[i].inc_ave_8;
+        winStop = 3.7*inc_ave_8;
+        lossStop = -3.7*inc_ave_8;
+
+        var matchForms = [];
+        methods.forEach(function(mtd) {
+            if(klineforms[mtd](klineJson, i) === true) {
+                matchForms.push(mtd);
+                if (intersections.formHandler) {
+                    intersections.formHandler(mtd, klineJson, i);
+                }
+
+            }
+        });
+
+        if (intersections.formsHandler && matchForms.length>0) {
+            intersections.formsHandler(matchForms, klineJson, i);
+        }
+
+    }
+    
 }
 
 function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, options) {

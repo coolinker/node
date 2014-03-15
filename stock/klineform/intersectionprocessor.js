@@ -31,7 +31,7 @@ function next() {
   combinationArrayIndex++;
   if (combinationArrayIndex>=intersetionArray.length) return false;
 
-  if (combinationArrayIndex>3000) return false;
+  //if (combinationArrayIndex>4500) return false;
 
   if (this.has(this.getFormsCombination())) return this.next();
 
@@ -105,22 +105,22 @@ function merge(obj) {
 }
 
 function readJson() {
-  if(fs.existsSync("../datasource/intersection.json")) {
-    var content = fs.readFileSync("../datasource/intersection" + ".json")
+  if(fs.existsSync("../config/intersection.json")) {
+    var content = fs.readFileSync("../config/intersection" + ".json")
     intersectionsMap = JSON.parse(content);
 
     for (var att in intersectionsMap) {
       var obj = intersectionsMap[att];
       obj.ratio = Number((obj.win/obj.total).toFixed(4));
-      // if(obj.ratio>0.8 && obj.total<10)
-      //   console.log("readJson:",att,  JSON.stringify(obj));
+       //if(obj.ratio>0.8 && obj.total>500)
+        // console.log("readJson:",att,  JSON.stringify(obj));
     }
   }
 }
 
 function writeJson() {
   var content = JSON.stringify(intersectionsMap);
-  fs.writeFileSync("../datasource/intersection" + ".json", content);
+  fs.writeFileSync("../config/intersection" + ".json", content);
 }
 
 exports.config = config;

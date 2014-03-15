@@ -1,8 +1,15 @@
 var klineutil = require("./klineutil");
+var intersectionprocessor = require("./klineform/intersectionprocessor").config(1);
 var klineio;
+var klineformanalyser;
 
 function config(start, end){
     klineio  = require("./klineio").config(start, end);
+    klineformanalyser = require("./klineform/analyser").config({
+        startDate: start,
+        endDate: end
+    });
+
     return this;
 }
 
@@ -294,6 +301,32 @@ function exRightsDay(klineJson) {
     }
 }
 
+function matchForms(kLineJson) {
+    var jsonLen = kLineJson.length;
+    var bullforms = klineformanalyser.bullKLineFormMethods();
+     klineformanalyser.traverseForAppearance(bullforms, kLineJson, {
+                formHandler: function(form, klineJson, i) {},
+                formsHandler: function(forms, klineJson, i) {
+                    klineJson[i].match = forms//.toString();
+                    var reObj = {};
+                    var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100, reObj);
+                    var days = reObj.days;
+                    var date = kLineJson[i].date;
+                    for (var j=1; j<days && i+j<jsonLen; j++) {
+                        if(!kLineJson[i+j].pendings) {
+                            kLineJson[i+j].pendings = {};
+                        }
+                        var pobj = {"day": j};
+                        //pobj.date = date;
+                        pobj.ratio = intersectionprocessor.matchRatio(forms);
+                        kLineJson[i+j].pendings[date] = pobj;
+
+                    }
+
+                }
+            });
+}
+
 function winOrLose(kLineJson) {
     var jsonLen = kLineJson.length;
     for (var i=0; i<jsonLen; i++) {
@@ -302,7 +335,16 @@ function winOrLose(kLineJson) {
 
         var winStop = 3.7*inc_ave_8;
         var lossStop = -3.7*inc_ave_8;
-        var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100);
+        //var reObj = {};
+        var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100/*, reObj*/);
+        //var days = reObj.days;
+        // var date = kLineJson[i].date;
+        // for (var j=1; j<days && i+j<jsonLen; j++) {
+        //     if(!kLineJson[i+j].pendings) {
+        //         kLineJson[i+j].pendings = {};
+        //     }
+        //     kLineJson[i+j].pendings[date] = j;
+        // }
 
         kLineJson[i].incStop = rel;
         kLineJson[i].winOrLose = rel>=winStop ? "win" : (rel<=lossStop?"lose":"pending");
@@ -311,7 +353,7 @@ function winOrLose(kLineJson) {
 
 function updateKLines(match) {
     var stocks = klineio.getAllStockIds(match);
-    //stocks = ["SZ002482"];
+    //stocks = ["SH600016"];
     
     stocks.forEach(
         function (stockId) {
@@ -350,7 +392,7 @@ function updateKLines(match) {
             });
 
             winOrLose(kLineJson);
-
+            matchForms(kLineJson);
             //average(kLineJson, "amplitude", 144, function (kl) {
             //    return klineutil.increase(kl.low, kl.high);
             //});

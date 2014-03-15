@@ -179,7 +179,7 @@ function noExRight(klineJson, from, to) {
     return true;
 }
 
-function winOrLoss(klineJson, start, lossStop, winStop, daysStop) {
+function winOrLoss(klineJson, start, lossStop, winStop, daysStop, resultObj) {
     lossStop = lossStop||-0.05;
     winStop = winStop || 0.05;
     daysStop = daysStop || 200;
@@ -187,8 +187,8 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop) {
     var stoplossprice = price * (1+lossStop);
     var stopwinprice = price * (1+winStop);
     var exRight = 1;
-   
-    for (var i=start+1; i<klineJson.length && (i-start)<=daysStop ; i++) {
+    var i;
+    for ( i=start+1; i<klineJson.length && (i-start)<=daysStop ; i++) {
 
         if (klineJson[i].exRightsDay) {
             exRight = klineJson[i].open/klineJson[i-1].close;
@@ -198,15 +198,30 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop) {
         var low = klineJson[i].low/exRight;
 
         if (low <= stoplossprice) {
-            return increase(price, low);
+            var inc =  increase(price, low);
+            if (resultObj) {
+                resultObj.inc = inc;
+                resultObj.days = i-start;
+            }
+            return inc;
         }
         
         if (high >= stopwinprice) {
-            return increase(price, high);
+            var inc =  increase(price, high);
+            if (resultObj) {
+                resultObj.inc = inc;
+                resultObj.days = i-start;
+            }
+            return inc;
         } 
     }
 
-    return increase(price, klineJson[i-1].close);
+    var inc = increase(price, klineJson[i-1].close);
+    if (resultObj) {
+        resultObj.inc = inc;
+        resultObj.days = i-start;
+    }
+    return inc;
 }
 
 function winOrLossA(klineJson, start, lossStop, winStop, daysStop) {
