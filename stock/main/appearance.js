@@ -3,7 +3,7 @@ var startDate = new Date("01/01/2005");
 var endDate = new Date("01/01/2015");
 
 var displayMinCount = -1
-var displayInfoFromDate = new Date("01/01/2013");
+var displayInfoFromDate = new Date("01/01/2014");
 var displayInfoToDate = new Date("11/16/2015");
 var displayEveryCase = false;
 var displayInfo = "moreinfo1";
@@ -14,9 +14,13 @@ var klineio = require("../klineio").config(startDate, endDate);
 var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
-//stocks = ["SZ002563","SH600089"];
+//stocks = ["SH600089"];
 
 if (cluster.isMaster) {
+    var fs = require("fs");
+    var content = fs.readFileSync("../config/daypendings.json","utf8");
+    var pendings = JSON.parse(content);
+
     var stocksLen = stocks.length;
     var masterResult = {};
     var masterRatioResult = {};
@@ -94,6 +98,7 @@ if (cluster.isMaster) {
                 //if (date.indexOf("2013")<0) delete masterDays[date];
             }
 
+            
             sortedDates.sort(function(d1, d2) {
                 var dt1 = new Date(d1);
                 var dt2 = new Date(d2);
@@ -116,7 +121,12 @@ if (cluster.isMaster) {
                 }
 
                 if (displayInfo !== undefined) {
-                    console.log(date, masterRatioResult[date].stockNumber + "/" + dayTotal, perStr, (masterRatioResult[date].ratioSum / masterRatioResult[date].stockNumber).toFixed(4));
+                    console.log(date, masterRatioResult[date].stockNumber + "/" + dayTotal, 
+                        perStr, (masterRatioResult[date].ratioSum / masterRatioResult[date].stockNumber).toFixed(4),
+                        pendings[date]?(pendings[date].latestCount+"/"+pendings[date].count):"",  
+                        pendings[date]?(pendings[date].latestRatio+"/"+pendings[date].ratio):"");
+
+                        if (!pendings[date]) console.log("-------------------", date)
                 }
             });
 
@@ -156,17 +166,18 @@ if (cluster.isMaster) {
             var incResult = {};
 
             klineformanalyser.traverseForAppearance(mtds, kLineJson, {
-                formHandler: function(form, klineJson) {
-                    var date = klineJson.date;
+                formHandler: function(form, klineJson, i) {
+
+                    var date = klineJson[i].date;
                     if (incResult[form] === undefined) {
                         incResult[form] = [];
                     }
                     //incResult[form].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
                     incResult[form].push({
                         date: date,
-                        inc: klineJson.incStop,
-                        win: klineJson.winOrLose == "win",
-                        lose: klineJson.winOrLose == "lose"
+                        inc: klineJson[i].incStop,
+                        win: klineJson[i].winOrLose == "win",
+                        lose: klineJson[i].winOrLose == "lose"
                     });
 
                     if (!displayEveryCase) return;
@@ -177,8 +188,8 @@ if (cluster.isMaster) {
                     }
 
                 },
-                formsHandler: function(forms, klineJson) {
-                    var date = klineJson.date;
+                formsHandler: function(forms, klineJson, i) {
+                    var date = klineJson[i].date;
                     if (forms.length > 0) {
                         if (!formsResultTotal[date]) {
                             formsResultTotal[date] = {};
@@ -188,7 +199,6 @@ if (cluster.isMaster) {
                     }
                 }
             });
-
 
 
             for (var mtd in incResult) {

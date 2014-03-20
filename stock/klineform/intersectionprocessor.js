@@ -112,8 +112,8 @@ function readJson() {
     for (var att in intersectionsMap) {
       var obj = intersectionsMap[att];
       obj.ratio = Number((obj.win/obj.total).toFixed(4));
-       //if(obj.ratio>0.8 && obj.total>500)
-        // console.log("readJson:",att,  JSON.stringify(obj));
+       // if(obj.ratio>0.8 && obj.total>1000)
+       //   console.log("readJson:",att,  JSON.stringify(obj));
     }
   }
 }

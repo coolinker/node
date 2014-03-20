@@ -72,6 +72,24 @@ function readKLineBase(stockId, callback) {
   
 }
 
+function readKLineSync(stockId) {
+  var kLineJson = [];
+  var content = fs.readFileSync("../datasource/klines/"+stockId+".json","utf8");
+
+  content.split("\r\n").forEach(function(line) {
+          if (line.length>0) {
+              var json = JSON.parse(line);
+              var date = new Date(json.date);
+              
+              if (date > startDate && date < endDate) {
+                  kLineJson.push(json);       
+              }
+          }
+  });
+
+  return kLineJson;
+}
+
 function readKLine(stockId, callback) {
   //console.log("Read K line data:"+stockId, startDate, endDate);
   var kLineJson = [];
@@ -155,6 +173,7 @@ exports.config = config;
 
 exports.readKLineBaseSync = readKLineBaseSync;
 exports.readKLineBase = readKLineBase;
+exports.readKLineSync = readKLineSync;
 exports.readKLine = readKLine;
 
 exports.writeKLineSync = writeKLineSync;

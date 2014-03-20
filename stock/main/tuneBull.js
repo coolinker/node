@@ -10,8 +10,8 @@ var cluster = require('cluster');
 var dateSections = []; 
 var dateSections = [new Date("01/01/2008"),new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "reversedHammerA";
-var intersectionKLineForm = "wBottom"; 
+var klineForm = "roundBottomDerivedA";
+var intersectionKLineForm = "roundBottomDerivedB";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
 //"wBottom, wBottomA, headShoulderBottom, on8While21UpVolumeHigh, on8While21Up, 
@@ -22,7 +22,7 @@ var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates = [];//["05/29/2013"];
 
 var stocks = klineio.getAllStockIds();
-//stocks = ['SZ002482'];
+//stocks = ['SH600089'];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;

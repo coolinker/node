@@ -2,7 +2,7 @@ var klineutil = require("./klineutil");
 var intersectionprocessor = require("./klineform/intersectionprocessor").config(1);
 var klineio;
 var klineformanalyser;
-
+var pendingcount = 0;
 function config(start, end){
     klineio  = require("./klineio").config(start, end);
     klineformanalyser = require("./klineform/analyser").config({
@@ -254,7 +254,7 @@ function markTroughs(klineJson, field, increaseMin, minInterval) {
 
 }
 
-function average(klineJson, field, interval, valFun) {
+function average(klineJson, field, interval, ignoreEx, valFun) {
     //console.log("average:", field, interval);
     var scaleSum = 0;
     var jsonLen = klineJson.length;
@@ -265,7 +265,9 @@ function average(klineJson, field, interval, valFun) {
         }
     }
     for (var i= jsonLen-1; i>0; i--) {
-        //var kl = klineJson[i];
+        if (!ignoreEx && klineJson[i].exRightsDay) {
+            scaleSum = scaleSum * (klineJson[i].open/klineJson[i-1].close);
+        }
         scaleSum = scaleSum + valFun(klineJson, i);
         if (jsonLen-i === interval) {
             klineJson[jsonLen-1][aveField] = Math.round(1000*scaleSum/interval)/1000;
@@ -290,13 +292,17 @@ function exRightsDay(klineJson) {
         var low = klineJson[i].low;
         var high = klineJson[i].high;
        
-        if (klineutil.increase(prehigh, low) > 0 && open < close) {
-            klineJson[i].gapUp = klineutil.increase(prehigh, low);
-        } else if (klineutil.increase(preclose, open) < -0.105) {
+       if (klineutil.increase(preclose, open) < -0.105) {
             klineJson[i].exRightsDay = true;
-        } else if(klineutil.increase(prelow, high) < 0 && open > close) {
-            klineJson[i].gapDown = klineutil.increase(prelow, high);
-        }
+        } else if (klineutil.increase(preclose, open) > 0.105) {
+            klineJson[i].exRightsDay = true;
+        } 
+
+        // if (klineutil.increase(prehigh, low) > 0 && open < close) {
+        //     klineJson[i].gapUp = klineutil.increase(prehigh, low);
+        // } else if(klineutil.increase(prelow, high) < 0 && open > close) {
+        //     klineJson[i].gapDown = klineutil.increase(prelow, high);
+        // }
 
     }
 }
@@ -307,12 +313,19 @@ function matchForms(kLineJson) {
      klineformanalyser.traverseForAppearance(bullforms, kLineJson, {
                 formHandler: function(form, klineJson, i) {},
                 formsHandler: function(forms, klineJson, i) {
-                    klineJson[i].match = forms//.toString();
+                    klineJson[i].match = forms;
                     var reObj = {};
+                    var inc_ave_8 = kLineJson[i].inc_ave_8;
+                    if (!inc_ave_8) return;
+
+                    var winStop = Math.min(3.7*inc_ave_8, 0.15);
+                    var lossStop = Math.max(-3.7*inc_ave_8, -0.15);
+
                     var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100, reObj);
                     var days = reObj.days;
                     var date = kLineJson[i].date;
-                    for (var j=1; j<days && i+j<jsonLen; j++) {
+                    var j=1;
+                    for (; j<days && i+j<jsonLen; j++) {
                         if(!kLineJson[i+j].pendings) {
                             kLineJson[i+j].pendings = {};
                         }
@@ -321,6 +334,12 @@ function matchForms(kLineJson) {
                         pobj.ratio = intersectionprocessor.matchRatio(forms);
                         kLineJson[i+j].pendings[date] = pobj;
 
+                    }
+                    if (j===days && i+j<jsonLen) {
+                        if(!kLineJson[i+j].stop) kLineJson[i+j].stop = {};
+                        kLineJson[i+j].stop[date] = kLineJson[i].winOrLose;
+                        var wl = (rel >= winStop? "win": (rel<=lossStop?"lose":"pending"));
+                        if (kLineJson[i].winOrLose!=wl) console.log("error",wl, kLineJson[i].winOrLose, date);
                     }
 
                 }
@@ -333,8 +352,8 @@ function winOrLose(kLineJson) {
         var inc_ave_8 = kLineJson[i].inc_ave_8;
         if (!inc_ave_8) continue;
 
-        var winStop = 3.7*inc_ave_8;
-        var lossStop = -3.7*inc_ave_8;
+        var winStop = Math.min(3.7*inc_ave_8, 0.15);
+        var lossStop = Math.max(-3.7*inc_ave_8, -0.15);
         //var reObj = {};
         var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100/*, reObj*/);
         //var days = reObj.days;
@@ -364,33 +383,39 @@ function updateKLines(match) {
             average(kLineJson, "close", 55);
             average(kLineJson, "close", 144);
             average(kLineJson, "close", 233);
-            average(kLineJson, "volume", 8);
-            average(kLineJson, "volume", 21);
+            average(kLineJson, "volume", 8, true);
+            average(kLineJson, "volume", 21, true);
 
-            average(kLineJson, "amplitude", 8, function (klj, n) {
+            average(kLineJson, "amplitude", 8, true, function (klj, n) {
                 var kl = klj[n];
                 return klineutil.increase(kl.low, kl.high);
             });
 
-            average(kLineJson, "amplitude", 55, function (klj, n) {
+            average(kLineJson, "amplitude", 55, true, function (klj, n) {
                 var kl = klj[n];
                 return klineutil.increase(kl.low, kl.high);
             });
 
-            average(kLineJson, "inc", 8, function (klj, n) {
+            average(kLineJson, "inc", 8, true, function (klj, n) {
                 if (n===0) return 0;
                 var klc = klj[n].close;
                 var klc1 = klj[n-1].close;
+                if (klj[n].exRightsDay) {
+                    klc1 = klc1*(klj[n].open/klj[n-1].close);
+                }
                 return Math.abs(klineutil.increase(klc1, klc));
             });
 
-            average(kLineJson, "inc", 21, function (klj, n) {
+            average(kLineJson, "inc", 21, true, function (klj, n) {
                 if (n===0) return 0;
                 var klc = klj[n].close;
                 var klc1 = klj[n-1].close;
+                if (klj[n].exRightsDay) {
+                    klc1 = klc1*(klj[n].open/klj[n-1].close);
+                }
                 return Math.abs(klineutil.increase(klc1, klc));
             });
-
+            //console.log(stockId);
             winOrLose(kLineJson);
             matchForms(kLineJson);
             //average(kLineJson, "amplitude", 144, function (kl) {
@@ -423,5 +448,5 @@ exports.mergeTroughs = mergeTroughs;
 exports.mergePeaks = mergePeaks;
 exports.markPeaks = markPeaks;
 exports.markTroughs = markTroughs;
-exports.average = average;
+//exports.average = average;
 exports.exRightsDay = exRightsDay;
