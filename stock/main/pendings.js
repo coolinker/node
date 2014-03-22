@@ -3,6 +3,7 @@ var fs = require("fs");
 
 var startDate = new Date("01/01/2005");
 var endDate = new Date("12/01/2015");
+var pendingcount = 0;
 
 var klineio = require("../klineio").config(startDate, endDate);
 
@@ -27,7 +28,9 @@ stocks.forEach(function(stockId) {
                 count: 0,
                 sum: 0,
                 latestCount:0,
-                latestRatio:0
+                latestRatio:0,
+                stopCount:0,
+                stopWinCount:0
             };
             datePending[date].latestCount++;
             var latestRatio;
@@ -51,8 +54,11 @@ stocks.forEach(function(stockId) {
             var stop = kLineJson[i].stop;
             for (var sdate in stop) {
                 if (stop[sdate]==="win") datePending[date].stopWinCount++;
-                else if (stop[sdate]==="lose") datePending[date].stopLoseCount++;
-                else console.log("error: not win or lose", stockId, sdate, stop);
+                // else if (stop[sdate]==="lose") datePending[date].stopLoseCount++;
+                // else {
+                //     console.log("error: not win or lose", stockId, sdate, stop);
+                //     pendingcount++;
+                // }
             }
 
         }
@@ -88,7 +94,7 @@ stocks.forEach(function(stockId) {
         output = "{" + output + "}";
         //var output = JSON.stringify(datePending);
         fs.writeFileSync("../config/daypendings.json", output);
-
+        //console.log("pendingcount", pendingcount)
         console.timeEnd("run");
 
     }

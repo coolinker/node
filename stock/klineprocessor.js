@@ -2,7 +2,7 @@ var klineutil = require("./klineutil");
 var intersectionprocessor = require("./klineform/intersectionprocessor").config(1);
 var klineio;
 var klineformanalyser;
-var pendingcount = 0;
+
 function config(start, end){
     klineio  = require("./klineio").config(start, end);
     klineformanalyser = require("./klineform/analyser").config({
@@ -338,8 +338,8 @@ function matchForms(kLineJson) {
                     if (j===days && i+j<jsonLen) {
                         if(!kLineJson[i+j].stop) kLineJson[i+j].stop = {};
                         kLineJson[i+j].stop[date] = kLineJson[i].winOrLose;
-                        var wl = (rel >= winStop? "win": (rel<=lossStop?"lose":"pending"));
-                        if (kLineJson[i].winOrLose!=wl) console.log("error",wl, kLineJson[i].winOrLose, date);
+                        // var wl = (rel >= winStop? "win": (rel<=lossStop?"lose":"pending"));
+                        // if (kLineJson[i].winOrLose!=wl) console.log("error",wl, kLineJson[i].winOrLose, date);
                     }
 
                 }
