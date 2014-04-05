@@ -132,6 +132,16 @@ function traverseForAppearance(methods, klineJson, intersections) {
     
 }
 
+function tryForms(methods, klineJson, i) {
+        var matchForms = [];
+        methods.forEach(function(mtd) {
+            if(klineforms[mtd](klineJson, i) === true) {
+                matchForms.push(mtd);
+            }
+        });
+        return matchForms;
+}
+
 function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, options) {
     var result = {total:0, win:0};
     var len = klineJson.length;
@@ -314,8 +324,9 @@ function config(options){
 
 exports.config = config;
 
-exports.traverseForIntersection = traverseForIntersection;
+exports.tryForms = tryForms;
 
+exports.traverseForIntersection = traverseForIntersection;
 exports.selectedBullKLineFormMethods = selectedBullKLineFormMethods;
 
 exports.bullKLineFormMethods = bullKLineFormMethods;

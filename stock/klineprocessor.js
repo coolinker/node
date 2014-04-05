@@ -374,76 +374,61 @@ function updateKLines(match) {
     var stocks = klineio.getAllStockIds(match);
     //stocks = ["SH600016"];
     
-    stocks.forEach(
-        function (stockId) {
-            klineio.readKLineBaseSync(stockId, function(kLineJson) {
-            exRightsDay(kLineJson);
-            average(kLineJson, "close", 8);
-            average(kLineJson, "close", 21);
-            average(kLineJson, "close", 55);
-            average(kLineJson, "close", 144);
-            average(kLineJson, "close", 233);
-            average(kLineJson, "volume", 8, true);
-            average(kLineJson, "volume", 21, true);
-
-            average(kLineJson, "amplitude", 8, true, function (klj, n) {
-                var kl = klj[n];
-                return klineutil.increase(kl.low, kl.high);
-            });
-
-            average(kLineJson, "amplitude", 55, true, function (klj, n) {
-                var kl = klj[n];
-                return klineutil.increase(kl.low, kl.high);
-            });
-
-            average(kLineJson, "inc", 8, true, function (klj, n) {
-                if (n===0) return 0;
-                var klc = klj[n].close;
-                var klc1 = klj[n-1].close;
-                if (klj[n].exRightsDay) {
-                    klc1 = klc1*(klj[n].open/klj[n-1].close);
-                }
-                return Math.abs(klineutil.increase(klc1, klc));
-            });
-
-            average(kLineJson, "inc", 21, true, function (klj, n) {
-                if (n===0) return 0;
-                var klc = klj[n].close;
-                var klc1 = klj[n-1].close;
-                if (klj[n].exRightsDay) {
-                    klc1 = klc1*(klj[n].open/klj[n-1].close);
-                }
-                return Math.abs(klineutil.increase(klc1, klc));
-            });
-            //console.log(stockId);
-            winOrLose(kLineJson);
-            matchForms(kLineJson);
-            //average(kLineJson, "amplitude", 144, function (kl) {
-            //    return klineutil.increase(kl.low, kl.high);
-            //});
-
-            //markPeaks(kLineJson, "high", 0.02, 3);
-            
-            //mergePeaks(kLineJson, "high", 3);
-
-            //markTroughs(kLineJson, "low", 0.02, 3);
-            
-           //mergeTroughs(kLineJson, "low", 3);
-
-
-            // markBoxs(kLineJson, "high", "high_peak", function highCeilBoxCompareWrapper(json1, json2) {
-            //     return highCeilBoxCompare(json1, json2, 0, (json1.amplitude_ave_8+json2.amplitude_ave_8)/12);
-            // });
-
-
-            klineio.writeKLineSync(stockId, kLineJson);
-        });
-
-    });
+    stocks.forEach(this.updateKLine);
 }
+
+function updateKLine(stockId) { 
+    klineio.readKLineBaseSync(stockId, function(kLineJson) {
+    exRightsDay(kLineJson);
+    average(kLineJson, "close", 8);
+    average(kLineJson, "close", 21);
+    average(kLineJson, "close", 55);
+    average(kLineJson, "close", 144);
+    average(kLineJson, "close", 233);
+    average(kLineJson, "volume", 8, true);
+    average(kLineJson, "volume", 21, true);
+
+    average(kLineJson, "amplitude", 8, true, function (klj, n) { 
+        var kl = klj[n];
+        return klineutil.increase(kl.low, kl.high);
+    });
+
+    average(kLineJson, "amplitude", 55, true, function (klj, n) {
+        var kl = klj[n];
+        return klineutil.increase(kl.low, kl.high);
+    });
+
+    average(kLineJson, "inc", 8, true, function (klj, n) {
+        if (n===0) return 0;
+        var klc = klj[n].close;
+        var klc1 = klj[n-1].close;
+        if (klj[n].exRightsDay) {
+            klc1 = klc1*(klj[n].open/klj[n-1].close);
+        }
+        return Math.abs(klineutil.increase(klc1, klc));
+    });
+
+    average(kLineJson, "inc", 21, true, function (klj, n) {
+        if (n===0) return 0;
+        var klc = klj[n].close;
+        var klc1 = klj[n-1].close;
+        if (klj[n].exRightsDay) {
+            klc1 = klc1*(klj[n].open/klj[n-1].close);
+        }
+        return Math.abs(klineutil.increase(klc1, klc));
+    });
+    //console.log(stockId);
+    winOrLose(kLineJson);
+    matchForms(kLineJson);
+    klineio.writeKLineSync(stockId, kLineJson);
+  });      
+}
+
 
 exports.config = config;
 exports.updateKLines = updateKLines;
+exports.updateKLine = updateKLine;
+
 exports.mergeTroughs = mergeTroughs;
 exports.mergePeaks = mergePeaks;
 exports.markPeaks = markPeaks;

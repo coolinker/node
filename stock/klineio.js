@@ -24,18 +24,25 @@ function readKLineBaseSync(stockId, callback) {
   var kLineJson = [];
 
   var content = fs.readFileSync("../datasource/klines_base/"+stockId+".TXT","utf8");
-
-  content.split("\r\n").forEach(function(line) {
+  var lines = content.split("\r\n");
+  var count = 0;
+  lines.forEach(function(line) {
       var lineEle = line.split(",");
 
       if (lineEle.length===7)  {
-            kLineJson.push({date: lineEle[0],
-              open: parseFloat(lineEle[1]), 
-              high: parseFloat(lineEle[2]),
-              low: parseFloat(lineEle[3]), 
-              close: parseFloat(lineEle[4]), 
-              volume: parseFloat(lineEle[5]), 
-              amount: parseFloat(lineEle[6])});
+          count++;
+          var vol = parseFloat(lineEle[5]);
+          if (vol>0) {
+              kLineJson.push({date: lineEle[0],
+                open: parseFloat(lineEle[1]), 
+                high: parseFloat(lineEle[2]),
+                low: parseFloat(lineEle[3]), 
+                close: parseFloat(lineEle[4]), 
+                volume: parseFloat(lineEle[5]), 
+                amount: parseFloat(lineEle[6])});
+          } else {
+            if (count<lines.length-2) console.log(stockId, count, lines.length, lineEle);
+          }
       }
   });
   
@@ -51,17 +58,23 @@ function readKLineBase(stockId, callback) {
     if(error) {
       console.log(error);
     } else {
-      content.split("\r\n").forEach(function(line) {
+      var lines = content.split("\r\n");
+      var count = 0;
+      lines.split("\r\n").forEach(function(line) {
           var lineEle = line.split(",");
 
           if (lineEle.length===7)  {
-                kLineJson.push({date: lineEle[0],
-                  open: parseFloat(lineEle[1]), 
-                  high: parseFloat(lineEle[2]),
-                  low: parseFloat(lineEle[3]), 
-                  close: parseFloat(lineEle[4]), 
-                  volume: parseFloat(lineEle[5]), 
-                  amount: parseFloat(lineEle[6])});
+                count++;
+                var vol = parseFloat(lineEle[5]);
+                if (vol>0) {
+                  kLineJson.push({date: lineEle[0],
+                    open: parseFloat(lineEle[1]), 
+                    high: parseFloat(lineEle[2]),
+                    low: parseFloat(lineEle[3]), 
+                    close: parseFloat(lineEle[4]), 
+                    volume: parseFloat(lineEle[5]), 
+                    amount: parseFloat(lineEle[6])});
+              }
           }
       });
 
