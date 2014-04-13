@@ -1,6 +1,10 @@
 var fs = require("fs");
+var ajaxRequest = require('request');
+
+
 var startDate = new Date("01/01/2005"); 
 var endDate = new Date("12/01/2013"); 
+
 
 function config(start, end){
   startDate = start;
@@ -17,6 +21,73 @@ function getAllStockIds (match) {
         }
     });
     return stockIds;
+}
+
+function readLatestKLineAjax(callback) {
+  var stockIds = getAllStockIds();
+  var stockIdParam = "";
+
+  var latestKLineAjaxJson = {};
+  var len = stockIds.length;
+  var counter = 0;
+  var timer = new Date();
+
+  for (var i=0; i<len; i++) {
+    stockIdParam += stockIds[i];
+    if ((i)%500 === 499 || i===len-1) {
+      
+      ajaxRequest('http://hq.sinajs.cn/list='+stockIdParam.toLowerCase(), function (error, response, body) {
+
+        if (!error && response.statusCode == 200) {
+          var lines = body.split(';')
+          var linec = 0;
+          lines.forEach(function (line) {
+            //http://www.cnblogs.com/me115/archive/2011/05/09/2040826.html
+            //var hq_str_sh601006="大秦铁路,6.68,6.65,6.70,6.72,6.65,6.70,6.71,38209704,255822755,35179,6.70,161140,6.69,365546,6.68,270900,6.67,358300,6.66,526520,6.71,639590,6.72,525568,6.73,449200,6.74,395731,6.75,2014-04-09,15:03:04,00";
+            if (line.length===1) {//"\n"
+              return;
+            }
+            //if (line.indexOf("sh600000")>-1) console.log("0000", line)
+            
+            linec++;
+            var sid = line.substr(line.indexOf("var hq_str_")+"var hq_str_".length, 8).toUpperCase();
+            if (!sid) console.log("Error: readLatestKLineAjax", line);
+
+            var values = line.substring(line.indexOf("\"")+1, line.lastIndexOf("\"")).split(",");
+            var datesplits = values[30].split("-");
+            if (sid.indexOf("SH")<0 && sid.indexOf("SZ")<0) 
+                console.log("0000", sid, line.indexOf("var hq_str_"), "var hq_str_".length, 
+                  line.substr(11, 8), "["+line.substr(0,20))
+            
+            latestKLineAjaxJson[sid] = {
+                date: (datesplits[1]+"/"+datesplits[2]+"/"+datesplits[0]),
+                open:Number(values[1]), 
+                high: Number(values[4]), 
+                low: Number(values[5]), 
+                close: Number(values[3]), 
+                volume: Number(values[8]), 
+                amount: Number(values[9])
+                };
+            
+          });
+
+            counter += linec;
+            if (counter === len) {
+              if (callback) callback(latestKLineAjaxJson);
+              console.log("readLatestKLineAjax time:", (new Date())-timer);
+            }
+          //console.log(body) // Print the google web page.
+        } else {
+          console.log("error", error)
+        }
+        
+      });
+      stockIdParam = "";
+    } else {
+      stockIdParam += ",";
+    }
+  }
+
 }
 
 function readKLineBaseSync(stockId, callback) {
@@ -41,13 +112,14 @@ function readKLineBaseSync(stockId, callback) {
                 volume: parseFloat(lineEle[5]), 
                 amount: parseFloat(lineEle[6])});
           } else {
+            //console.log("==",stockId, lineEle);
             if (count<lines.length-2) console.log(stockId, count, lines.length, lineEle);
           }
       }
   });
   
   //console.log("Read K line data:"+stockId, kLineJson.length);
-  callback(kLineJson);
+  callback(stockId, kLineJson);
   
 }
 function readKLineBase(stockId, callback) {
@@ -184,6 +256,7 @@ function writeKLine(stockId, jsonData, callback) {
 
 exports.config = config;
 
+exports.readLatestKLineAjax = readLatestKLineAjax;
 exports.readKLineBaseSync = readKLineBaseSync;
 exports.readKLineBase = readKLineBase;
 exports.readKLineSync = readKLineSync;

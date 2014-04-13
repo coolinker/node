@@ -9,7 +9,7 @@ var klineio = require("../klineio").config(startDate, endDate);
 
 var stocks = klineio.getAllStockIds();
 
-//stocks = ['SH600089'];
+//stocks = ['SH600016'];
 
 var stockCounter = 0;
 

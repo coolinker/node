@@ -269,11 +269,13 @@ function average(klineJson, field, interval, ignoreEx, valFun) {
             scaleSum = scaleSum * (klineJson[i].open/klineJson[i-1].close);
         }
         scaleSum = scaleSum + valFun(klineJson, i);
+
         if (jsonLen-i === interval) {
             klineJson[jsonLen-1][aveField] = Math.round(1000*scaleSum/interval)/1000;
         } else if (jsonLen-i > interval) {
             scaleSum = scaleSum - valFun(klineJson, i+interval);
             klineJson[i+interval-1][aveField] = Math.round(1000*scaleSum/interval)/1000;
+
         }
 
     }
@@ -370,15 +372,43 @@ function winOrLose(kLineJson) {
     }
 }
 
-function updateKLines(match) {
+function updateKLinesFromBase(match) {
     var stocks = klineio.getAllStockIds(match);
     //stocks = ["SH600016"];
     
-    stocks.forEach(this.updateKLine);
+    stocks.forEach(function(stockId) {
+        klineio.readKLineBaseSync(stockId, processChain);   
+    });
 }
 
-function updateKLine(stockId) { 
-    klineio.readKLineBaseSync(stockId, function(kLineJson) {
+function updateKLinesFromAjax(callback) {
+    klineio.readLatestKLineAjax(function(outputJson) {
+        var stocks = klineio.getAllStockIds();
+        //stocks = ["SH600016"];
+        
+        stocks.forEach(function(stockId) {
+            var kLineJson = klineio.readKLineSync(stockId); 
+            var endDate = new Date(kLineJson[kLineJson.length-1].date);
+            var latestJson = outputJson[stockId];
+            if (!latestJson) {
+                console.log("Error: no latestJson", stockId)
+                return;
+            }
+
+            var latestDate = new Date(latestJson.date);
+            console.log()
+            if (latestJson.amount>0 && latestDate > endDate) {
+                kLineJson.push(latestJson);
+                processChain(stockId, kLineJson);
+            }
+
+        });
+
+        callback();
+    });   
+}
+
+function processChain(stockId, kLineJson) {
     exRightsDay(kLineJson);
     average(kLineJson, "close", 8);
     average(kLineJson, "close", 21);
@@ -421,13 +451,10 @@ function updateKLine(stockId) {
     winOrLose(kLineJson);
     matchForms(kLineJson);
     klineio.writeKLineSync(stockId, kLineJson);
-  });      
-}
-
-
+  }
 exports.config = config;
-exports.updateKLines = updateKLines;
-exports.updateKLine = updateKLine;
+exports.updateKLinesFromBase = updateKLinesFromBase;
+exports.updateKLinesFromAjax = updateKLinesFromAjax;
 
 exports.mergeTroughs = mergeTroughs;
 exports.mergePeaks = mergePeaks;
