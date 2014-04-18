@@ -396,7 +396,6 @@ function updateKLinesFromAjax(callback) {
             }
 
             var latestDate = new Date(latestJson.date);
-            console.log()
             if (latestJson.amount>0 && latestDate > endDate) {
                 kLineJson.push(latestJson);
                 processChain(stockId, kLineJson);

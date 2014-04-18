@@ -13,7 +13,7 @@ var mailOptions = {
     from: "Mr Stock <Mr Stock@gmail.com>", // sender address
     to: "coolinker@gmail.com", // list of receivers
     subject: "To Buy", // Subject line
-    text: "Hello world ✔", // plaintext body
+    //text: "Hello world ✔", // plaintext body
     //html: "<b>Hello world ✔</b>" // html body
 }
 
@@ -29,7 +29,7 @@ var mailOptions = {
 
 
 function sendEmail(subj, body) {
-    mailOptions.text = body;
+    mailOptions.html = body;
     mailOptions.subject = subj
     transport.sendMail(mailOptions, function(error, response){
         if(error){
