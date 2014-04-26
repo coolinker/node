@@ -3,11 +3,11 @@ var startDate = new Date("01/01/2005");
 var endDate = new Date("01/01/2015");
 
 var displayMinCount = -1
-var displayInfoFromDate = new Date("01/01/2014");
-var displayInfoToDate = new Date("11/16/2015");
+var displayInfoFromDate = new Date("01/01/2008");
+var displayInfoToDate = new Date("01/01/2009");
 var displayEveryCase = false;
-var displayInfo = "moreinfo1";
-var klineForms = ""; //"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
+var displayInfo = "moreinfo";
+var klineForms = "bullPulsing"; //"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
 var klineio = require("../klineio").config(startDate, endDate);

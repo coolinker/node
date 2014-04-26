@@ -169,8 +169,8 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
                 //var rel = klineJson[i].incStop;
                
                 // '02/20/2013' '03/05/2013'
-                if (showLog) console.log(options.stockId, klineJson[i].date, rel);
-                else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, rel);
+                if (showLog) console.log(options.stockId, klineJson[i].date);
+                else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, klineJson[i].winOrLose);
                 
                 /*if (klineJson[i].winOrLose=="win" && rel<winStop) {
                     console.log(klineJson[i].date, options.stockId, rel, lossStop, winStop)

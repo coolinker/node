@@ -845,6 +845,48 @@ function smallRedsAndGreens(klineJson, i) {
         }()
 }
 
+/**
+ * (0.5, 0.5, 100) / 
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function bullPulsing(klineJson, i) {
+    var n=i;
+    var biginc = 0;
+    for (; n>1; n--) {
+        var inc_ave = klineJson[n].inc_ave_21;
+        if (klineutil.increase(klineJson[n].open, klineJson[n].close) > inc_ave*2) {
+            biginc = klineutil.increase(klineJson[n].open, klineJson[n].close);
+            break;
+        } 
+    }
+    if (i-n>15) return false;
+    //if (klineutil.increase(klineJson[n].volume_ave_8, klineJson[n].volume) < 0.5) return false;
+    var fun = function() {
+        if (i-n<2) return false;
+        for (var j=n+1; j<=i; j++) {
+            var inc_ave = klineJson[n-1].inc_ave_8;
+            if (klineutil.increase(klineJson[n].close, klineJson[j].close) < -0.5*inc_ave)
+                return false;
+        }
+
+        return true;
+    }
+
+    var inc_ave = klineJson[i].inc_ave_8;
+    return fun()
+        && function() {
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, n-65, n, "close", klineJson[n].open);
+            var higherItems = klineutil.higherItemsIndex(klineJson, n-20, n, "low", klineJson[n].close);
+            return n-lowerItems[0] <50 && n-higherItems[higherItems.length-1] > 5;
+
+        }();
+
+}
+
+exports.bullPulsing = bullPulsing;
+
 exports.smallRedsAndGreens = smallRedsAndGreens;
 exports.smallRedsAndGreensA = smallRedsAndGreensA;
 
