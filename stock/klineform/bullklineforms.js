@@ -861,10 +861,11 @@ function bullPulsing(klineJson, i) {
             break;
         } 
     }
-    if (i-n>15) return false;
+    if (i-n>18) return false;
+    if (i-n<2) return false;
     //if (klineutil.increase(klineJson[n].volume_ave_8, klineJson[n].volume) < 0.5) return false;
     var fun = function() {
-        if (i-n<2) return false;
+        
         for (var j=n+1; j<=i; j++) {
             var inc_ave = klineJson[n-1].inc_ave_8;
             if (klineutil.increase(klineJson[n].close, klineJson[j].close) < -0.5*inc_ave)
@@ -875,7 +876,9 @@ function bullPulsing(klineJson, i) {
     }
 
     var inc_ave = klineJson[i].inc_ave_8;
-    return fun()
+    return klineutil.increase(klineJson[i].volume_ave_21, klineJson[i].volume_ave_8) > 0
+        && klineutil.increase(klineJson[i].volume_ave_21, klineJson[i].volume_ave_8) < 0.5
+        && fun()
         && function() {
             var lowerItems = klineutil.lowerItemsIndex(klineJson, n-65, n, "close", klineJson[n].open);
             var higherItems = klineutil.higherItemsIndex(klineJson, n-20, n, "low", klineJson[n].close);
