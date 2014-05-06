@@ -1,11 +1,14 @@
 var klineutil = require("./klineutil");
-var intersectionprocessor = require("./klineform/intersectionprocessor").config(1);
+var intersectionprocessor = require("./form/intersectionprocessor").config(1);
+
+var moneyflowio = require("../moneyflow/io").config();
+
 var klineio;
 var klineformanalyser;
 
 function config(start, end){
     klineio  = require("./klineio").config(start, end);
-    klineformanalyser = require("./klineform/analyser").config({
+    klineformanalyser = require("./form/analyser").config({
         startDate: start,
         endDate: end
     });
@@ -374,7 +377,7 @@ function winOrLose(kLineJson) {
 
 function updateKLinesFromBase(match) {
     var stocks = klineio.getAllStockIds(match);
-    //stocks = ["SH600016"];
+    //stocks = ["SZ000831"];
     
     stocks.forEach(function(stockId) {
         klineio.readKLineBaseSync(stockId, processChain);   
@@ -405,6 +408,27 @@ function updateKLinesFromAjax(callback) {
 
         callback();
     });   
+}
+
+function mergeMoneyFlow(stockId, kLineJson) {
+    var moneyFlowJson = moneyflowio.readMoneyFlowSync(stockId);
+    var kllen = kLineJson.length;
+    var mflen = moneyFlowJson.length;
+    for (var i=1; i<=kllen && i<=mflen; i++) {
+        var klj = kLineJson[kllen-i];
+        var mfj = moneyFlowJson[mflen-i];
+        if (klj.date !== mfj.opendate) {
+            if (mfj.opendate !=="03/01/2010")
+                console.log("mergeMoneyFlow error:", stockId, i, klj.date, mfj.opendate, mfj);
+            break;
+        } else {
+            klj.netamount = mfj.netamount;
+            klj.ratioamount = mfj.ratioamount;
+            klj.r0_net = mfj.r0_net;
+            klj.r0_ratio = mfj.r0_ratio;
+        }
+    }
+
 }
 
 function processChain(stockId, kLineJson) {
@@ -449,6 +473,8 @@ function processChain(stockId, kLineJson) {
     //console.log(stockId);
     winOrLose(kLineJson);
     matchForms(kLineJson);
+    mergeMoneyFlow(stockId, kLineJson);
+
     klineio.writeKLineSync(stockId, kLineJson);
   }
 exports.config = config;

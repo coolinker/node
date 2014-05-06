@@ -287,6 +287,7 @@ function detectGapDownStress(klineJson, idx, interval, accuracy) {
     return undefined;
 }
 
+
 exports.leftTroughIdx = leftTroughIdx;
 exports.leftTrough = leftTrough;
 exports.lowItemIndex = lowItemIndex;

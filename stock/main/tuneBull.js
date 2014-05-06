@@ -8,13 +8,13 @@ var klineio =  require("../klineio").config(startDate, endDate);
 var cluster = require('cluster');
 
 var detailedDateResult = {};
-var detailedDateResultStart = new Date("01/01/2008");
-var detailedDateResultEnd = new Date("01/01/2009");
-var detailedDateResultTotalMin = 100;
+var detailedDateResultStart = new Date("01/01/2011");
+var detailedDateResultEnd = new Date("01/01/2012");
+var detailedDateResultTotalMin = 20;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "bullPulsing";
+var klineForm = "bullNeedle";
 var intersectionKLineForm = "";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
@@ -23,10 +23,10 @@ var unionKLineForm = "";
 //morningStar, sidewaysCompression
 
 var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
-var showLogDates =[]//["03/24/2008"];
+var showLogDates =[]//["11/14/2011"];
 
 var stocks = klineio.getAllStockIds();
-//stocks = ['SZ002371', "SZ002158", "SH600061"];
+//stocks = ['SZ002554']//['SZ002371', "SZ002158", "SH600061"];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;

@@ -888,6 +888,48 @@ function bullPulsing(klineJson, i) {
 
 }
 
+
+/**
+ * (0.5, 0.5, 100) / 
+ * @param  {[type]} klineJson [description]
+ * @param  {[type]} i         [description]
+ * @return {[type]}           [description]
+ */
+function bullNeedle(klineJson, i) {
+    //if (klineutil.increase(klineJson[i].open, klineJson[i].close) < 0) return false;
+
+    var n=i-1;
+    //var biginc = 0;
+    var chigh = klineJson[n].high;
+    var clow = klineJson[n].low;
+    for (; n>1; n--) {
+        var inc_ave = klineJson[n-1].inc_ave_8;
+        if (klineutil.increase(klineJson[n].open, klineJson[n].close) > 0.025//inc_ave*1.5
+            && klineutil.increase(klineJson[n].close, klineJson[n].high) > 0.005) {
+            //biginc = klineutil.increase(klineJson[n].open, klineJson[n].close);
+            if (klineutil.increase(klineJson[n].high, chigh) > 0 ) return false;
+            if (klineutil.increase(klineJson[n].open, clow) < 0.015) return false;
+            //if(i-n<2)  return false;
+            break;
+        }
+
+        clow = Math.min(klineJson[n].low, clow);
+        chigh = Math.max(klineJson[n].high, chigh);
+        //if(i-n>7)  return false;
+    }
+      // if (klineJson[i].date=="11/14/2011")
+      //     console.log(klineJson[n].date, klineJson[i].date, klineutil.increase(klineJson[n].close, klineJson[n].high) ,inc_ave)
+    return  klineutil.increase(klineJson[n].high, klineJson[i].close) > 0
+        && klineutil.increase(klineJson[n].high, klineJson[i].close) < 0.05
+        && function() {
+            var higherItems = klineutil.higherItemsIndex(klineJson, n-30, n-1, "low", klineJson[n].high);
+            var lh = higherItems[higherItems.length-1];
+            return n-lh > 5 && n-lh<10
+        } ()
+}
+
+
+exports.bullNeedle = bullNeedle;
 exports.bullPulsing = bullPulsing;
 
 exports.smallRedsAndGreens = smallRedsAndGreens;

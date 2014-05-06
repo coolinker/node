@@ -1,9 +1,9 @@
 var klineutil = require("../klineutil");
 var bullklineforms = require("./bullklineforms");
-var math = require("../mathutil");
+var math = require("../../mathutil");
 var fs = require("fs");
 
-var klineformanalyser = require("../klineform/analyser").config({
+var klineformanalyser = require("../form/analyser").config({
   startDate: startDate,
   endDate: endDate
 });
@@ -112,8 +112,8 @@ function readJson() {
     for (var att in intersectionsMap) {
       var obj = intersectionsMap[att];
       obj.ratio = Number((obj.win/obj.total).toFixed(4));
-       // if(obj.ratio>0.8 && obj.total>1000)
-       //   console.log("readJson:",att,  JSON.stringify(obj));
+        // if(obj.ratio>0.8 && obj.total>500 && att.indexOf("bullPulsing")>-1)
+        //   console.log("readJson:",att,  JSON.stringify(obj));
     }
   }
 }
