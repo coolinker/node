@@ -4,18 +4,18 @@ var startDate = new Date("01/01/2005");
 var endDate = new Date("12/01/2015"); 
 /**********************/
 
-var klineio =  require("../klineio").config(startDate, endDate);
+var klineio =  require("../kline/klineio").config(startDate, endDate);
 var cluster = require('cluster');
 
 var detailedDateResult = {};
 var detailedDateResultStart = new Date("01/01/2011");
 var detailedDateResultEnd = new Date("01/01/2012");
-var detailedDateResultTotalMin = 20;
+var detailedDateResultTotalMin = 1000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
 var klineForm = "bullNeedle";
-var intersectionKLineForm = "";
+var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
 //"wBottom, wBottomA, headShoulderBottom, on8While21UpVolumeHigh, on8While21Up, 
@@ -26,7 +26,7 @@ var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates =[]//["11/14/2011"];
 
 var stocks = klineio.getAllStockIds();
-//stocks = ['SZ002554']//['SZ002371', "SZ002158", "SH600061"];
+//stocks = ['SH600260']//['SZ002371', "SZ002158", "SH600061"];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
@@ -113,14 +113,14 @@ if (cluster.isMaster) {
       
 } else if (cluster.isWorker) {
 
-    var klineformanalyser = require("../klineform/analyser").config({
-        startDate: startDate,
+    var klineformanalyser = require("../kline/form/analyser").config({
+        startDate: new Date("03/01/2010"),
         endDate: endDate
     });
 
-    
-    
-    var klineutil = require("../klineutil");
+    unionKLineForm = klineformanalyser.bullKLineFormMethods().join(",");
+
+    var klineutil = require("../kline/klineutil");
     var forkResult = {total:0, win:0};
     //var forkTotal = 0;
     //var forkWins = 0;

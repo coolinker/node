@@ -214,6 +214,7 @@ function traverseForLosing(method, klineJson, lossStop, winStop, daysStop, optio
             (bearklineforms[method](klineJson, i) 
             || (options.union && unionResult(bearklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bearklineforms, options.intersection.split(","), klineJson, i))
+            && 
             ) {
                 
 
@@ -264,6 +265,7 @@ function unionResult (klineforms, methods, klineJson, idx) {
 }
 
 function intersectionResult (klineforms, methods, klineJson, idx) {
+
     for (var i=0; i<methods.length; i++) {
         if (!klineforms[methods[i]](klineJson, idx)) {
             return false;

@@ -86,8 +86,21 @@ function higherItemsIndex(klineJson, from, to, field, value) {
     from = from<0 ? 0 : from;
     var len = klineJson.length;
     var items = [];
+    var exRight = 1;
     for (var i=from; i<len && i<=to; i++) {
-        if (klineJson[i][field] > value) items.push(i);
+        if (!ignoreEx && klineJson[i].exRightsDay) {
+            if (exRight===1) {
+                exRight = klineJson[i].open/klineJson[i-1].close;
+                value = value/exRight;
+                items.length = 0;
+                i = from;
+                continue;
+            } else {
+                vlaue = value*exRight;
+            }
+            
+        }
+        if(klineJson[i][field] > value) items.push(i);
     }
 
     return items;
@@ -97,8 +110,21 @@ function lowerItemsIndex(klineJson, from, to, field, value) {
     from = from<0 ? 0 : from;
     var len = klineJson.length;
     var items = [];
+    var exRight = 1;
     for (var i=from; i<len && i<=to; i++) {
-        if (klineJson[i][field] < value) items.push(i);
+        if (!ignoreEx && klineJson[i].exRightsDay) {
+            if (exRight===1) {
+                exRight = klineJson[i].open/klineJson[i-1].close;
+                value = value/exRight;
+                items.length = 0;
+                i = from;
+                continue;
+            } else {
+                vlaue = value*exRight;
+            }
+            
+        }
+        if(klineJson[i][field] < value) items.push(i);
     }
 
     return items;
