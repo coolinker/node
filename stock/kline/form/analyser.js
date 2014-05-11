@@ -5,6 +5,7 @@ var endDate = new Date("12/01/2015");
 
 var bullklineforms = require("./bullklineforms");
 var bearklineforms = require("./bearklineforms");
+var moneyflowforms = require("./moneyflowforms");
 
 var klineforms = undefined;
 
@@ -156,6 +157,7 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
         if (options.passAll || 
             (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))
+            && intersectionResult(moneyflowforms, ["moneyFlowInOut"], klineJson, i)
             ) {
                 // var amp = klineJson[i].amplitude_ave_8;
                 // winStop = 1.25*amp;
@@ -214,7 +216,6 @@ function traverseForLosing(method, klineJson, lossStop, winStop, daysStop, optio
             (bearklineforms[method](klineJson, i) 
             || (options.union && unionResult(bearklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bearklineforms, options.intersection.split(","), klineJson, i))
-            && 
             ) {
                 
 
@@ -265,13 +266,20 @@ function unionResult (klineforms, methods, klineJson, idx) {
 }
 
 function intersectionResult (klineforms, methods, klineJson, idx) {
-
     for (var i=0; i<methods.length; i++) {
         if (!klineforms[methods[i]](klineJson, idx)) {
             return false;
         }
     }
     return true;
+}
+
+function matchMoneyFlowForm (klineJson, idx) {
+    if (moneyflowforms.moneyFlowInOut(klineJson, idx)) {
+        return ["moneyFlowInOut"];
+    } else {
+        return [];
+    }
 }
 
 function selectedBullKLineFormMethods(arr) {
@@ -328,6 +336,7 @@ exports.config = config;
 
 exports.tryForms = tryForms;
 
+exports.matchMoneyFlowForm = matchMoneyFlowForm;
 exports.traverseForIntersection = traverseForIntersection;
 exports.selectedBullKLineFormMethods = selectedBullKLineFormMethods;
 

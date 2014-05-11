@@ -5,6 +5,7 @@ function moneyFlowInOut(klineJson, i) {
     var sec = 150;
     if (i<sec) return false;
     if (klineJson[i-sec].r0_net===undefined) return false;
+
     var maxr0netsum = -100000000000;
     var maxr0xnetsum = -100000000000;
     var r0netsum = 0;

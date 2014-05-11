@@ -5,7 +5,7 @@ var startDate = new Date("01/01/2005");
 var endDate = new Date("12/01/2015");
 var pendingcount = 0;
 
-var klineio = require("../klineio").config(startDate, endDate);
+var klineio = require("../kline/klineio").config(startDate, endDate);
 
 var stocks = klineio.getAllStockIds();
 

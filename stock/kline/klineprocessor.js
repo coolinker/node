@@ -319,6 +319,10 @@ function matchForms(kLineJson) {
                 formHandler: function(form, klineJson, i) {},
                 formsHandler: function(forms, klineJson, i) {
                     klineJson[i].match = forms;
+                    var mmf = klineformanalyser.matchMoneyFlowForm(klineJson, i);
+                    if (mmf.length>0) {
+                        klineJson[i].match_moneyflow = mmf;
+                    }
                     var reObj = {};
                     var inc_ave_8 = kLineJson[i].inc_ave_8;
                     if (!inc_ave_8) return;
@@ -471,9 +475,9 @@ function processChain(stockId, kLineJson) {
         return Math.abs(klineutil.increase(klc1, klc));
     });
     //console.log(stockId);
+    mergeMoneyFlow(stockId, kLineJson);
     winOrLose(kLineJson);
     matchForms(kLineJson);
-    mergeMoneyFlow(stockId, kLineJson);
 
     klineio.writeKLineSync(stockId, kLineJson);
   }

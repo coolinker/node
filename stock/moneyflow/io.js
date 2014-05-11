@@ -2,10 +2,10 @@ var fs = require("fs");
 var ajaxRequest = require('request');
 
 var moneyFlowUrl = "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_zjlrqs?page=1&num="
-+1000+"&sort=opendate&asc=0&daima=";
++10+"&sort=opendate&asc=0&daima=";
 
 var stocks = getAllStockIds();
-
+//stocks = ["SH600000"];
 function config(){
     return this;
 }
@@ -28,7 +28,7 @@ function updateMoneyFlowData(startIndex, callback) {
         return;
     }
 
-    var step = 10;
+    var step = 100;
     console.log("updateMoneyFlowData", startIndex)
     
     var counter = 0;
@@ -45,7 +45,25 @@ function updateMoneyFlowData(startIndex, callback) {
                   body = body.replace(/\{/g, "{\"");
                   body = body.replace(/\}-\{/g, "},{");
                   var json = JSON.parse(body);
-                  writeMoneyFlowSync(_stockId, json);
+                  json.reverse();
+                  //var origjson = readMoneyFlowDateMapSync(_stockId);
+                  var origjsonArr = readMoneyFlowSync(_stockId);
+                  var lastday = origjsonArr.length>0
+                    ? new Date(origjsonArr[origjsonArr.length-1].opendate)
+                    : new Date(0);
+
+                  for (var j=0; j<json.length; j++) {
+                    var fields = json[j].opendate.split("-");
+                    var _date = fields[1]+"/"+fields[2]+"/"+fields[0];
+
+                    if (new Date(_date) > lastday && Number(json[j].turnover)!==0) {
+                      json[j].opendate = _date;
+                      origjsonArr.push(json[j]);
+                      //console.log(_stockId, j, _date, json[j].opendate, origjsonArr.length)
+                    }
+                  }
+
+                  writeMoneyFlowSync(_stockId, origjsonArr);
                   counter++;
 
                   if (counter===i-startIndex) {
@@ -62,26 +80,45 @@ function updateMoneyFlowData(startIndex, callback) {
 
 }
 
+function readMoneyFlowDateMapSync(stockId) {
+  var moneyFlowJson = {};
+  var path = "../datasource/moneyflow/"+stockId+".json";
+
+  if (fs.existsSync(path)) {
+    var content = fs.readFileSync(path,"utf8");
+    content.split("\r\n").forEach(function(line) {
+            if (line.length>0) {
+                var json = JSON.parse(line);
+                if (json.turnover===0) return;
+                moneyFlowJson[json.opendate] = json;
+            }
+    });
+  }
+
+  return moneyFlowJson;
+}
+
 function readMoneyFlowSync(stockId) {
   var moneyFlowJson = [];
-  var content = fs.readFileSync("../datasource/moneyflow/"+stockId+".json","utf8");
-  content.split("\r\n").forEach(function(line) {
-          if (line.length>0) {
-              var json = JSON.parse(line);
-              if (json.turnover===0) return;
-              // var  str = (json.netamount/10000).toFixed(2);
-              // if (str.length<8) {
-              //   for (var i=str.length; i<8; i++) {
-              //     str+=" ";
-              //   }
-              // }
-              //console.log(json.opendate, " ",str, " ",(json.r0_net/10000).toFixed(2));
-              moneyFlowJson.push(json);       
-          }
-  });
-
-  moneyFlowJson.reverse();
-
+  var path = "../datasource/moneyflow/"+stockId+".json";
+  if (fs.existsSync(path)) {
+    var content = fs.readFileSync(path,"utf8");
+    content.split("\r\n").forEach(function(line) {
+            if (line.length>0) {
+                var json = JSON.parse(line);
+                if (json.turnover===0) return;
+                // var  str = (json.netamount/10000).toFixed(2);
+                // if (str.length<8) {
+                //   for (var i=str.length; i<8; i++) {
+                //     str+=" ";
+                //   }
+                // }
+                //console.log(json.opendate, " ",str, " ",(json.r0_net/10000).toFixed(2));
+                moneyFlowJson.push(json);       
+            }
+    });
+  }
+  //moneyFlowJson.reverse();
   return moneyFlowJson;
 }
 
@@ -91,10 +128,11 @@ function writeMoneyFlowSync(stockId, jsonData) {
     jsonData.forEach(function(line){
          for (attr in line) {
             if (attr==="opendate") {
-              var fields = line.opendate.split("-");
-              line.opendate = fields[1]+"/"+fields[2]+"/"+fields[0];
+              // var fields = line.opendate.split("-");
+              // line.opendate = fields[1]+"/"+fields[2]+"/"+fields[0];
+            } else {
+              line[attr] = Number(line[attr]);
             }
-            else line[attr] = Number(line[attr]);
          }
 
         if (data!=="") {

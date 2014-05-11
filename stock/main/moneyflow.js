@@ -1,7 +1,15 @@
 console.time("run");
 var moneyflowio = require("../moneyflow/io").config();
 var klineutil = require("../kline/klineutil");
-var targetDateStr = "11/15/2013"// "04/30/2014";
+var today = new Date();
+var _m = 1+today.getMonth();
+var _d = today.getDate();
+var _y = today.getFullYear();
+
+var targetDateStr = (_m>9?_m:"0"+_m) +"/"
+        +(_d>9?_d:"0"+_d) +"/"+_y;
+ console.log("targetDateStr:"+targetDateStr);     
+targetDateStr = "05/09/2014";
 var daySection = 150;
 var startDate = new Date("01/01/2005");
 var endDate = new Date("01/01/2015");
@@ -13,7 +21,10 @@ var endDate = new Date("01/01/2015");
 
 var klineio = require("../kline/klineio").config(startDate, endDate);
 var stocks = klineio.getAllStockIds();
-stocks = ["SH600260"];//["SH600015"];//
+//stocks = ["SH600260"];//["SH600015"];//
+
+var emailbody = "";
+
 stocks.forEach(function(stockId) {
     var kLineJson= klineio.readKLineSync(stockId);
     var len = kLineJson.length;
@@ -29,7 +40,6 @@ stocks.forEach(function(stockId) {
         if(klj.date === targetDateStr) break;
     }
     if (i===-1) return;
-
     var startidx = i;
     for (; i>=0 && startidx-i<=daySection; i--) {
         var klj = kLineJson[i];
@@ -49,15 +59,19 @@ stocks.forEach(function(stockId) {
     var valuablecount = 0;
     var midprice = kLineJson[startidx].close;
     var sumbelow = 0, sumabove = 0;
+    var sum40 = 0;
     var sum20 = 0;
     var sum10 = 0;
+    var sum5 = 0;
     for (i = maxr0netsumidx; i>0 && i<=startidx; i++) {
         var klj = kLineJson[i];
         
         r0netsum += klj.r0_net;
         r0xnetsum += klj.netamount-klj.r0_net;
+        if(startidx-i<40) sum40+=klj.r0_net;
         if(startidx-i<20) sum20+=klj.r0_net;
         if(startidx-i<10) sum10+=klj.r0_net;
+        if(startidx-i<5) sum5+=klj.r0_net;
 
         if (klj.close<midprice) sumbelow += klj.r0_net;
         else if (klj.close>midprice) sumabove += klj.r0_net;
@@ -85,6 +99,7 @@ stocks.forEach(function(stockId) {
     var aboveitems_half = klineutil.higherItemsIndex(kLineJson, 
             maxr0netsumidx, startidx-Math.round((startidx-maxr0netsumidx)/2), "low", kLineJson[startidx].close);
     var belowitems = klineutil.lowerItemsIndex(kLineJson, maxr0netsumidx, startidx, "high", kLineJson[startidx].close);
+    
     if (valuablecount>=0 
         //&& inc<40*kLineJson[startidx].inc_ave_21 
         && duration>40 
@@ -103,6 +118,26 @@ stocks.forEach(function(stockId) {
             "sumabove:"+(sumabove/10000).toFixed(2), "sumbelow:"+(sumbelow/10000).toFixed(2),
          (r0netsum/10000).toFixed(2), (r0xnetsum/10000).toFixed(2))
 
+        emailbody += //"<a href='http://image.sinajs.cn/newchart/daily/n/"+stockId.toLowerCase()+".gif'>"
+                        "<a href='http://vip.stock.finance.sina.com.cn/moneyflow/#!ssfx!"+stockId.toLowerCase()+"'>"
+                        +stockId+"</a> "
+                        + kLineJson[maxr0netsumidx].date+"-"+targetDateStr+" <br>"
+                        +"duration:"+(startidx-maxr0netsumidx)+" above:"+aboveitems.length+" below:"+belowitems.length
+                        + " above_half:"+aboveitems_half.length+"<br>"
+                        +"r0netsum:"+(r0netsum/10000).toFixed(2)+" r0xnetsum:"+(r0xnetsum/10000).toFixed(2)+"<br>"
+                        +"r0netsum_above:"+(sumabove/10000).toFixed(2)+" r0netsum_below:"+(sumbelow/10000).toFixed(2)+"<br>"
+                        +"sum5:"+(sum5/10000).toFixed(2)+" sum10:"+(sum10/10000).toFixed(2)
+                        +"sum20:"+(sum20/10000).toFixed(2)+" sum40:"+(sum40/10000).toFixed(2)+"<br>"
+                        +"<img src=\"http://image.sinajs.cn/newchart/daily/n/"
+                        +stockId.toLowerCase()+".gif\" width=\"400\" height=\"250\"><br>"
+                        
+
     }
 });
-        
+
+if (emailbody!=="") {
+//console.log(emailbody);
+        var mailutil = require("../mailutil");
+        mailutil.sendEmail("Flow", emailbody);
+}
+console.timeEnd("run");

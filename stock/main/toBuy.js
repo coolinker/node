@@ -7,17 +7,17 @@ var matchInfoDate = new Date("03/01/2014");
 var matchInfoJson = {};
 
 resultJson = {
-    targetRatio: 0.75
+    targetRatio: 0.5
 }
 
-var intersectionprocessor = require("../klineform/intersectionprocessor").config(3);
-var klineformanalyser = require("../klineform/analyser").config({
+var intersectionprocessor = require("../kline/form/intersectionprocessor").config(3);
+var klineformanalyser = require("../kline/form/analyser").config({
         startDate: startDate,
         endDate: endDate
     });
 
-var klineutil = require("../klineutil");
-var klineio = require("../klineio").config(startDate, endDate);
+var klineutil = require("../kline/klineutil");
+var klineio = require("../kline/klineio").config(startDate, endDate);
 var stocks = klineio.getAllStockIds();
 //stocks = ['SZ000820', 'SZ002415']
 console.time("run");
@@ -31,8 +31,8 @@ for (var stockidx=0; stockidx<stocks.length; stockidx++) {
     for (var i=kLineJson.length-1; i>=0; i--) {
         var date = kLineJson[i].date;
         var forms = kLineJson[i].match;//klineformanalyser.tryForms(mtds, kLineJson, i);
-
-        if (forms !==undefined && new Date(date) >= matchInfoDate) {
+        var forms_moneyflow = kLineJson[i].match_moneyflow;
+        if (forms_moneyflow && forms !==undefined && new Date(date) >= matchInfoDate) {
             if (!matchInfoJson[date]) matchInfoJson[date] = {total:0, win:0, lose:0, pending:0, ratiosum:0};
             matchInfoJson[date].total++;
             if (kLineJson[i].winOrLose === "win") matchInfoJson[date].win++;
@@ -93,16 +93,17 @@ for (var dateidx=0; dateidx<dateArr.length; dateidx++) {
                     var str = "";
                     resultJson[dateStr].stocks.forEach(function(stockObj){
                         str += stockObj.date+" "
-                        +"<a href='http://image.sinajs.cn/newchart/daily/n/"+stockObj.stockId.toLowerCase()+".gif'>"
+                        //+"<a href='http://image.sinajs.cn/newchart/daily/n/"+stockObj.stockId.toLowerCase()+".gif'>"
+                        +"<a href='http://vip.stock.finance.sina.com.cn/moneyflow/#!ssfx!"+stockObj.stockId.toLowerCase()+"'>"
                         +stockObj.stockId+"</a> "
                         +stockObj.ratio+" "
                         +stockObj.close+" "
                         +stockObj.lastclose+"<br>";
-                        if (stockObj.ratio>0.78) {
+                        //if (stockObj.ratio>0.78) {
                             str += "<img src=\"http://image.sinajs.cn/newchart/daily/n/"
                             +stockObj.stockId.toLowerCase()
                             +".gif\" width=\"400\" height=\"250\"><br>"
-                        }
+                        //}
                     });
                     return str;
             }();
@@ -111,7 +112,7 @@ for (var dateidx=0; dateidx<dateArr.length; dateidx++) {
 }
 
 console.log(emailBody+emailBody_1);
-mailutil.sendEmail("To Buy", emailBody+"<br>========================<br>"+emailBody_1);
+mailutil.sendEmail("Form", emailBody+"<br>========================<br>"+emailBody_1);
 
 console.timeEnd("run");
 
