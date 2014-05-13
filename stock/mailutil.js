@@ -1,17 +1,20 @@
 var nodemailer = require("nodemailer");
 
-var transport = nodemailer.createTransport("SMTP",{
-    service: "Gmail",
+var transport = nodemailer.createTransport("SMTP", {
+    host: "smtp.126.com",
+    //port: 25,
+    secureConnection: true, // use SSL
+    port: 465, // port for secure SMTP
     auth: {
-        user: "coolinker@gmail.com",
+        user: "yang_dx@126.com",
         pass: "B3ijing19"
     }
 });
 
 // setup e-mail data with unicode symbols
 var mailOptions = {
-    from: "Mr Stock <Mr Stock@gmail.com>", // sender address
-    to: "coolinker@gmail.com,yang_dx@126.com", // list of receivers
+    from: "Mr Stock <yang_dx@126.com>", // sender address
+    to: "yang_dx@126.com,coolinker@gmail.com", // list of receivers
     subject: "To Buy", // Subject line
     //text: "Hello world ✔", // plaintext body
     //html: "<b>Hello world ✔</b>" // html body

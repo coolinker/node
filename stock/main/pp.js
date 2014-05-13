@@ -6,8 +6,8 @@ var klineio = require("../kline/klineio").config(startDate, endDate);
 console.time("run");
 
 klineprocesser.updateKLinesFromAjax(function(){
-    console.timeEnd("run");
-});
+     console.timeEnd("run");
+ });
 
 //klineprocesser.updateKLinesFromBase();
 console.timeEnd("run");

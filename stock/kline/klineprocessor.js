@@ -381,7 +381,7 @@ function winOrLose(kLineJson) {
 
 function updateKLinesFromBase(match) {
     var stocks = klineio.getAllStockIds(match);
-    //stocks = ["SZ000831"];
+    //stocks = ["SH600037"];
     
     stocks.forEach(function(stockId) {
         klineio.readKLineBaseSync(stockId, processChain);   
@@ -391,10 +391,13 @@ function updateKLinesFromBase(match) {
 function updateKLinesFromAjax(callback) {
     klineio.readLatestKLineAjax(function(outputJson) {
         var stocks = klineio.getAllStockIds();
-        //stocks = ["SH600016"];
         
         stocks.forEach(function(stockId) {
             var kLineJson = klineio.readKLineSync(stockId); 
+            if (kLineJson.length===0) {
+                console.log(stockId)
+                return;
+            }
             var endDate = new Date(kLineJson[kLineJson.length-1].date);
             var latestJson = outputJson[stockId];
             if (!latestJson) {
@@ -405,9 +408,9 @@ function updateKLinesFromAjax(callback) {
             var latestDate = new Date(latestJson.date);
             if (latestJson.amount>0 && latestDate > endDate) {
                 kLineJson.push(latestJson);
-                processChain(stockId, kLineJson);
+                processChain(stockId, kLineJson); 
             }
-
+            
         });
 
         callback();
@@ -421,9 +424,10 @@ function mergeMoneyFlow(stockId, kLineJson) {
     for (var i=1; i<=kllen && i<=mflen; i++) {
         var klj = kLineJson[kllen-i];
         var mfj = moneyFlowJson[mflen-i];
+
         if (klj.date !== mfj.opendate) {
             if (mfj.opendate !=="03/01/2010")
-                console.log("mergeMoneyFlow error:", stockId, i, klj.date, mfj.opendate, mfj);
+                 console.log("mergeMoneyFlow error:", stockId, i, klj.date, mfj.opendate, mfj);
             break;
         } else {
             klj.netamount = mfj.netamount;

@@ -19,6 +19,7 @@ function moneyFlowInOut(klineJson, i) {
     for (var j = i; j>=0 && i-j<=sec; j--) {
         var klj = klineJson[j];
         r0netsum += klj.r0_net;
+        if (isNaN(r0netsum)) console.log(klj.date, j, i, klj.r0_net, r0netsum)
         r0xnetsum += klj.netamount-klj.r0_net;
         if(i-j<20) sum20+=klj.r0_net;
         if(i-j<10) sum10+=klj.r0_net;
