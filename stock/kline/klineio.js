@@ -54,6 +54,12 @@ function readLatestKLineAjax(callback) {
             if (!sid) console.log("Error: readLatestKLineAjax", line);
 
             var values = line.substring(line.indexOf("\"")+1, line.lastIndexOf("\"")).split(",");
+            if (values.length<31) {
+              //终止上市
+              console.log(stockIdParam, line)
+              return;
+            }
+
             var datesplits = values[30].split("-");
             if (sid.indexOf("SH")<0 && sid.indexOf("SZ")<0) 
                 console.log("0000", sid, line.indexOf("var hq_str_"), "var hq_str_".length, 

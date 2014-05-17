@@ -10,11 +10,11 @@ var cluster = require('cluster');
 var detailedDateResult = {};
 var detailedDateResultStart = new Date("01/01/2011");
 var detailedDateResultEnd = new Date("01/01/2012");
-var detailedDateResultTotalMin = 1000;
+var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "bullNeedle";
+var klineForm = "headShoulderBottom";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
@@ -26,7 +26,7 @@ var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates =[]//["11/14/2011"];
 
 var stocks = klineio.getAllStockIds();
-//stocks = ['SH600260']//['SZ002371', "SZ002158", "SH600061"];
+//stocks = ['SH600509']//['SZ002371', "SZ002158", "SH600061"];
 
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
@@ -118,7 +118,7 @@ if (cluster.isMaster) {
         endDate: endDate
     });
 
-    unionKLineForm = klineformanalyser.bullKLineFormMethods().join(",");
+    //unionKLineForm = klineformanalyser.bullKLineFormMethods().join(",");
 
     var klineutil = require("../kline/klineutil");
     var forkResult = {total:0, win:0};

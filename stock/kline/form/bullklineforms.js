@@ -10,6 +10,7 @@ var bearklineforms = require("./bearklineforms");
  * @return {[type]}           [description]
  */
 function wBottomA (klineJson, i) {
+    //return true;
     var amp = klineJson[i].amplitude_ave_8;
     if (klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 1) return false
 
@@ -64,6 +65,7 @@ function wBottom (klineJson, i) {
  * @return {[type]}           [description]
  */
 function headShoulderBottom (klineJson, i) {
+    return true;
     var amp = klineJson[i].inc_ave_8;
 
     var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
