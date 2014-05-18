@@ -1,6 +1,7 @@
 
 var klineutil = require("../klineutil");
 var bearklineforms = require("./bearklineforms");
+var moneyflowforms = require("./moneyflowforms");
 /**
  *  (-0.05, 0.05, 12) / 55.32%
  *  (-0.05, 0.05, 100) / 66.84%
@@ -10,7 +11,6 @@ var bearklineforms = require("./bearklineforms");
  * @return {[type]}           [description]
  */
 function wBottomA (klineJson, i) {
-    //return true;
     var amp = klineJson[i].amplitude_ave_8;
     if (klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 1) return false
 
@@ -26,6 +26,7 @@ function wBottomA (klineJson, i) {
     if (!klineutil.noExRight(klineJson, leftBottom-30, i)) return false;
     var outerHigh = klineutil.highItem(klineJson, leftBottom-30, leftBottom, "high");
     return klineutil.increase(klineJson[leftBottom].high, outerHigh)> amp*8
+        && moneyflowforms.wBottomA(klineJson, i);
 }
 
 /**
@@ -65,7 +66,7 @@ function wBottom (klineJson, i) {
  * @return {[type]}           [description]
  */
 function headShoulderBottom (klineJson, i) {
-    return true;
+    //return true;
     var amp = klineJson[i].inc_ave_8;
 
     var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);

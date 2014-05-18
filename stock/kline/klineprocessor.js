@@ -435,6 +435,7 @@ function mergeMoneyFlow(stockId, kLineJson) {
             klj.r0_net = mfj.r0_net;
             klj.r0_ratio = mfj.r0_ratio;
         }
+
     }
 
 }
@@ -448,6 +449,8 @@ function processChain(stockId, kLineJson) {
     average(kLineJson, "close", 233);
     average(kLineJson, "volume", 8, true);
     average(kLineJson, "volume", 21, true);
+    average(kLineJson, "amount", 8, true);
+    average(kLineJson, "amount", 21, true);
 
     average(kLineJson, "amplitude", 8, true, function (klj, n) { 
         var kl = klj[n];
