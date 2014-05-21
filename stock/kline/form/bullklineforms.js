@@ -11,21 +11,22 @@ var moneyflowforms = require("./moneyflowforms");
  * @return {[type]}           [description]
  */
 function wBottomA (klineJson, i) {
-    var amp = klineJson[i].amplitude_ave_8;
-    if (klineutil.increase(klineJson[i].volume_ave_8, klineJson[i].volume) > 1) return false
+    var amp = klineJson[i].inc_ave_8;
+    if (klineutil.increase(klineJson[i].amount_ave_8, klineJson[i].amount) > 1) return false
 
     var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
     var middleTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
-    if (klineutil.increase(klineJson[middleTop].high, klineJson[i].close)<-0.03) return false
+    //if (klineutil.increase(klineJson[middleTop].high, klineJson[i].close)<-0.03) return false
     
     var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, middleTop);
-    if (0!==klineutil.inBetween(klineutil.increase(klineJson[leftBottom].low, klineJson[rightBottom].low), 0.05, 0.15)) {
+    if (klineutil.increase(klineJson[leftBottom].low, klineJson[rightBottom].low) < amp*1.8//0.05
+        ) {
         return false;    
     }
 
     if (!klineutil.noExRight(klineJson, leftBottom-30, i)) return false;
     var outerHigh = klineutil.highItem(klineJson, leftBottom-30, leftBottom, "high");
-    return klineutil.increase(klineJson[leftBottom].high, outerHigh)> amp*8
+    return klineutil.increase(klineJson[leftBottom].high, outerHigh)> 0.26
         && moneyflowforms.wBottomA(klineJson, i);
 }
 

@@ -34,6 +34,7 @@ if (cluster.isMaster) {
     // var masterWins = 0;
     var masterResult = {master_total:0, master_win:0};
     var masterDetailedDateResult = {};
+    var masterConditionObj = {win:{}, lose:{}};
     var funName;
 
 
@@ -45,6 +46,10 @@ if (cluster.isMaster) {
             // masterWins += msg.win;
 
             funName = msg.fun;
+            var conditionObj = msg.conditionObj;
+            delete msg.conditionObj;
+            delete msg.fun;
+
             for (var att in msg) {
                 if (att === "detailedDateResult") {
                     var ddr = msg.detailedDateResult;
@@ -54,10 +59,24 @@ if (cluster.isMaster) {
                         masterDetailedDateResult[_att].win += ddr[_att].win;
                     }
                 } else {
-                    masterResult["master_"+att] = masterResult["master_"+att]?masterResult["master_"+att]+msg[att]:msg[att];
+                    if (att==="fun" || att==="conditionObj") {
+                        console.log("---------error")
+                    } else masterResult["master_"+att] = masterResult["master_"+att]?masterResult["master_"+att]+msg[att]:msg[att];
                 }
             }
 
+            
+            for (var att in conditionObj.win) {
+                if (!masterConditionObj.win[att]) masterConditionObj.win[att] = {"_true":0, "_false":0};
+                masterConditionObj.win[att]._true+= conditionObj.win[att]._true;
+                masterConditionObj.win[att]._false+= conditionObj.win[att]._false;
+            }
+            for (var att in conditionObj.lose) {
+                if (!masterConditionObj.lose[att]) masterConditionObj.lose[att] = {"_true":0, "_false":0};
+                masterConditionObj.lose[att]._true+= conditionObj.lose[att]._true;
+                masterConditionObj.lose[att]._false+= conditionObj.lose[att]._false;
+            }
+            
         }
 
     for (var i = 0; i < numCPUs; i++) {
@@ -95,6 +114,7 @@ if (cluster.isMaster) {
 
             if (intersectionKLineForm) funName = klineForm+" && "+intersectionKLineForm;
             if (unionKLineForm) klineForm+" || "+unionKLineForm;
+            
             for (var att in masterResult) {
                 if (att.length>12 && att.indexOf("master_total")===0) {
                     var winatt = "master_win"+att.substring(12);
@@ -106,6 +126,49 @@ if (cluster.isMaster) {
 
             console.log(funName, masterResult.master_win+"/"+masterResult.master_total
                 +"="+(masterResult.master_win/masterResult.master_total).toFixed(3));
+
+            console.log("\r\ncondition tune result:");
+            var conditionArr = [];
+            for (var att in masterConditionObj.win) {
+                var wincon = masterConditionObj.win[att];
+                var losecon = masterConditionObj.lose[att];
+                var wintrueper = wincon._true/(wincon._true+wincon._false);
+                var losetrueper = losecon._true/(losecon._true+losecon._false);
+                if (wintrueper>0.9 || wintrueper<0.1) {
+                    conditionArr.push(att, wintrueper, losetrueper);
+                    conditionArr.push(att)
+                }
+                if (wintrueper>0.9 && losetrueper<0.8 
+                    || wintrueper<0.1 && losetrueper>0.2) {
+                    conditionArr.push(att)
+                }
+            }
+            console.log("conditionArr", conditionArr.length);
+
+            conditionArr.sort(function(att1, att2){
+                var losecon1 = masterConditionObj.lose[att1];
+                var losetrueper1 = losecon1._true/(losecon1._true+losecon1._false);
+                if (losetrueper1<0.5) losetrueper1 = 1- losetrueper1;
+                var losecon2 = masterConditionObj.lose[att2];
+                var losetrueper2 = losecon2._true/(losecon2._true+losecon2._false);
+                if (losetrueper2<0.5) losetrueper2 = 1- losetrueper2;
+                
+                if (losetrueper1>losetrueper2) return -1;
+                if (losetrueper1<losetrueper2) return 1;
+                return 0;
+
+            })
+            
+
+            for (var ci=0; ci<10 && ci<conditionArr.length; ci++) {
+                catt = conditionArr[ci];
+                var wincon = masterConditionObj.win[catt];
+                var losecon = masterConditionObj.lose[catt];
+                var wintrueper = wincon._true/(wincon._true+wincon._false);
+                var losetrueper = losecon._true/(losecon._true+losecon._false);
+                console.log(catt, wintrueper.toFixed(3), losetrueper.toFixed(3), masterConditionObj.win[catt], masterConditionObj.lose[catt]);
+            }
+            
             console.timeEnd("run");
         }
     });
@@ -117,11 +180,11 @@ if (cluster.isMaster) {
         startDate: new Date("03/01/2010"),
         endDate: endDate
     });
-
+    var conditionanalyser = require("../kline/form/conditionanalyser");
     //unionKLineForm = klineformanalyser.bullKLineFormMethods().join(",");
-
     var klineutil = require("../kline/klineutil");
     var forkResult = {total:0, win:0};
+    var conditionObj = {win:{}, lose:{}};
     //var forkTotal = 0;
     //var forkWins = 0;
 
@@ -132,8 +195,6 @@ if (cluster.isMaster) {
         var mth = date.getMonth()+1;
         return (mth>9?mth:"0"+mth)+"/"+date.getDate()+"/"+date.getFullYear();
     }
-
-    
 
     function processStock(idx) {
         var stockId = stocks[idx];
@@ -150,10 +211,13 @@ if (cluster.isMaster) {
                  {passAll:false, showLog:showLog, showLogDates:showLogDates, stockId:stockId,
                     union:unionKLineForm,
                     intersection:intersectionKLineForm,
-                    injection: function(mtd, stockId, date, iswin){
+                    injection: function(stockId, klineJson, idx, mtd){
                         //console.log(stockId, date, iswin)
+                        var date = new Date(klineJson[idx].date);
+                        var iswin = klineJson[idx].winOrLose==="win";
+                        
+                        conditionanalyser.conditions(klineJson, idx, conditionObj);
                         if (dateSections.length===0) return;
-
                         var keytotal = "";
                         var keywin = "";
                         var seclen = dateSections.length;
@@ -168,6 +232,7 @@ if (cluster.isMaster) {
                         } else {
                             for (var i=1; i<dateSections.length; i++) {
                                 if (date < dateSections[i]) {
+
                                     var startstr = dateToString(dateSections[i-1]);
                                     var endstr = dateToString(dateSections[i]);
                                     keytotal ="total_"+startstr + "_" + endstr;
@@ -176,6 +241,8 @@ if (cluster.isMaster) {
                                 }
                             }
                         }
+
+
                         if (date>=detailedDateResultStart && date<=detailedDateResultEnd) {
                             var dstr = dateToString(date);
                             if (!detailedDateResult[dstr]) {
@@ -190,6 +257,7 @@ if (cluster.isMaster) {
                         if(iswin) {
                             forkResult[keywin] = forkResult[keywin]?forkResult[keywin]+1:1;
                         }
+
                     }
                 });
 
@@ -199,6 +267,7 @@ if (cluster.isMaster) {
             if (idx === endIdx) {
                 forkResult.fun = fun;
                 forkResult.detailedDateResult = detailedDateResult;
+                forkResult.conditionObj = conditionObj;
                 process.send(forkResult);
                 process.exit(0);
             } else {

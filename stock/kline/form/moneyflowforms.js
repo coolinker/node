@@ -1,19 +1,45 @@
 var klineutil = require("../klineutil");
-
+var counter = 0;
 function moneyFlowInOut(klineJson, i, stockid) {
     return true;
     return moneyFlowInOutB(klineJson, i, stockid)
 }
+function toFixedString(str, len) {
+    str = String(str);
+    var diff = len - str.length;
+    for (var i=0; i<diff; i++) {
+        str +=" ";
+    }
+    return str;
+}
 
 function wBottomA (klineJson, i) {
     var obj = {};
-    processMoneyFlowInOut(klineJson, i, obj);
 
-    return obj.netsummax_r0_duration>40
+    processMoneyFlowInOut(klineJson, i, obj);
+    
+    var rel = obj.netsummax_r0_duration>40
+        && obj.netsummax_r0+obj.netsummax_r0_netsum_r0x<0
         //&& obj.netsummax_r0x_20 < klineJson[i].amount_ave_21
-        && obj.netsummax_r0x_20 > obj.netsummax_r0_20*0.8
+        /*&& obj.netsummax_r0x_20 > obj.netsummax_r0_20
         && obj.netsummin_r0_20 >= -0.01*klineJson[i].amount_ave_21
         && obj.netsum_r0_above>obj.netsum_r0_below*1.5;
+*/
+    return rel;
+
+    if (false && klineJson[i].date==="11/14/2011") {
+
+        console.log(toFixedString(obj.netsummax_r0_5<2000000, 5), 
+            toFixedString(obj.netsummax_r0_10<2000000, 5), 
+            toFixedString(obj.netsummax_r0x_5>0, 5),
+            toFixedString(obj.netsummax_r0x_5 === obj.netsummax_r0x_10, 5),
+            toFixedString(obj.netsummin_r0x_5 < 0, 5),
+            toFixedString(obj.netsummin_r0x_10 < 0, 5),
+            toFixedString(obj.netsummin_r0x_20 < 0, 5)
+
+            )
+    }
+    return rel
 }
 
 function processMoneyFlowInOut(klineJson, i, obj) {
@@ -40,6 +66,9 @@ function processMoneyFlowInOut(klineJson, i, obj) {
 
     var netsum_r0_above = 0, netsum_r0_below = 0;
     var netsum_r0_above_60 = 0, netsum_r0_below_60 = 0;
+    var netsum_r0x_above = 0, netsum_r0x_below = 0;
+    var netsum_r0x_above_60 = 0, netsum_r0x_below_60 = 0;
+
     var currentprice = klineJson[i].close;
     var netsummax_idx_r0 = -1;
 
@@ -68,19 +97,28 @@ function processMoneyFlowInOut(klineJson, i, obj) {
         }
 
         var klj = klineJson[j];
+        var r0x_net = klj.netamount-klj.r0_net;
+
         var midprice = (klj.high+klj.low)/2;
         if (midprice>currentprice) {
             netsum_r0_above += klj.r0_net;
-            if (i-j<60) netsum_r0_above_60 += klj.r0_net;
+            netsum_r0x_above += r0x_net;
+            if (i-j<60) {
+                netsum_r0_above_60 += klj.r0_net;
+                netsum_r0x_above_60 += r0x_net;
+            }
         }
 
         if (midprice<currentprice) {
             netsum_r0_below += klj.r0_net;
-            if (i-j<60) netsum_r0_below_60 += klj.r0_net;
+            netsum_r0x_below += r0x_net;
+            if (i-j<60) {
+                netsum_r0_below_60 += klj.r0_net;
+                netsum_r0x_below_60 += r0x_net;
+            }
         }
 
         netsum_r0 += klj.r0_net;
-        var r0x_net = klj.netamount-klj.r0_net;
         netsum_r0x += r0x_net;
 
         if (netsum_r0 < netsummin_r0) {
@@ -135,6 +173,11 @@ function processMoneyFlowInOut(klineJson, i, obj) {
     obj.netsum_r0_above_60 = netsum_r0_above_60;
     obj.netsum_r0_below = netsum_r0_below;
     obj.netsum_r0_below_60 = netsum_r0_below_60;
+
+    obj.netsum_r0x_above = netsum_r0x_above;
+    obj.netsum_r0x_above_60 = netsum_r0x_above_60;
+    obj.netsum_r0x_below = netsum_r0x_below;
+    obj.netsum_r0x_below_60 = netsum_r0x_below_60;
     //console.log("netsummax_days<20", klineJson[i].amount_ave_8, klineJson[i].amount_ave_21)
 
 }
@@ -436,3 +479,4 @@ function moneyFlowInOutA(klineJson, i, stockid) {
 
 exports.moneyFlowInOut = moneyFlowInOut;
 exports.wBottomA = wBottomA;
+exports.processMoneyFlowInOut = processMoneyFlowInOut;

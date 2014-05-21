@@ -157,7 +157,7 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
         if (options.passAll || 
             (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))
-            && intersectionResult(moneyflowforms, ["moneyFlowInOut"], klineJson, i)
+            /*&& intersectionResult(moneyflowforms, ["moneyFlowInOut"], klineJson, i)*/
             ) {
                 // var amp = klineJson[i].amplitude_ave_8;
                 // winStop = 1.25*amp;
@@ -185,7 +185,7 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
                 }
                 result.total++;
                 
-                if (options.injection) options.injection(method, options.stockId, date, klineJson[i].winOrLose=="win");
+                if (options.injection) options.injection(options.stockId, klineJson, i, method);
                 // if (dateSections !== undefined) {
                 //     var sec = getDateSection(date, dateSections);
                 //     result['total_'+sec]++;
