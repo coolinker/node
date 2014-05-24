@@ -27,7 +27,6 @@ function wBottomA (klineJson, i) {
     if (!klineutil.noExRight(klineJson, leftBottom-30, i)) return false;
     var outerHigh = klineutil.highItem(klineJson, leftBottom-30, leftBottom, "high");
     return klineutil.increase(klineJson[leftBottom].high, outerHigh)> 0.26
-        && moneyflowforms.wBottomA(klineJson, i);
 }
 
 /**

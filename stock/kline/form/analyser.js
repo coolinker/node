@@ -157,7 +157,8 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
         if (options.passAll || 
             (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))
-            /*&& intersectionResult(moneyflowforms, ["moneyFlowInOut"], klineJson, i)*/
+            && moneyflowforms[method] && moneyflowforms[method](klineJson, i)
+            //intersectionResult(moneyflowforms, ["moneyFlowInOut"], klineJson, i)
             ) {
                 // var amp = klineJson[i].amplitude_ave_8;
                 // winStop = 1.25*amp;

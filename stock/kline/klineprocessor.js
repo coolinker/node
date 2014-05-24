@@ -1,6 +1,6 @@
 var klineutil = require("./klineutil");
 var intersectionprocessor = require("./form/intersectionprocessor").config(1);
-
+var moneyflowforms = require("./form/moneyflowforms");
 var moneyflowio = require("../moneyflow/io").config();
 
 var klineio;
@@ -440,6 +440,155 @@ function mergeMoneyFlow(stockId, kLineJson) {
 
 }
 
+function processMoneyFlow(kLineJson) {
+    var jsonLen = kLineJson.length;
+    for (var i=jsonLen-1; i>0; i--) {
+        processDayMoneyFlow(kLineJson, i);
+    }
+}
+
+function processDayMoneyFlow(klineJson, i) {
+    var sec = 150;
+    if (i<sec) return false;
+    if (klineJson[i-sec].r0_net===undefined) return false;
+
+    var netsum_r0 = 0;
+    var netsum_r0x = 0;
+    var maxnetsumidx_r0 = -1;
+
+    var netsummin_r0x = 100000000000;
+    var netsummin_r0x_5 = 0, netsummin_r0x_10 = 0, netsummin_r0x_20 = 0, netsummin_r0x_40 = 0;
+
+    var netsummax_r0x = -100000000000;
+    var netsummax_r0x_5 = 0, netsummax_r0x_10 = 0, netsummax_r0x_20 = 0, netsummax_r0x_40 = 0;
+
+    var netsummax_r0 = -100000000000;
+    var netsummax_r0_5 = 0, netsummax_r0_10 = 0, netsummax_r0_20 = 0, netsummax_r0_40 = 0;
+
+    var netsummin_r0 = 100000000000;
+    var netsummin_r0_5 = 0, netsummin_r0_10 = 0, netsummin_r0_20 = 0, netsummin_r0_40 = 0;
+
+
+    var netsum_r0_above = 0, netsum_r0_below = 0;
+    var netsum_r0_above_60 = 0, netsum_r0_below_60 = 0;
+    var netsum_r0x_above = 0, netsum_r0x_below = 0;
+    var netsum_r0x_above_60 = 0, netsum_r0x_below_60 = 0;
+
+    var currentprice = klineJson[i].close;
+    var netsummax_idx_r0 = -1;
+
+    for (var j = i; j>=0 && i-j<=sec; j--) {
+
+        if (i-j === 5) {
+            netsummax_r0_5 = netsummax_r0;
+            netsummin_r0_5 = netsummin_r0;
+            netsummin_r0x_5 = netsummin_r0x;
+            netsummax_r0x_5 = netsummax_r0x
+        } else if (i-j === 10) {
+            netsummax_r0_10 = netsummax_r0;
+            netsummin_r0_10 = netsummin_r0;
+            netsummin_r0x_10 = netsummin_r0x;
+            netsummax_r0x_10 = netsummax_r0x
+        } else if (i-j === 20) {
+            netsummax_r0_20 = netsummax_r0;
+            netsummin_r0_20 = netsummin_r0;
+            netsummin_r0x_20 = netsummin_r0x;
+            netsummax_r0x_20 = netsummax_r0x
+        } else if (i-j === 40) {
+            netsummax_r0_40 = netsummax_r0;
+            netsummin_r0_40 = netsummin_r0;
+            netsummin_r0x_40 = netsummin_r0x;
+            netsummax_r0x_40 = netsummax_r0x
+        }
+
+        var klj = klineJson[j];
+        var r0x_net = klj.netamount-klj.r0_net;
+
+        var midprice = (klj.high+klj.low)/2;
+        if (midprice>currentprice) {
+            netsum_r0_above += klj.r0_net;
+            netsum_r0x_above += r0x_net;
+            if (i-j<60) {
+                netsum_r0_above_60 += klj.r0_net;
+                netsum_r0x_above_60 += r0x_net;
+            }
+        }
+
+        if (midprice<currentprice) {
+            netsum_r0_below += klj.r0_net;
+            netsum_r0x_below += r0x_net;
+            if (i-j<60) {
+                netsum_r0_below_60 += klj.r0_net;
+                netsum_r0x_below_60 += r0x_net;
+            }
+        }
+
+        netsum_r0 += klj.r0_net;
+        netsum_r0x += r0x_net;
+
+        if (netsum_r0 < netsummin_r0) {
+            netsummin_r0 = netsum_r0;
+        }
+        if (netsum_r0 > netsummax_r0) {
+            netsummax_r0 = netsum_r0;
+            netsummax_idx_r0 = j;
+            netsummax_r0_netsum_r0x = netsum_r0x;
+        }
+
+        if (netsum_r0x < netsummin_r0x) {
+            netsummin_r0x = netsum_r0x;
+        }
+
+        if (netsum_r0x > netsummax_r0x) {
+            netsummax_r0x = netsum_r0x;
+        }
+
+    }
+
+    if (netsummax_idx_r0===-1) console.log("error netsummax_idx_r0 should not be -1");
+
+    var obj = klineJson[i];
+
+    obj.netsummax_r0_duration = i-netsummax_idx_r0;
+    obj.netsummax_r0_netsum_r0x = netsummax_r0_netsum_r0x;
+
+    obj.netsummax_r0 = netsummax_r0;
+    obj.netsummax_r0_5 = netsummax_r0_5;
+    obj.netsummax_r0_10 = netsummax_r0_10;
+    obj.netsummax_r0_20 = netsummax_r0_20;
+    obj.netsummax_r0_40 = netsummax_r0_40;
+    
+    obj.netsummin_r0 =  netsummin_r0;
+    obj. netsummin_r0_5 =  netsummin_r0_5;
+    obj. netsummin_r0_10 =  netsummin_r0_10;
+    obj. netsummin_r0_20 =  netsummin_r0_20;
+    obj. netsummin_r0_40 =  netsummin_r0_40;
+
+    obj.netsummax_r0x = netsummax_r0x;
+    obj.netsummax_r0x_5 = netsummax_r0x_5;
+    obj.netsummax_r0x_10 = netsummax_r0x_10;
+    obj.netsummax_r0x_20 = netsummax_r0x_20;
+    obj.netsummax_r0x_40 = netsummax_r0x_40;
+
+    obj. netsummin_r0x =  netsummin_r0x;
+    obj. netsummin_r0x_5 =  netsummin_r0x_5;
+    obj. netsummin_r0x_10 =  netsummin_r0x_10;
+    obj. netsummin_r0x_20 =  netsummin_r0x_20;
+    obj. netsummin_r0x_40 =  netsummin_r0x_40;
+
+    obj.netsum_r0_above = netsum_r0_above;
+    obj.netsum_r0_above_60 = netsum_r0_above_60;
+    obj.netsum_r0_below = netsum_r0_below;
+    obj.netsum_r0_below_60 = netsum_r0_below_60;
+
+    obj.netsum_r0x_above = netsum_r0x_above;
+    obj.netsum_r0x_above_60 = netsum_r0x_above_60;
+    obj.netsum_r0x_below = netsum_r0x_below;
+    obj.netsum_r0x_below_60 = netsum_r0x_below_60;
+    //console.log("netsummax_days<20", klineJson[i].amount_ave_8, klineJson[i].amount_ave_21)
+
+}
+
 function processChain(stockId, kLineJson) {
     exRightsDay(kLineJson);
     average(kLineJson, "close", 8);
@@ -483,6 +632,8 @@ function processChain(stockId, kLineJson) {
     });
     //console.log(stockId);
     mergeMoneyFlow(stockId, kLineJson);
+    processMoneyFlow(kLineJson);
+    
     winOrLose(kLineJson);
     matchForms(kLineJson);
 

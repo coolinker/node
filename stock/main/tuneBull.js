@@ -14,7 +14,7 @@ var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "wBottomA";
+var klineForm = "wBottom";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
@@ -134,27 +134,29 @@ if (cluster.isMaster) {
                 var losecon = masterConditionObj.lose[att];
                 var wintrueper = wincon._true/(wincon._true+wincon._false);
                 var losetrueper = losecon._true/(losecon._true+losecon._false);
-                if (wintrueper>0.9 || wintrueper<0.1) {
-                    conditionArr.push(att, wintrueper, losetrueper);
-                    conditionArr.push(att)
-                }
-                if (wintrueper>0.9 && losetrueper<0.8 
-                    || wintrueper<0.1 && losetrueper>0.2) {
+                
+                if (true || wintrueper>0.5 && wintrueper-losetrueper>0
+                    || wintrueper<0.5 && wintrueper-losetrueper<0) {
                     conditionArr.push(att)
                 }
             }
             console.log("conditionArr", conditionArr.length);
 
             conditionArr.sort(function(att1, att2){
+                var wincon1 = masterConditionObj.win[att1];
+                var wintrueper1 = wincon1 ? wincon1._true/(wincon1._true+wincon1._false) : 0;
                 var losecon1 = masterConditionObj.lose[att1];
-                var losetrueper1 = losecon1._true/(losecon1._true+losecon1._false);
-                if (losetrueper1<0.5) losetrueper1 = 1- losetrueper1;
+                var losetrueper1 = losecon1 ? losecon1._true/(losecon1._true+losecon1._false) : 0;
+                var abs1 = Math.abs(wintrueper1-losetrueper1);
+
+                var wincon2 = masterConditionObj.win[att2];
+                var wintrueper2 = wincon2 ? wincon2._true/(wincon2._true+wincon2._false) : 0;
                 var losecon2 = masterConditionObj.lose[att2];
-                var losetrueper2 = losecon2._true/(losecon2._true+losecon2._false);
-                if (losetrueper2<0.5) losetrueper2 = 1- losetrueper2;
+                var losetrueper2 = losecon2 ? losecon2._true/(losecon2._true+losecon2._false) : 0;
+                var abs2 = Math.abs(wintrueper2-losetrueper2);
                 
-                if (losetrueper1>losetrueper2) return -1;
-                if (losetrueper1<losetrueper2) return 1;
+                if (abs1>abs2) return -1;
+                if (abs1<abs2) return 1;
                 return 0;
 
             })
@@ -164,8 +166,8 @@ if (cluster.isMaster) {
                 catt = conditionArr[ci];
                 var wincon = masterConditionObj.win[catt];
                 var losecon = masterConditionObj.lose[catt];
-                var wintrueper = wincon._true/(wincon._true+wincon._false);
-                var losetrueper = losecon._true/(losecon._true+losecon._false);
+                var wintrueper = wincon ? wincon._true/(wincon._true+wincon._false) : 0;
+                var losetrueper = losecon ? losecon._true/(losecon._true+losecon._false) : 0;
                 console.log(catt, wintrueper.toFixed(3), losetrueper.toFixed(3), masterConditionObj.win[catt], masterConditionObj.lose[catt]);
             }
             

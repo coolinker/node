@@ -6,12 +6,8 @@ function trueFalse(key, bool, keyObj) {
 }
 
 function conditions(klineJson, idx, conditionObj) {
-    var obj = {};
-    for (var att in klineJson[idx]) {
-        obj[att] = klineJson[idx][att];
-    }
-
-    moneyflowforms.processMoneyFlowInOut(klineJson, idx, obj);
+    var obj = klineJson[idx];
+    
     
     var iswin = klineJson[idx].winOrLose==="win";
     if (!conditionObj.win) conditionObj.win = {};
@@ -27,8 +23,10 @@ function conditions(klineJson, idx, conditionObj) {
     trueFalse("obj.netsummax_r0>obj.amount_ave_21", 
         obj.netsummax_r0>obj.amount_ave_21, keyObj);
 
+    
     trueFalse("obj.netsummax_r0_netsum_r0x>0.5*obj.amount_ave_21", 
         obj.netsummax_r0_netsum_r0x>0.5*obj.amount_ave_21, keyObj);
+
     trueFalse("obj.netsummax_r0_netsum_r0x>0", 
         obj.netsummax_r0_netsum_r0x>0, keyObj);
     trueFalse("obj.netsummax_r0_netsum_r0x<-0.5*obj.amount_ave_21", 
@@ -36,12 +34,21 @@ function conditions(klineJson, idx, conditionObj) {
     
     trueFalse("obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>0", 
         obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>0, keyObj);
+    trueFalse("obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>0.05*obj.amount_ave_21", 
+        obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>0.05*obj.amount_ave_21, keyObj);
+
     trueFalse("obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>obj.amount_ave_21", 
         obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>obj.amount_ave_21, keyObj);
 
     trueFalse("obj.netsummax_r0_5>0.05*obj.amount_ave_21", obj.netsummax_r0_5>0.05*obj.amount_ave_21, keyObj);
     trueFalse("obj.netsummax_r0_10>0.05*obj.amount_ave_21", obj.netsummax_r0_10>0.05*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsummax_r0_10>0.0*obj.amount_ave_21", obj.netsummax_r0_10>0.0*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsummax_r0_10>0.1*obj.amount_ave_21", obj.netsummax_r0_10>0.1*obj.amount_ave_21, keyObj);
+    
     trueFalse("obj.netsummax_r0_20>0.1*obj.amount_ave_21", obj.netsummax_r0_20>0.1*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsummax_r0_20>0.05*obj.amount_ave_21", obj.netsummax_r0_20>0.05*obj.amount_ave_21, keyObj);
+    //trueFalse("obj.netsummax_r0_20>0.15*obj.amount_ave_21", obj.netsummax_r0_20>0.15*obj.amount_ave_21, keyObj);
+
     trueFalse("obj.netsummax_r0_40>0.1*obj.amount_ave_21", obj.netsummax_r0_40>0.1*obj.amount_ave_21, keyObj);
 
     trueFalse("obj.netsummin_r0<-0.1*obj.amount_ave_21", obj.netsummin_r0<-0.1*obj.amount_ave_21, keyObj);
@@ -55,11 +62,11 @@ function conditions(klineJson, idx, conditionObj) {
     trueFalse("obj.netsummax_r0x_20>0.1*obj.amount_ave_21", obj.netsummax_r0x_20>0.1*obj.amount_ave_21, keyObj);
     trueFalse("obj.netsummax_r0x_40>0.1*obj.amount_ave_21", obj.netsummax_r0x_40>0.1*obj.amount_ave_21, keyObj);
 
-    trueFalse("obj.netsummin_r0x<-0.1*obj.amount_ave_21", obj.netsummin_r0x<-0.1*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsummin_r0x<-0.3*obj.amount_ave_21", obj.netsummin_r0x<-0.3*obj.amount_ave_21, keyObj);
     trueFalse("obj.netsummin_r0x_5<-0.05*obj.amount_ave_21", obj.netsummin_r0x_5<-0.05*obj.amount_ave_21, keyObj);
     trueFalse("obj.netsummin_r0x_10<-0.05*obj.amount_ave_21", obj.netsummin_r0x_10<-0.05*obj.amount_ave_21, keyObj);
     trueFalse("obj.netsummin_r0x_20<-0.1*obj.amount_ave_21", obj.netsummin_r0x_20<-0.1*obj.amount_ave_21, keyObj);
-    trueFalse("obj.netsummin_r0x_40<-0.1*obj.amount_ave_21", obj.netsummin_r0x_40<-0.1*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsummin_r0x_40<-0.2*obj.amount_ave_21", obj.netsummin_r0x_40<-0.2*obj.amount_ave_21, keyObj);
 
     trueFalse("obj.netsummax_r0+obj.netsummin_r0x>0", obj.netsummax_r0+obj.netsummin_r0x>0, keyObj);
     trueFalse("obj.netsummax_r0_5+obj.netsummin_r0x_5>0", obj.netsummax_r0_5+obj.netsummin_r0x_5>0, keyObj);
@@ -99,6 +106,11 @@ function conditions(klineJson, idx, conditionObj) {
     trueFalse("obj.netsum_r0_above_60>0.1*obj.amount_ave_21", obj.netsum_r0_above_60>0.1*obj.amount_ave_21, keyObj);
 
     trueFalse("obj.netsum_r0_below>0.05*obj.amount_ave_21", obj.netsum_r0_below>0.05*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsum_r0_below>-0.1*obj.amount_ave_21", obj.netsum_r0_below>-0.1*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsum_r0_below<0.1*obj.amount_ave_21", obj.netsum_r0_below<0.1*obj.amount_ave_21, keyObj);
+    //trueFalse("obj.netsum_r0_below<0.15*obj.amount_ave_21", obj.netsum_r0_below<0.15*obj.amount_ave_21, keyObj);
+    //trueFalse("obj.netsum_r0_below<0.05*obj.amount_ave_21", obj.netsum_r0_below<0.05*obj.amount_ave_21, keyObj);
+
     trueFalse("obj.netsum_r0_below_60>0.05*obj.amount_ave_21", obj.netsum_r0_below_60>0.05*obj.amount_ave_21, keyObj);
 }
 
