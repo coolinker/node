@@ -46,7 +46,8 @@ function conditions(klineJson, idx, conditionObj) {
     trueFalse("obj.netsummax_r0_10>0.1*obj.amount_ave_21", obj.netsummax_r0_10>0.1*obj.amount_ave_21, keyObj);
     
     trueFalse("obj.netsummax_r0_20>0.1*obj.amount_ave_21", obj.netsummax_r0_20>0.1*obj.amount_ave_21, keyObj);
-    trueFalse("obj.netsummax_r0_20>0.05*obj.amount_ave_21", obj.netsummax_r0_20>0.05*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsummax_r0_20>0.3*obj.amount_ave_21", obj.netsummax_r0_20>0.3*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsummax_r0_20>0.5*obj.amount_ave_21", obj.netsummax_r0_20>0.5*obj.amount_ave_21, keyObj);
     //trueFalse("obj.netsummax_r0_20>0.15*obj.amount_ave_21", obj.netsummax_r0_20>0.15*obj.amount_ave_21, keyObj);
 
     trueFalse("obj.netsummax_r0_40>0.1*obj.amount_ave_21", obj.netsummax_r0_40>0.1*obj.amount_ave_21, keyObj);
@@ -56,6 +57,7 @@ function conditions(klineJson, idx, conditionObj) {
     trueFalse("obj.netsummin_r0_10<-0.05*obj.amount_ave_21", obj.netsummin_r0_10<-0.05*obj.amount_ave_21, keyObj);
     trueFalse("obj.netsummin_r0_20<-0.1*obj.amount_ave_21", obj.netsummin_r0_20<-0.1*obj.amount_ave_21, keyObj);
     trueFalse("obj.netsummin_r0_40<-0.1*obj.amount_ave_21", obj.netsummin_r0_40<-0.1*obj.amount_ave_21, keyObj);
+    trueFalse("obj.netsummin_r0_40>-0.3*obj.amount_ave_21", obj.netsummin_r0_40>-0.3*obj.amount_ave_21, keyObj);
 
     trueFalse("obj.netsummax_r0x_5>0.05*obj.amount_ave_21", obj.netsummax_r0x_5>0.05*obj.amount_ave_21, keyObj);
     trueFalse("obj.netsummax_r0x_10>0.05*obj.amount_ave_21", obj.netsummax_r0x_10>0.05*obj.amount_ave_21, keyObj);

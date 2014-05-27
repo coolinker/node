@@ -116,7 +116,9 @@ function traverseForAppearance(methods, klineJson, intersections) {
 
         var matchForms = [];
         methods.forEach(function(mtd) {
-            if(klineforms[mtd](klineJson, i) === true) {
+            if(klineforms[mtd](klineJson, i) === true
+                && moneyflowforms[mtd] 
+                && moneyflowforms[mtd](klineJson, i)) {
                 matchForms.push(mtd);
                 if (intersections.formHandler) {
                     intersections.formHandler(mtd, klineJson, i);
@@ -151,9 +153,9 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
     
     for (var i=50; i<len; i++) {
         var date = new Date(klineJson[i].date);
+
         if (date < startDate) continue;
         if (date > endDate) break;
-        
         if (options.passAll || 
             (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))

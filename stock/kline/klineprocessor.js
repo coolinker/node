@@ -319,10 +319,10 @@ function matchForms(kLineJson) {
                 formHandler: function(form, klineJson, i) {},
                 formsHandler: function(forms, klineJson, i) {
                     klineJson[i].match = forms;
-                    var mmf = klineformanalyser.matchMoneyFlowForm(klineJson, i);
-                    if (mmf.length>0) {
-                        klineJson[i].match_moneyflow = mmf;
-                    }
+                    // var mmf = klineformanalyser.matchMoneyFlowForm(klineJson, i);
+                    // if (mmf.length>0) {
+                    //     klineJson[i].match_moneyflow = mmf;
+                    // }
                     var reObj = {};
                     var inc_ave_8 = kLineJson[i].inc_ave_8;
                     if (!inc_ave_8) return;
@@ -361,8 +361,8 @@ function winOrLose(kLineJson) {
         var inc_ave_8 = kLineJson[i].inc_ave_8;
         if (!inc_ave_8) continue;
 
-        var winStop = Math.min(3.7*inc_ave_8, 0.15);
-        var lossStop = Math.max(-3.7*inc_ave_8, -0.15);
+        var winStop = Math.min(5*inc_ave_8, 0.15);
+        var lossStop = Math.max(-5*inc_ave_8, -0.15);
         //var reObj = {};
         var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100/*, reObj*/);
         //var days = reObj.days;

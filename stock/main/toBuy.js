@@ -31,8 +31,7 @@ for (var stockidx=0; stockidx<stocks.length; stockidx++) {
     for (var i=kLineJson.length-1; i>=0; i--) {
         var date = kLineJson[i].date;
         var forms = kLineJson[i].match;//klineformanalyser.tryForms(mtds, kLineJson, i);
-        var forms_moneyflow = kLineJson[i].match_moneyflow;
-        if (forms_moneyflow && forms !==undefined && new Date(date) >= matchInfoDate) {
+        if (forms !==undefined && new Date(date) >= matchInfoDate) {
             if (!matchInfoJson[date]) matchInfoJson[date] = {total:0, win:0, lose:0, pending:0, ratiosum:0};
             matchInfoJson[date].total++;
             if (kLineJson[i].winOrLose === "win") matchInfoJson[date].win++;
@@ -48,7 +47,7 @@ for (var stockidx=0; stockidx<stocks.length; stockidx++) {
             if (ratio>resultJson.targetRatio) {
                 resultJson[date].valid++;
                 var close = kLineJson[i].close;
-                if (klineutil.increase(close, lastclose) < 0.01) {
+                if (klineutil.increase(close, lastclose) < kLineJson[i].inc_ave_21) {
                     //console.log(date, stockId, ratio, close, lastclose);
                     resultJson[date].stocks.push({date: date,
                         stockId: stockId,
