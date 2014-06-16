@@ -5,15 +5,18 @@ var klineutil = require("../kline/klineutil");
 var startDate = new Date("01/01/2005");
 var endDate = new Date("01/01/2015");
 
-var today = new Date();
-var _m = 1+today.getMonth();
-var _d = today.getDate();
-var _y = today.getFullYear();
+var targetDateStr = process.argv[2];
 
-var targetDateStr = (_m>9?_m:"0"+_m) +"/"
+if (!targetDateStr) {
+    var today = new Date();
+    var _m = 1+today.getMonth();
+    var _d = today.getDate();
+    var _y = today.getFullYear();
+
+    targetDateStr = (_m>9?_m:"0"+_m) +"/"
         +(_d>9?_d:"0"+_d) +"/"+_y;
+}
 
-//targetDateStr = "05/28/2014";
 console.log("targetDateStr:"+targetDateStr);     
 
 var daySection = 150;

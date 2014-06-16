@@ -42,7 +42,9 @@ stocks.forEach(function(stockId) {
     //var inc = klineutil.increase(kLineJson[maxr0netsumidx].open, kLineJson[i].close);
     var duration = klj.netsummax_r0_duration;
 
-    var aboveitems = klineutil.higherItemsIndex(kLineJson, maxr0netsumidx, i, "low", kLineJson[i].close);
+    var low_index_5 = klineutil.lowItemIndex(kLineJson, i-5, i, "close");
+    var low_index_20 = klineutil.lowItemIndex(kLineJson, i-20, i, "low");
+    var low_index_40 = klineutil.lowItemIndex(kLineJson, i-40, i, "low");
     //var aboveitems_15 = klineutil.higherItemsIndex(kLineJson, i-15, i, "low", kLineJson[i].close);
     var belowitems = klineutil.lowerItemsIndex(kLineJson, maxr0netsumidx, i, "high", kLineJson[i].close);
     var belowitems_30 = klineutil.lowerItemsIndex(kLineJson, i-30, i, "high", kLineJson[i].close);
@@ -154,45 +156,46 @@ stocks.forEach(function(stockId) {
                         +"<br>"
                         +"aboveitems:"+aboveitems.length+ " belowitems:"+belowitems.length+" belowitems_30:"+belowitems_30.length
                         +"<br>"
-                        +"netsum_r0_5:"+(klj.netsum_r0_5/10000).toFixed(2)
-                        +"netsum_r0_10:"+(klj.netsum_r0_10/10000).toFixed(2)
-                        +"netsum_r0_20:"+(klj.netsum_r0_20/10000).toFixed(2) 
-                        +"netsum_r0_40:"+(klj.netsum_r0_40/10000).toFixed(2) 
-                        +"<br>"
-                        +"netsum_r0x_5:"+(klj.netsum_r0x_5/10000).toFixed(2)
-                        +"netsum_r0x_10:"+(klj.netsum_r0x_10/10000).toFixed(2)
-                        +"netsum_r0x_20:"+(klj.netsum_r0x_20/10000).toFixed(2) 
-                        +"netsum_r0x_40:"+(klj.netsum_r0x_40/10000).toFixed(2) 
-                        +"<br>"+"<br>"
-                        +"netsummax_r0_5:"+(klj.netsummax_r0_5/10000).toFixed(2)
-                        +"netsummax_r0_10:"+(klj.netsummax_r0_10/10000).toFixed(2)
-                        +"netsummax_r0_20:"+(klj.netsummax_r0_20/10000).toFixed(2)
-                        +"netsummax_r0_40:"+(klj.netsummax_r0_40/10000).toFixed(2)
-                        +"<br>"
-                        +"netsummax_r0x_5:"+(klj.netsummax_r0x_5/10000).toFixed(2)
-                        +"netsummax_r0x_10:"+(klj.netsummax_r0x_10/10000).toFixed(2)
-                        +"netsummax_r0x_20:"+(klj.netsummax_r0x_20/10000).toFixed(2)
-                        +"netsummax_r0x_40:"+(klj.netsummax_r0x_40/10000).toFixed(2) 
-                        +"<br>"+"<br>"
-                        +"netsummin_r0_5:"+(klj.netsummin_r0_5/10000).toFixed(2) 
-                        +"netsummin_r0_10:"+(klj.netsummin_r0_10/10000).toFixed(2)
-                        +"netsummin_r0_20:"+(klj.netsummin_r0_20/10000).toFixed(2) 
-                        +"netsummin_r0_40:"+(klj.netsummin_r0_40/10000).toFixed(2) 
-                        +"<br>"
-                        +"netsummin_r0x_5:"+(klj.netsummin_r0x_5/10000).toFixed(2) 
-                        +"netsummin_r0x_10:"+(klj.netsummin_r0x_10/10000).toFixed(2)
-                        +"netsummin_r0x_20:"+(klj.netsummin_r0x_20/10000).toFixed(2) 
-                        +"netsummin_r0x_40:"+(klj.netsummin_r0x_40/10000).toFixed(2) 
-                        +"<br>"+"<br>"
-                        +"netsum_r0_above:"+(klj.netsum_r0_above/10000).toFixed(2) 
-                        +"netsum_r0_below:"+(klj.netsum_r0_below/10000).toFixed(2)
-                        +"<br>"
-                        +"netsum_r0_above_60:"+(klj.netsum_r0_above_60/10000).toFixed(2)
-                        +"netsum_r0_below_60:"+(klj.netsum_r0_below_60/10000).toFixed(2)
-                        +"<br>"
-                        +"netsummax_r0:"+(klj.netsummax_r0/10000).toFixed(2) 
-                        +"<br>"
-                        +"netsummax_r0_netsum_r0x:"+(klj.netsummax_r0_netsum_r0x/10000).toFixed(2)
+                        +" netsum_r0_5:"+(klj.netsum_r0_5/10000).toFixed(2)
+                        +" netsum_r0_10:"+(klj.netsum_r0_10/10000).toFixed(2)
+                        +" netsum_r0_20:"+(klj.netsum_r0_20/10000).toFixed(2) 
+                        +" netsum_r0_40:"+(klj.netsum_r0_40/10000).toFixed(2) 
+                        +" <br>"
+                        +" netsum_r0x_5:"+(klj.netsum_r0x_5/10000).toFixed(2)
+                        +" netsum_r0x_10:"+(klj.netsum_r0x_10/10000).toFixed(2)
+                        +" netsum_r0x_20:"+(klj.netsum_r0x_20/10000).toFixed(2) 
+                        +" netsum_r0x_40:"+(klj.netsum_r0x_40/10000).toFixed(2) 
+                        +" <br>"+" <br>"
+                        +" netsummax_r0_5:"+(klj.netsummax_r0_5/10000).toFixed(2)
+                        +" netsummax_r0_10:"+(klj.netsummax_r0_10/10000).toFixed(2)
+                        +" netsummax_r0_20:"+(klj.netsummax_r0_20/10000).toFixed(2)
+                        +" netsummax_r0_40:"+(klj.netsummax_r0_40/10000).toFixed(2)
+                        +" <br>"
+                        +" netsummax_r0x_5:"+(klj.netsummax_r0x_5/10000).toFixed(2)
+                        +" netsummax_r0x_10:"+(klj.netsummax_r0x_10/10000).toFixed(2)
+                        +" netsummax_r0x_20:"+(klj.netsummax_r0x_20/10000).toFixed(2)
+                        +" netsummax_r0x_40:"+(klj.netsummax_r0x_40/10000).toFixed(2) 
+                        +" <br>"+" <br>"
+                        +" netsummin_r0_5:"+(klj.netsummin_r0_5/10000).toFixed(2) 
+                        +" netsummin_r0_10:"+(klj.netsummin_r0_10/10000).toFixed(2)
+                        +" netsummin_r0_20:"+(klj.netsummin_r0_20/10000).toFixed(2) 
+                        +" netsummin_r0_40:"+(klj.netsummin_r0_40/10000).toFixed(2) 
+                        +" <br>"
+                        +" netsummin_r0x_5:"+(klj.netsummin_r0x_5/10000).toFixed(2) 
+                        +" netsummin_r0x_10:"+(klj.netsummin_r0x_10/10000).toFixed(2)
+                        +" netsummin_r0x_20:"+(klj.netsummin_r0x_20/10000).toFixed(2) 
+                        +" netsummin_r0x_40:"+(klj.netsummin_r0x_40/10000).toFixed(2) 
+                        +" <br>"+" <br>"
+                        +" netsum_r0_above:"+(klj.netsum_r0_above/10000).toFixed(2) 
+                        +" netsum_r0_below:"+(klj.netsum_r0_below/10000).toFixed(2)
+                        +" <br>"
+                        +" netsum_r0_above_60:"+(klj.netsum_r0_above_60/10000).toFixed(2)
+                        +" netsum_r0_below_60:"+(klj.netsum_r0_below_60/10000).toFixed(2)
+                        +" <br>"
+                        +" netsummax_r0:"+(klj.netsummax_r0/10000).toFixed(2) 
+                        +" <br>"
+                        +" netsummax_r0_netsum_r0x:"+(klj.netsummax_r0_netsum_r0x/10000).toFixed(2)
+                        +" <br>"
                         +"<img src=\"http://image.sinajs.cn/newchart/daily/n/"
                         +stockId.toLowerCase()+".gif\" width=\"400\" height=\"250\"><br>"             
 

@@ -509,12 +509,20 @@ function processDayMoneyFlow(klineJson, i) {
             netsummin_r0_40 = netsummin_r0;
             netsummin_r0x_40 = netsummin_r0x;
             netsummax_r0x_40 = netsummax_r0x
+        } else if (i-j === 80) {
+            klineJson[i].netsum_r0_80 = netsum_r0;
+            klineJson[i].netsum_r0x_80 = netsum_r0x;
+
+            netsummax_r0_80 = netsummax_r0;
+            netsummin_r0_80 = netsummin_r0;
+            netsummin_r0x_80 = netsummin_r0x;
+            netsummax_r0x_80 = netsummax_r0x
         }
 
 
         var r0x_net = klj.netamount-klj.r0_net;
 
-        var midprice = (klj.high+klj.low)/2;
+        var midprice = klj.close//(klj.high+klj.low)/2;
         if (midprice>currentprice) {
             netsum_r0_above += klj.r0_net;
             netsum_r0x_above += r0x_net;
