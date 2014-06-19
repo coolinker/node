@@ -522,7 +522,7 @@ function processDayMoneyFlow(klineJson, i) {
 
         var r0x_net = klj.netamount-klj.r0_net;
 
-        var midprice = klj.close//(klj.high+klj.low)/2;
+        var midprice = Math.max(klj.close, klj.open)//(klj.high+klj.low)/2;
         if (midprice>currentprice) {
             netsum_r0_above += klj.r0_net;
             netsum_r0x_above += r0x_net;

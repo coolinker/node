@@ -2,9 +2,13 @@ var webdriver = require('selenium-webdriver');
 var ajaxRequest = require('request');
 
 var userId = "1145923";
+var userName = "";
+var password = "";
+var tradingPassword = "";
+
 var availableFund = 0;
 var minimumFundToLeftHigh = 9262;
-var minimumFundToLeftLow = 3000;
+var minimumFundToLeftLow = 1000;
 var driver = new webdriver.Builder().
 withCapabilities(webdriver.Capabilities.chrome()).
 build();
@@ -25,8 +29,8 @@ var user = form.findElement(webdriver.By.id('userNameLogin'));
 var password = form.findElement(webdriver.By.id('pwd'));
 var validNum = form.findElement(webdriver.By.id('validNum'));
 
-user.sendKeys("coolinker");
-password.sendKeys("B3ijing19l");
+user.sendKeys(userName);
+password.sendKeys(password);
 validNum.sendKeys("");
 
 //driver.executeAsyncScript(function(){alert('hi welcome')});
@@ -199,28 +203,6 @@ driver.wait(function() {
 
 }, 5000);
 
-// driver.wait(function() {
-//     console.log("check-trace", new Date());
-//     var url = "https://trading.lufax.com/trading/service/trade/check-trace?sid="
-//         +tradingSid+"&productId="+productID+"&userId="+userId+"&curStep=TRADE_INFO"
-//         +"&_="+(new Date()).getTime();
-//     return driver.executeAsyncScript(function() {
-//         var url = arguments[arguments.length - 2];
-//         var callback = arguments[arguments.length - 1];
-//         var xhr = new XMLHttpRequest();
-//         xhr.open("GET", url, true);
-//         xhr.onreadystatechange = function() {
-//             if (xhr.readyState == 4) {
-//                 callback(xhr.responseText);
-//             }
-//         }
-//         xhr.send('');
-//     }, url).then(function(str) {
-//         console.log("check-trace: TRADE_INFO", new Date(), str);
-//         return true;
-//     });
-// }, 5000);
-
 driver.wait(function() {
     console.log("trace-trace......", new Date());
     var url = "https://trading.lufax.com/trading/service/trade/trace";
@@ -295,7 +277,7 @@ driver.wait(function() {
 var inputValidJY;
 driver.wait(function() {
     driver.get("https://trading.lufax.com/trading/security-valid?productId="+productID+"&sid="+tradingSid);
-    driver.findElement(webdriver.By.xpath("//input[@id='tradeCode']")).sendKeys("B3ijing19jy");
+    driver.findElement(webdriver.By.xpath("//input[@id='tradeCode']")).sendKeys(tradingPassword);
     inputValidJY = driver.findElement(webdriver.By.xpath("//input[@id='inputValid']"));
     return inputValidJY.sendKeys("").then(function(){
         console.log("waiting valid code...", new Date())
