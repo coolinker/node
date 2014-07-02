@@ -48,7 +48,8 @@ stocks.forEach(function(stockId) {
     var low_index_20 = klineutil.lowItemIndex(kLineJson, i-20, i, "low");
     var low_index_40 = klineutil.lowItemIndex(kLineJson, i-40, i-5, "low");
     var longDownNeedle = 0;
-    for (var j=i; i-j<20; j--) {
+    for (var j=i; j>=0 && i-j<20; j--) {
+        //if (!kLineJson[j]) console.log("stockId", stockId, j, kLineJson.length)
         if ((klineutil.increase(kLineJson[j].low, Math.min(kLineJson[j].close, kLineJson[j].open)) > 0.8*kLineJson[j].inc_ave_21
             || klineutil.increase(Math.max(kLineJson[j].close, kLineJson[j].open), kLineJson[j].high) > 0.8*kLineJson[j].inc_ave_21)
             && kLineJson[j].r0_net>0)

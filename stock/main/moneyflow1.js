@@ -121,7 +121,8 @@ stocks.forEach(function(stockId) {
         //   (maxr0netsum/10000).toFixed(2), (maxr0xnetsum/10000).toFixed(2))
     }
    //600016 600515
-   
+
+    if (maxr0netsumidx<0) return;
     var inc = klineutil.increase(kLineJson[maxr0netsumidx].open, kLineJson[startidx].close);
     var duration = startidx-maxr0netsumidx;
     var durationmiddle = maxr0netsumidx+Math.floor(duration/2);

@@ -27,6 +27,8 @@ for (var stockidx=0; stockidx<stocks.length; stockidx++) {
     var stockId = stocks[stockidx];
 
     var kLineJson = klineio.readKLineSync(stockId);
+    if(!kLineJson[kLineJson.length-1]) console.log(stockId, kLineJson.length)
+    if (kLineJson.length===0)  continue;
     var lastclose = kLineJson[kLineJson.length-1].close;
     for (var i=kLineJson.length-1; i>=0; i--) {
         var date = kLineJson[i].date;

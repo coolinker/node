@@ -173,8 +173,8 @@ function morningStarA(klineJson, i) {
     if (obj.netsummax_r0 === undefined) return false;
 
     return  morningStarA_1(klineJson, i) 
-        || morningStarA_2(klineJson, i)
-        || morningStarA_3(klineJson, i)
+        // || morningStarA_2(klineJson, i)
+        // || morningStarA_3(klineJson, i)
 
 }
 
@@ -188,12 +188,28 @@ function morningStarB_1(klineJson, i) {
         && obj.netsummin_r0x_5<obj.netsummin_r0_5
 }
 
+function morningStarB_2(klineJson, i) {
+
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return obj.netsummax_r0_10<=0.1*obj.amount_ave_21
+        && obj.netsummin_r0_20>-0.05*obj.amount_ave_21
+        && obj.netsum_r0_below<0.05*obj.amount_ave_21
+    
+}
+
 function morningStarB(klineJson, i) {
 
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
-    return obj.netsummax_r0_10<=0.0*obj.amount_ave_21
+    return obj.netsummin_r0_5===obj.netsummin_r0_10
+        && obj.netsummax_r0x_10>obj.netsummax_r0_10 + 0.03*obj.amount_ave_21 
+        && obj.netsummin_r0_10===obj.netsummin_r0_20
+        && obj.netsum_r0x_5<=obj.netsum_r0_5
+        // && (morningStarB_1(klineJson, i)
+        // || morningStarB_2(klineJson, i))
     
 }
 
