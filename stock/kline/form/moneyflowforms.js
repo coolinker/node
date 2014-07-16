@@ -173,8 +173,8 @@ function morningStarA(klineJson, i) {
     if (obj.netsummax_r0 === undefined) return false;
 
     return  morningStarA_1(klineJson, i) 
-        // || morningStarA_2(klineJson, i)
-        // || morningStarA_3(klineJson, i)
+         || morningStarA_2(klineJson, i)
+         || morningStarA_3(klineJson, i)
 
 }
 
@@ -204,18 +204,36 @@ function morningStarB(klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
-    return obj.netsummin_r0_5===obj.netsummin_r0_10
-        && obj.netsummax_r0x_10>obj.netsummax_r0_10 + 0.03*obj.amount_ave_21 
-        && obj.netsummin_r0_10===obj.netsummin_r0_20
-        && obj.netsum_r0x_5<=obj.netsum_r0_5
-        // && (morningStarB_1(klineJson, i)
-        // || morningStarB_2(klineJson, i))
+    return morningStarB_1(klineJson, i)
+         || morningStarB_2(klineJson, i)
     
 }
 
+function redNGreenRed_1(klineJson, i) {
+
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return obj.netsummax_r0_10<=0.0*obj.amount_ave_21
+        && obj.netsummin_r0_5===obj.netsummin_r0_10
+        && obj.netsummin_r0_10===obj.netsummin_r0_20
+    
+}
+
+function redNGreenRed(klineJson, i) {
+
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return obj.netsummax_r0_5<0.02*obj.amount_ave_21
+        && obj.netsummin_r0_10>-0.02*obj.amount_ave_21
+        && obj.netsummax_r0_5===obj.netsummax_r0_10
+    
+}
 exports.moneyFlowInOut = moneyFlowInOut;
 exports.wBottomA = wBottomA;
 exports.wBottom = wBottom;
 exports.headShoulderBottom = headShoulderBottom;
 exports.morningStarA = morningStarA;
 exports.morningStarB = morningStarB;
+exports.redNGreenRed = redNGreenRed;

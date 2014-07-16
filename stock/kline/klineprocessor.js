@@ -381,7 +381,7 @@ function winOrLose(kLineJson) {
 
 function updateKLinesFromBase(match) {
     var stocks = klineio.getAllStockIds(match);
-    //stocks = ["SZ002408"];
+    //stocks = ["SH600012"];
     
     stocks.forEach(function(stockId) {
         klineio.readKLineBaseSync(stockId, processChain);   
@@ -454,7 +454,6 @@ function processDayMoneyFlow(klineJson, i) {
 
     var netsum_r0 = 0;
     var netsum_r0x = 0;
-    var maxnetsumidx_r0 = -1;
 
     var netsummin_r0x = 100000000000;
     var netsummin_r0x_5 = 0, netsummin_r0x_10 = 0, netsummin_r0x_20 = 0, netsummin_r0x_40 = 0;
@@ -522,31 +521,13 @@ function processDayMoneyFlow(klineJson, i) {
 
         var r0x_net = klj.netamount-klj.r0_net;
 
-        var midprice = (klj.high+klj.low)/2;
-        if (midprice>currentprice) {
-            netsum_r0_above += klj.r0_net;
-            netsum_r0x_above += r0x_net;
-            if (i-j<60) {
-                netsum_r0_above_60 += klj.r0_net;
-                netsum_r0x_above_60 += r0x_net;
-            }
-        }
-
-        if (midprice<currentprice) {
-            netsum_r0_below += klj.r0_net;
-            netsum_r0x_below += r0x_net;
-            if (i-j<60) {
-                netsum_r0_below_60 += klj.r0_net;
-                netsum_r0x_below_60 += r0x_net;
-            }
-        }
-
         netsum_r0 += klj.r0_net;
         netsum_r0x += r0x_net;
 
         if (netsum_r0 < netsummin_r0) {
             netsummin_r0 = netsum_r0;
         }
+
         if (netsum_r0 > netsummax_r0) {
             netsummax_r0 = netsum_r0;
             netsummax_idx_r0 = j;
@@ -564,6 +545,34 @@ function processDayMoneyFlow(klineJson, i) {
     }
 
     if (netsummax_idx_r0===-1) console.log("error netsummax_idx_r0 should not be -1");
+    
+    for (var m = i; m>=netsummax_idx_r0; m--) {
+        var klj = klineJson[m];
+
+        var r0x_net = klj.netamount-klj.r0_net;
+        if (klineJson.length>m+1 && klineJson[m+1].exRightsDay) {
+            currentprice = currentprice*klineJson[m].close/klineJson[m+1].open
+        }
+
+        var midprice = (klj.high+klj.low)/2;
+        if (midprice>currentprice) {
+            netsum_r0_above += klj.r0_net;
+            netsum_r0x_above += r0x_net;
+            if (i-m<60) {
+                netsum_r0_above_60 += klj.r0_net;
+                netsum_r0x_above_60 += r0x_net;
+            }
+        }
+
+        if (midprice<currentprice) {
+            netsum_r0_below += klj.r0_net;
+            netsum_r0x_below += r0x_net;
+            if (i-m<60) {
+                netsum_r0_below_60 += klj.r0_net;
+                netsum_r0x_below_60 += r0x_net;
+            }
+        }
+    }
 
     var obj = klineJson[i];
 
@@ -623,7 +632,10 @@ function processChain(stockId, kLineJson) {
         var kl = klj[n];
         return klineutil.increase(kl.low, kl.high);
     });
-
+    average(kLineJson, "amplitude", 21, true, function (klj, n) { 
+        var kl = klj[n];
+        return klineutil.increase(kl.low, kl.high);
+    });
     average(kLineJson, "amplitude", 55, true, function (klj, n) {
         var kl = klj[n];
         return klineutil.increase(kl.low, kl.high);
@@ -653,7 +665,7 @@ function processChain(stockId, kLineJson) {
     processMoneyFlow(kLineJson);
     
     winOrLose(kLineJson);
-    matchForms(kLineJson);
+    //matchForms(kLineJson);
 
     klineio.writeKLineSync(stockId, kLineJson);
   }

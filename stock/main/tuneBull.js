@@ -14,7 +14,7 @@ var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "morningStarB";
+var klineForm = "redNGreenRed";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom

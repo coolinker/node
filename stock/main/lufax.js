@@ -2,13 +2,11 @@ var webdriver = require('selenium-webdriver');
 var ajaxRequest = require('request');
 
 var userId = "1145923";
-var userName = "";
-var password = "";
-var tradingPassword = "";
-
 var availableFund = 0;
-var minimumFundToLeftHigh = 9262;
+var minimumFundToLeftHigh = 9500;
 var minimumFundToLeftLow = 1000;
+var minInterest = 0.086;
+
 var driver = new webdriver.Builder().
 withCapabilities(webdriver.Capabilities.chrome()).
 build();
@@ -29,8 +27,8 @@ var user = form.findElement(webdriver.By.id('userNameLogin'));
 var password = form.findElement(webdriver.By.id('pwd'));
 var validNum = form.findElement(webdriver.By.id('validNum'));
 
-user.sendKeys(userName);
-password.sendKeys(password);
+user.sendKeys("coolinker");
+password.sendKeys("B3ijing19l");
 validNum.sendKeys("");
 
 //driver.executeAsyncScript(function(){alert('hi welcome')});
@@ -49,7 +47,7 @@ driver.sleep(1000);
 
 driver.wait(function() {
     console.log("asset-overview", new Date());
-    var url = "https://my.lufax.com/my/service/users/" + userId + "/asset-overview?mytest=test";
+    var url = "https://my.lufax.com/my/service/users/" + userId + "/asset-overview";
     return driver.executeAsyncScript(function() {
         var url = arguments[arguments.length - 2];
         var callback = arguments[arguments.length - 1];
@@ -76,7 +74,7 @@ driver.sleep(1000);
 
 driver.wait(function() {
     console.log("counts-info", new Date());
-    var url = "https://list.lufax.com/list/service/product/counts-info?jake=yes";
+    var url = "https://list.lufax.com/list/service/product/counts-info";
     return driver.executeAsyncScript(function() {
         var url = arguments[arguments.length - 2];
         var callback = arguments[arguments.length - 1];
@@ -96,10 +94,12 @@ driver.wait(function() {
 }, 5000);
 
 
-var productID;
+var productID, _productID;
 var isAjaxRequesting = false;
 var sessionHeartBeat = new Date();
 var ajaxRequestingTime;
+var pageNumber = 1;
+var maxInterest = 0;
 
 driver.wait(function() {
     
@@ -109,37 +109,71 @@ driver.wait(function() {
         console.log("sessionHeartBeat", sessionHeartBeat)
     }
 
-    if (!productID && isAjaxRequesting === false && (!ajaxRequestingTime || (new Date() - ajaxRequestingTime) > 500)) {
+    if (isAjaxRequesting === false && (!ajaxRequestingTime || (new Date() - ajaxRequestingTime) > 500)) {
 
         isAjaxRequesting = true;
         ajaxRequestingTime = new Date();
         ajaxRequest({
-                uri: "https://list.lufax.com/list/service/product/transfer-product-list/listing/1?column=publishedAt&order=asc&isDefault=true",
-                timeout: 1000
+                uri: "https://list.lufax.com/list/service/product/transfer-product-list/listing/"
+                    +pageNumber+"?minAmount=0&maxAmount=100000000&tradingMode=&column=publishedAt&order=asc&isDefault=true",
+                timeout: 2000
             },
+            //https://list.lufax.com/list/service/product/transfer-product-list/listing/2?minAmount=0&maxAmount=100000000&column=publishedAt&tradingMode=&order=desc&isDefault=true&_=1404353632804
+
             function(error, response, body) {
                 if (error) {
-                    console.log(error);
+                    //console.log(error);
                 } else if (response.statusCode == 200) {
                     var json = JSON.parse(body);
-                    var products = json.data;
-                    var topPriceToBuy = 0;
-                    if (products[0].productStatus !== "DONE") {
-                        console.log(products[0].productStatus, products[0].price, topPriceToBuy, new Date())
+                    if (json.currentPage<json.totalPage && pageNumber<json.totalPage) pageNumber++;
+                    else {
+                        pageNumber = json.totalPage-10;
+                        //console.log("----------------", json.currentPage, json.totalPage);
                     }
+                    var products = json.data;
+                                      
                     products.forEach(function(product) {
+                        var valueDate = Number(product.valueDate.substr(6,2));//=20140624
+                        var currentDate = (new Date()).getDate();
+                        var publishedTime = new Date(Date.parse(product.publishedAt+"T"+product.publishAtDateTime+"+0800"))
+                        var adjustPrice = product.adjustPrice;
+
+                        if(product.bidCurrentPrice === undefined && product.tradingMode === "06"
+                            || product.bidCurrentPrice !== undefined && product.tradingMode !== "06") 
+                            console.log("****************product.tradingMode=06", product.productId, product.adjustPrice)
+                            
+                        if (product.tradingMode === "06") {
+                            if (new Date()-publishedTime<55*60*1000) return;
+                            //console.log("product.tradingMode", product.tradingMode, new Date(), publishedTime, new Date()-publishedTime)
+                            adjustPrice += product.bidCurrentPrice+10;
+
+                        }    
+                        //adjustPrice = adjustPrice;// - product.principal * (product.interestRate/12)*(adjustDays/30);
+
+                        var _adjustInterest = adjustInterest(product.principal, adjustPrice, product.interestRate, product.numberOfInstalments)
+                         var adjustDays = (currentDate + 30 - valueDate)%30;
+                        _adjustInterest = _adjustInterest/(1- (adjustDays/30)/product.numberOfInstalments);
+                        // if (adjustDays>20) console.log(adjustDays, (1- (adjustDays/30)/product.numberOfInstalments), _adjustInterest
+                        //     , product.principal, adjustPrice);
+                        
                         if (product.productStatus === "ONLINE" 
-                            && product.price <= availableFund
-                            &&(availableFund-product.price > minimumFundToLeftHigh
-                                 || availableFund-product.price < minimumFundToLeftLow)
-                            && product.price > topPriceToBuy) {
-                            topPriceToBuy = product.price;
-                            productID = product.productId;
-                            console.log("");
-                            console.log("productID********", productID, topPriceToBuy);
-                            console.log("");
+                            && _adjustInterest > minInterest
+                            // && product.price < availableFund
+                            // &&(availableFund-product.price > minimumFundToLeftHigh
+                            //    || availableFund-product.price < minimumFundToLeftLow)
+                            ) {
+                            maxInterest = _adjustInterest;
+                            _productID = product.productId;
+                            
+                            console.log("productID********", pageNumber, _productID, (_adjustInterest*100).toFixed(2), product.principal, product.bidCurrentPrice, product.adjustPrice, 
+                                ((new Date())-publishedTime)/60000);
+                            
                         }
                     })
+
+                    if (json.currentPage===json.totalPage && _productID) {
+                        //productID = _productID;
+                    }
 
                 }
                 isAjaxRequesting = false;
@@ -202,6 +236,28 @@ driver.wait(function() {
         });
 
 }, 5000);
+
+// driver.wait(function() {
+//     console.log("check-trace", new Date());
+//     var url = "https://trading.lufax.com/trading/service/trade/check-trace?sid="
+//         +tradingSid+"&productId="+productID+"&userId="+userId+"&curStep=TRADE_INFO"
+//         +"&_="+(new Date()).getTime();
+//     return driver.executeAsyncScript(function() {
+//         var url = arguments[arguments.length - 2];
+//         var callback = arguments[arguments.length - 1];
+//         var xhr = new XMLHttpRequest();
+//         xhr.open("GET", url, true);
+//         xhr.onreadystatechange = function() {
+//             if (xhr.readyState == 4) {
+//                 callback(xhr.responseText);
+//             }
+//         }
+//         xhr.send('');
+//     }, url).then(function(str) {
+//         console.log("check-trace: TRADE_INFO", new Date(), str);
+//         return true;
+//     });
+// }, 5000);
 
 driver.wait(function() {
     console.log("trace-trace......", new Date());
@@ -277,7 +333,7 @@ driver.wait(function() {
 var inputValidJY;
 driver.wait(function() {
     driver.get("https://trading.lufax.com/trading/security-valid?productId="+productID+"&sid="+tradingSid);
-    driver.findElement(webdriver.By.xpath("//input[@id='tradeCode']")).sendKeys(tradingPassword);
+    driver.findElement(webdriver.By.xpath("//input[@id='tradeCode']")).sendKeys("B3ijing19jy");
     inputValidJY = driver.findElement(webdriver.By.xpath("//input[@id='inputValid']"));
     return inputValidJY.sendKeys("").then(function(){
         console.log("waiting valid code...", new Date())
@@ -309,3 +365,55 @@ driver.wait(function() {
 
 }, 10000);
 
+
+
+function math_power(x, y) {
+    var result = 1;
+    for (var i=0; i<y; i++) {
+        result *= x; 
+    }
+    return result;
+}
+
+function payment_month(principal, interest_month, months) {
+    return principal*interest_month*math_power((1+interest_month), months)/(
+        math_power((1+interest_month), months)-1)
+}
+
+
+function adjustInterest(principal, adjustPrice, interest, months) {
+    var paymentPerMonth = payment_month(principal, interest/12, months);
+    var interestCeil = interest;
+    var interestFloor = interest;
+    while (paymentPerMonth < payment_month(principal+adjustPrice, interestFloor/12, months)) {
+        interestCeil = interestFloor;
+        interestFloor -= 0.001;
+    }
+
+    while (paymentPerMonth > payment_month(principal+adjustPrice, interestCeil/12, months)) {
+        interestFloor = interestCeil;
+        interestCeil += 0.001;
+    }
+
+    //console.log("start:", interestFloor, interestCeil);
+    interest = interestCeil;
+    var _count = 0;
+    while(_count<15){
+        _count++;
+        var adjustedPaymentPerMonth = payment_month(principal+adjustPrice, interest/12, months);
+        //console.log("---", interestFloor, interestCeil, adjustedPaymentPerMonth, paymentPerMonth)
+        if (Math.round(adjustedPaymentPerMonth)-Math.round(paymentPerMonth) === 0) return interest;
+        //if (_count===10) console.log(interest, adjustedPaymentPerMonth, paymentPerMonth)
+        if (adjustedPaymentPerMonth > paymentPerMonth) {
+            interest = (interestCeil+interestFloor)/2;
+            interestCeil = interest;
+        } else {
+            interestFloor = interest;
+            interest += 0.0005;
+            interestCeil = interest;
+        }
+        
+    }
+
+    console.log("*******************", principal, adjustPrice, interest, months)
+}

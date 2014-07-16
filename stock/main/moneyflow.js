@@ -26,7 +26,9 @@ function _f(amount){
     return (amount/10000).toFixed(2)
 }
 var emailbody = "";
-var counter = 0, losecounter = 0;
+var counter = 0, losecounter = 0, wincounter = 0;
+
+//stocks = ["SZ002424"]
 stocks.forEach(function(stockId) {
     var kLineJson= klineio.readKLineSync(stockId);
     var len = kLineJson.length;
@@ -47,36 +49,57 @@ stocks.forEach(function(stockId) {
     
     var low_index_20 = klineutil.lowItemIndex(kLineJson, i-20, i, "low");
     var low_index_40 = klineutil.lowItemIndex(kLineJson, i-40, i-5, "low");
-    var longDownNeedle = 0;
-    for (var j=i; j>=0 && i-j<20; j--) {
+    var longDownNeedle = 0, longDownNeedleDates = [];
+    var bigLowSmallVolume = 0, bigLowSmallVolumeDates = [];
+    for (var j=i; j>=1 && i-j<30; j--) {
         //if (!kLineJson[j]) console.log("stockId", stockId, j, kLineJson.length)
-        if ((klineutil.increase(kLineJson[j].low, Math.min(kLineJson[j].close, kLineJson[j].open)) > 0.8*kLineJson[j].inc_ave_21
-            || klineutil.increase(Math.max(kLineJson[j].close, kLineJson[j].open), kLineJson[j].high) > 0.8*kLineJson[j].inc_ave_21)
-            && kLineJson[j].r0_net>0)
+        if(klineutil.increase(kLineJson[j].low, kLineJson[j-1].close) > 0.8*kLineJson[j].amplitude_ave_21
+            && klineutil.increase(kLineJson[j].amount_ave_21, kLineJson[j].amount) < 0
+            || klineutil.increase(kLineJson[j].low, kLineJson[j-1].close) > 0.8*kLineJson[j].amplitude_ave_8
+            && klineutil.increase(kLineJson[j].amount_ave_8, kLineJson[j].amount) < 0) {
+            bigLowSmallVolume++;
+            bigLowSmallVolumeDates.push(kLineJson[j].date)
+            //if (stockId==="SH600012")
+            //console.log(stockId, kLineJson[j].date, klineutil.increase(kLineJson[j].low, kLineJson[j-1].close) , kLineJson[j].inc_ave_8, kLineJson[j].inc_ave_21)
+        }
+            
+
+        if ((klineutil.increase(kLineJson[j].low, Math.min(kLineJson[j].close, kLineJson[j].open)) > 0.8*kLineJson[j].inc_ave_8
+            || klineutil.increase(Math.max(kLineJson[j].close, kLineJson[j].open), kLineJson[j].high) > 0.8*kLineJson[j].inc_ave_8)
+            && kLineJson[j].r0_net>0) {
             longDownNeedle++;
-    }
-// console.log(longDownNeedle, _f(klj.netsum_r0_40 + klj.netsum_r0x_40), 
+            longDownNeedleDates.push(kLineJson[j].date)
+        }
+    }   
+// console.log(klj.netsum_r0_above_60, 0.5*klj.amount_ave_21, klj.netsum_r0_above_60 - 0.5*klj.amount_ave_21,
+//     _f(klj.netsum_r0_above+klj.netsum_r0x_above), 
+//     _f(klj.netsum_r0_above_60+klj.netsum_r0x_above_60), _f(klj.amount_ave_21));
 //     _f(klj.netsummax_r0+klj.netsummax_r0_netsum_r0x),
 //     duration,  i-low_index_40, klineutil.increase(kLineJson[low_index_40].low, kLineJson[i].close), kLineJson[i].inc_ave_21)
-    if (duration>40
-        && longDownNeedle> 5 
+    if (duration>60
+        && (longDownNeedle> 0 || bigLowSmallVolume>0)
         && i-low_index_40 > 10
         && kLineJson[i].close > kLineJson[low_index_40].low
-        && klineutil.increase(kLineJson[low_index_40].low, kLineJson[i].close) < 8 * kLineJson[i].inc_ave_21
+        && klineutil.increase(kLineJson[low_index_40].low, kLineJson[i].close) < 5 * kLineJson[i].inc_ave_21
         && klj.netsummax_r0+klj.netsummax_r0_netsum_r0x>klj.amount_ave_21
         && (klj.netsum_r0_20 + klj.netsum_r0x_20 > 0 || klj.netsum_r0_40 + klj.netsum_r0x_40 > 0)
         && klj.netsum_r0_above+klj.netsum_r0x_above>0.5*klj.amount_ave_21
-        && klj.netsum_r0_above_60+klj.netsum_r0x_above_60> 0.5*klj.amount_ave_21
+        && klj.netsum_r0_above_60> 0.5*klj.amount_ave_21
+        && klj.netsum_r0_above > klj.netsum_r0_below
         //***********&& klj.netsummin_r0x_10 + klj.netsummax_r0_10 > -0.8*klj.amount_ave_8
         ) {
         counter++;
+        if (klj.winOrLose === "win") {
+            wincounter++;
+        }
         //console.log(stockId, longDownNeedle, _f(klj.netsum_r0_40 + klj.netsum_r0x_40), _f(klj.netsummax_r0+klj.netsummax_r0_netsum_r0x))
         if (klj.winOrLose === "lose") {
             losecounter++;
-         console.log("\r\n", stockId, duration, kLineJson[maxr0netsumidx].date, klj.date)
-         console.log(klj.netsum_r0_above_60,klj.netsum_r0x_above_60)
-         console.log(klj.netsum_r0_above,klj.netsum_r0x_above)
-         console.log(klj.netsummax_r0+klj.netsummax_r0_netsum_r0x);
+         console.log("\r\n"+stockId, duration, kLineJson[maxr0netsumidx].date, klj.date)
+         console.log("bigLowSmallVolume:", bigLowSmallVolumeDates, "longDownNeedle", longDownNeedleDates);
+         console.log(_f(klj.netsum_r0_above), _f(klj.netsum_r0x_above), " / ", _f(klj.netsum_r0_below), _f(klj.netsum_r0x_below))
+         console.log(_f(klj.netsummax_r0), " / ", _f(klj.netsummax_r0_netsum_r0x), (klj.netsummax_r0/klj.amount_ave_8).toFixed(2));
+         //console.log(_f(klj.netsummax_r0+klj.netsummax_r0_netsum_r0x));
         }         
         /*
         emailbody += "<a href='http://vip.stock.finance.sina.com.cn/moneyflow/#!ssfx!"+stockId.toLowerCase()+"'>"
@@ -146,7 +169,7 @@ stocks.forEach(function(stockId) {
                         +" netsum_r0_above_60:"+(klj.netsum_r0_above_60/10000).toFixed(2)
                         +" netsum_r0_below_60:"+(klj.netsum_r0_below_60/10000).toFixed(2)
                         +" <br>"
-                        +" netsummax_r0:"+(klj.netsummax_r0/10000).toFixed(2) 
+                        +" netsummax_r0:"+(klj.netsummax_r0/10000).toFixed(2) +" div day amount:"+(klj.netsummax_r0/klj.amount_ave_8).toFixed(2)
                         +" <br>"
                         +" netsummax_r0_netsum_r0x:"+(klj.netsummax_r0_netsum_r0x/10000).toFixed(2)
                         +" <br>"
@@ -156,7 +179,7 @@ stocks.forEach(function(stockId) {
     }
 });
 //emailbody="";
-console.log("lose:", losecounter, "counter:", counter);
+console.log("win:", wincounter, "lose:", losecounter, "counter:", counter);
 if (emailbody!=="") {
 //console.log(emailbody);
         var mailutil = require("../mailutil");
