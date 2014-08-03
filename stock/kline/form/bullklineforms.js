@@ -10,7 +10,9 @@ var moneyflowforms = require("./moneyflowforms");
  * @param  {[type]} i         [description]
  * @return {[type]}           [description]
  */
-function wBottomA (klineJson, i) {
+
+function wBottomA(klineJson, i) {
+
     var amp = klineJson[i].inc_ave_8;
     if (klineutil.increase(klineJson[i].amount_ave_8, klineJson[i].amount) > 1) return false
 
@@ -38,6 +40,7 @@ function wBottomA (klineJson, i) {
  * @return {[type]}           [description]
  */
 function wBottom (klineJson, i) {
+    return true;
     var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
     var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
     
@@ -931,7 +934,11 @@ function bullNeedle(klineJson, i) {
         } ()
 }
 
+function moneyflow(klineJson, i) {
+    return true;
+}
 
+exports.moneyflow = moneyflow;
 exports.bullNeedle = bullNeedle;
 exports.bullPulsing = bullPulsing;
 

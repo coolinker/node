@@ -14,7 +14,7 @@ var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "redNGreenRed";
+var klineForm = "wBottom";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
@@ -27,7 +27,7 @@ var showLogDates =[]//["11/14/2011"];
 
 var stocks = klineio.getAllStockIds();
 //stocks = ['SH600509']//['SZ002371', "SZ002158", "SH600061"];
-
+var __themastercount = 0;
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
     // var masterTotal = 0;
@@ -143,34 +143,95 @@ if (cluster.isMaster) {
             console.log("conditionArr", conditionArr.length);
 
             conditionArr.sort(function(att1, att2){
+
                 var wincon1 = masterConditionObj.win[att1];
                 var wintrueper1 = wincon1 ? wincon1._true/(wincon1._true+wincon1._false) : 0;
                 var losecon1 = masterConditionObj.lose[att1];
                 var losetrueper1 = losecon1 ? losecon1._true/(losecon1._true+losecon1._false) : 0;
-                var abs1 = Math.abs(wintrueper1-losetrueper1);
+
+                // if (att1=="klineutil.increase(klineJson[idx].close_ave_21,klineJson[idx].close_ave_8)>0.05")
+                //     console.log("1:", wintrueper1, losetrueper1, wincon1, losecon1, att2)
+
+                // if (att2=="klineutil.increase(klineJson[idx].close_ave_21,klineJson[idx].close_ave_8)>0.05")
+                //     console.log("2:", wintrueper1, losetrueper1, wincon1, losecon1, att1) 
+               
+                // if (att1==="obj.netsum_r0_below_60>0.0*obj.amount_ave_21" || att2==="obj.netsum_r0_below_60>0.0*obj.amount_ave_21") {
+                //     console.log("abs1:", wincon1,losecon1, att1);
+                //     console.log("abs2:", masterConditionObj.win[att2], masterConditionObj.lose[att2], att2)
+                // }
+                //if (wintrueper1===0 && losetrueper1===0 || wintrueper1===1 && losetrueper1===1) return 1;
+                //if (wintrueper1<0.1 && losetrueper1<0.1 || wintrueper1>0.9 && losetrueper1>0.9) return 1;
+                // if (wintrueper1>losetrueper1 
+                //     && ((wincon1._true+losecon1._true < 1000
+                //             && wincon1._true/(wincon1._true+losecon1._true)<0.8) 
+                //         || wincon1._true+losecon1._true < 1000)) return 1;
+                // if (wintrueper1<losetrueper1 
+                //     && ((wincon1._false+losecon1._false < 1000
+                //     && wincon1._false/(wincon1._false+losecon1._false)<0.8)
+                //     || wincon1._false+losecon1._false < 1000)) return 1;
+                
+               if (losetrueper1===1) return 1;
+                var abs1 =  wintrueper1>losetrueper1? wintrueper1/losetrueper1: (1-wintrueper1)/(1-losetrueper1) //Math.abs(wintrueper1-losetrueper1);
+
 
                 var wincon2 = masterConditionObj.win[att2];
                 var wintrueper2 = wincon2 ? wincon2._true/(wincon2._true+wincon2._false) : 0;
                 var losecon2 = masterConditionObj.lose[att2];
                 var losetrueper2 = losecon2 ? losecon2._true/(losecon2._true+losecon2._false) : 0;
-                var abs2 = Math.abs(wintrueper2-losetrueper2);
-                
+
+                //if (wintrueper2===0 && losetrueper2===0|| wintrueper2===1 && losetrueper2===1) return -1;
+                //if (wintrueper2<0.1 && losetrueper2<0.1 || wintrueper2>0.9 && losetrueper2>0.9) return -1;
+                // if (wintrueper2>losetrueper2
+                //     && ((wincon2._true+losecon2._true < 1000
+                //             && wincon2._true/(wincon2._true+losecon2._true)<0.8)
+                //         || wincon2._true+losecon2._true < 1000)) return -1;
+                // if (wintrueper2<losetrueper2
+                //     && ((wincon2._false+losecon2._false < 1000
+                //             && wincon2._false/(wincon2._false+losecon2._false)<0.8)
+                //         || wincon2._false+losecon2._false < 1000)) return -1;
+
+                if (losetrueper2===1) return -1;
+                var abs2 = wintrueper2>losetrueper2? wintrueper2/losetrueper2:  (1-wintrueper2)/(1-losetrueper2)  //Math.abs(wintrueper2-losetrueper2);
+
+                var totalremain1 = wintrueper1>losetrueper1?(wincon1._true+losecon1._true): (wincon1._false+losecon1._false);
+                var totalremain2 = wintrueper2>losetrueper2?(wincon2._true+losecon2._true): (wincon2._false+losecon2._false);
                 if (abs1>abs2) return -1;
                 if (abs1<abs2) return 1;
                 return 0;
 
             })
             
+            var isDupeCondition = function(str){
+                var depe = "none".replace(/ /g, "");
+                ;
+                var cond = str.replace(/ /g, "").replace(/[><=]/g, " ").split(" ")[0];
 
-            for (var ci=0; ci<10 && ci<conditionArr.length; ci++) {
+                //console.log(depe.indexOf(cond), depe, cond);
+                return depe.indexOf(cond)>=0;
+            }
+
+            for (var ci=0; ci<15 && ci<conditionArr.length; ci++) {
                 catt = conditionArr[ci];
                 var wincon = masterConditionObj.win[catt];
                 var losecon = masterConditionObj.lose[catt];
                 var wintrueper = wincon ? wincon._true/(wincon._true+wincon._false) : 0;
                 var losetrueper = losecon ? losecon._true/(losecon._true+losecon._false) : 0;
-                console.log(catt, wintrueper.toFixed(3), losetrueper.toFixed(3), masterConditionObj.win[catt], masterConditionObj.lose[catt]);
+
+                var per = wintrueper>losetrueper
+                   ? (masterConditionObj.win[catt]._true/(masterConditionObj.win[catt]._true+masterConditionObj.lose[catt]._true))
+                   : (masterConditionObj.win[catt]._false/(masterConditionObj.win[catt]._false+masterConditionObj.lose[catt]._false));
+                console.log(per.toFixed(3), 
+                    wintrueper>losetrueper 
+                    ? (masterConditionObj.win[catt]._true+masterConditionObj.lose[catt]._true)
+                    : (masterConditionObj.win[catt]._false+masterConditionObj.lose[catt]._false),
+                    wintrueper.toFixed(3), 
+                    losetrueper.toFixed(3), masterConditionObj.win[catt], masterConditionObj.lose[catt], 
+                    (isDupeCondition(catt)?"***":"")+catt
+                    );
+
             }
             
+
             console.timeEnd("run");
         }
     });
@@ -217,8 +278,8 @@ if (cluster.isMaster) {
                         //console.log(stockId, date, iswin)
                         var date = new Date(klineJson[idx].date);
                         var iswin = klineJson[idx].winOrLose==="win";
-                        
-                        conditionanalyser.conditions(klineJson, idx, conditionObj);
+                        __themastercount++;
+                        conditionanalyser.conditions(klineJson, idx, conditionObj, stockId);
                         if (dateSections.length===0) return;
                         var keytotal = "";
                         var keywin = "";
@@ -270,6 +331,8 @@ if (cluster.isMaster) {
                 forkResult.fun = fun;
                 forkResult.detailedDateResult = detailedDateResult;
                 forkResult.conditionObj = conditionObj;
+                forkResult.__themastercount = __themastercount;
+                //console.log("__themastercount", __themastercount)
                 process.send(forkResult);
                 process.exit(0);
             } else {

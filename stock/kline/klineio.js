@@ -128,6 +128,37 @@ function readKLineBaseSync(stockId, callback) {
   callback(stockId, kLineJson);
   
 }
+
+function readKLineRightBaseSync(stockId) {
+  
+  var kLineJson = {};
+  var content = fs.readFileSync("../datasource/klines_base_right/"+stockId+".TXT","utf8");
+  var lines = content.split("\r\n");
+  var count = 0;
+  lines.forEach(function(line) {
+      var lineEle = line.split(",");
+
+      if (lineEle.length===7)  {
+          count++;
+          var vol = parseFloat(lineEle[5]);
+          if (vol>0) {
+              kLineJson[lineEle[0]] = {date: lineEle[0],
+                open: parseFloat(lineEle[1]), 
+                high: parseFloat(lineEle[2]),
+                low: parseFloat(lineEle[3]), 
+                close: parseFloat(lineEle[4]), 
+                volume: parseFloat(lineEle[5]), 
+                amount: parseFloat(lineEle[6])};
+          } else {
+            //console.log("==",stockId, lineEle);
+            if (count<lines.length-2) console.log(stockId, count, lines.length, lineEle);
+          }
+      }
+  });
+  
+  return kLineJson;
+}
+
 function readKLineBase(stockId, callback) {
   //console.log("Read K line data:"+stockId);
   var kLineJson = [];
@@ -264,6 +295,7 @@ exports.config = config;
 
 exports.readLatestKLineAjax = readLatestKLineAjax;
 exports.readKLineBaseSync = readKLineBaseSync;
+exports.readKLineRightBaseSync = readKLineRightBaseSync;
 exports.readKLineBase = readKLineBase;
 exports.readKLineSync = readKLineSync;
 exports.readKLine = readKLine;
