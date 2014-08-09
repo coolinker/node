@@ -125,10 +125,9 @@ driver.wait(function() {
                     //console.log(error);
                 } else if (response.statusCode == 200) {
                     var json = JSON.parse(body);
-                    if (json.currentPage<json.totalPage && pageNumber<json.totalPage) pageNumber++;
+                    if (pageNumber<40 && json.currentPage<json.totalPage && pageNumber<json.totalPage) pageNumber++;
                     else {
-                        pageNumber = json.totalPage-10;
-                        //console.log("----------------", json.currentPage, json.totalPage);
+                        pageNumber = 1;//json.totalPage-10;
                     }
                     var products = json.data;
                                       
@@ -156,17 +155,23 @@ driver.wait(function() {
                         // if (adjustDays>20) console.log(adjustDays, (1- (adjustDays/30)/product.numberOfInstalments), _adjustInterest
                         //     , product.principal, adjustPrice);
                         
+                        //availableFund = 1200000;
+
                         if (product.productStatus === "ONLINE" 
                             && _adjustInterest > minInterest
-                            // && product.price < availableFund
+                            //&& product.price < availableFund
                             // &&(availableFund-product.price > minimumFundToLeftHigh
-                            //    || availableFund-product.price < minimumFundToLeftLow)
+                            //     || availableFund-product.price < minimumFundToLeftLow)
                             ) {
                             maxInterest = _adjustInterest;
                             _productID = product.productId;
                             
-                            console.log("productID********", pageNumber, _productID, (_adjustInterest*100).toFixed(2), product.principal, product.bidCurrentPrice, product.adjustPrice, 
-                                ((new Date())-publishedTime)/60000);
+                            console.log("PID********", pageNumber>=10?pageNumber:"0"+pageNumber, 
+                                _productID, (_adjustInterest*100).toFixed(2), product.principal.toFixed(2), 
+                                product.bidCurrentPrice!=undefined?" Bid: "+product.bidCurrentPrice:"",
+                                product.adjustPrice?"Adj: "+product.adjustPrice:"", 
+                                (((new Date())-publishedTime)/60000).toFixed(2),
+                                product.valueDate.substr(0,8));
                             
                         }
                     })

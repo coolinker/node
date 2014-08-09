@@ -14,7 +14,7 @@ var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "wBottom";
+var klineForm = "morningStarA";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
@@ -202,15 +202,17 @@ if (cluster.isMaster) {
             })
             
             var isDupeCondition = function(str){
-                var depe = "none".replace(/ /g, "");
-                ;
+                var depe = "obj.netsum_r0_below<=0*obj.amount_ave_21"
+        +"obj.netsummin_r0_40>=-0.0*obj.amount_ave_21"
+        +"obj.netsummax_r0_10 <= 0.0 * obj.amount_ave_21".replace(/ /g, "");
+    
                 var cond = str.replace(/ /g, "").replace(/[><=]/g, " ").split(" ")[0];
 
                 //console.log(depe.indexOf(cond), depe, cond);
                 return depe.indexOf(cond)>=0;
             }
 
-            for (var ci=0; ci<15 && ci<conditionArr.length; ci++) {
+            for (var ci=0; ci<20 && ci<conditionArr.length; ci++) {
                 catt = conditionArr[ci];
                 var wincon = masterConditionObj.win[catt];
                 var losecon = masterConditionObj.lose[catt];

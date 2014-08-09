@@ -40,7 +40,6 @@ function wBottomA(klineJson, i) {
  * @return {[type]}           [description]
  */
 function wBottom (klineJson, i) {
-    return true;
     var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
     var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
     
@@ -69,7 +68,6 @@ function wBottom (klineJson, i) {
  * @return {[type]}           [description]
  */
 function headShoulderBottom (klineJson, i) {
-    //return true;
     var amp = klineJson[i].inc_ave_8;
 
     var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
@@ -129,6 +127,7 @@ function sidewaysCompression (klineJson, i) {
  * @return {[type]}           [description]
  */
 function morningStarA(klineJson, i) {
+    return true;
     var inc_ave = klineJson[i].inc_ave_8;
     return klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -inc_ave*1
         && klineutil.increase(klineJson[i].open, klineJson[i].close) > inc_ave*1

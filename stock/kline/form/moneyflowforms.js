@@ -82,112 +82,119 @@ function wBottom_1(klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
-    return obj.netsummax_r0_10<=0.03*obj.amount_ave_21
-        && obj.netsummin_r0_10> -0.08*obj.amount_ave_21
+    return true
+            && obj.netsummax_r0_10<=0.0*obj.amount_ave_21 //81.5% 2846 
+            && obj.netsummax_r0x_20>obj.netsummax_r0_20
+            && obj.netsummin_r0_20===-0*obj.amount_ave_21
+            //&& klineutil.increase(obj.close_ave_21, obj.close_ave_8)<-0.05
+            && function(){
+
+                var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
+                var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
+                var leftBottomIdx = klineutil.lowItemIndex(klineJson, midTopIdx-10, midTopIdx, "low");
+                var leftTopIdx = klineutil.highItemIndex(klineJson, leftBottomIdx-30, leftBottomIdx, "high");
+
+                return klineutil.increase(klineJson[midTopIdx].high, klineJson[leftTopIdx].high) > 0.25;    
+            }()
+
 }
 
 function wBottom_2(klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
-    return obj.netsummax_r0_20<0.1*obj.amount_ave_21
-        && obj.netsummin_r0_5>-0.05*obj.amount_ave_21
-        && obj.netsum_r0_below<0.2*obj.amount_ave_21
+    return true
+            && obj.netsummax_r0x_10>0.2*obj.amount_ave_21
+            && obj.netsummax_r0>2*obj.amount_ave_21
+            && obj.netsum_r0_below<=0.0*obj.amount_ave_21
+            && function(){
 
+                var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
+                var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
+                var leftBottomIdx = klineutil.lowItemIndex(klineJson, midTopIdx-10, midTopIdx, "low");
+                var leftTopIdx = klineutil.highItemIndex(klineJson, leftBottomIdx-30, leftBottomIdx, "high");
+
+                return klineutil.increase(klineJson[midTopIdx].high, klineJson[leftTopIdx].high) > 0.25;    
+            }()
+            
 }
 
 function wBottom_3(klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
-    return obj.netsummax_r0_5===obj.netsummax_r0_10
-        && obj.netsummin_r0_40>-0.3*obj.amount_ave_21
-        && obj.netsum_r0_below<0.05*obj.amount_ave_21
-}
+    return true
+            && obj.netsummin_r0_40===0*obj.amount_ave_21
+            && obj.netsummax_r0_10<=0.0*obj.amount_ave_21
+            && obj.netsummax_r0_netsum_r0x<-5*obj.amount_ave_21
+            && function(){
 
-function wBottom_4(klineJson, i) {
-    var obj = klineJson[i];
-    if (obj.netsummax_r0 === undefined) return false;
+                var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
+                var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
+                var leftBottomIdx = klineutil.lowItemIndex(klineJson, midTopIdx-10, midTopIdx, "low");
+                var leftTopIdx = klineutil.highItemIndex(klineJson, leftBottomIdx-30, leftBottomIdx, "high");
 
-    return obj.netsum_r0_above>obj.netsum_r0_below*1
-        && obj.netsum_r0_below>-0.5*obj.amount_ave_21
-        && obj.netsummax_r0_10===0.0*obj.amount_ave_21
+                return klineutil.increase(klineJson[midTopIdx].high, klineJson[leftTopIdx].high) > 0.25;    
+            }()
+            
 }
 
 
 function wBottom(klineJson, i) {
-    var obj = klineJson[i];
-    if (obj.netsummax_r0 === undefined) return false;
-
-    var rightBottomIdx = klineutil.lowItemIndex(klineJson, i-10, i, "low");
-    var midTopIdx = klineutil.highItemIndex(klineJson, rightBottomIdx-10, rightBottomIdx, "high");
-    var leftBottomIdx = klineutil.lowItemIndex(klineJson, midTopIdx-10, midTopIdx, "low");
-    var leftTopIdx = klineutil.highItemIndex(klineJson, leftBottomIdx-30, leftBottomIdx, "high");
-
-    return true
-            && obj.netsummax_r0x_40>obj.netsummax_r0_40 //81%2224 
-            && obj.netsummax_r0_10<=0.0*obj.amount_ave_21 //81.5% 2846 
-            //&& obj.netsum_r0_below<=0.0*obj.amount_ave_21 //81.4%2848
-            && obj.netsummax_r0x_20>obj.netsummax_r0_20
-            && obj.netsummin_r0_20===-0*obj.amount_ave_21
-            && klineutil.increase(obj.close_ave_21, obj.close_ave_8)<-0.05
-            && klineutil.increase(klineJson[midTopIdx].high, klineJson[leftTopIdx].high) > 0.25;
-
-////////////////////////
-    var obj = klineJson[i];
-    if (obj.netsummax_r0 === undefined) return false;
-
-    return wBottom_1(klineJson, i) 
-        || wBottom_2(klineJson, i)
-        || wBottom_3(klineJson, i)
-        || wBottom_4(klineJson, i)
+    return (wBottom_1(klineJson, i) || wBottom_2(klineJson, i)) || wBottom_3(klineJson, i) 
 }
 
 function headShoulderBottom_1(klineJson, i) {
+    
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
-    return obj.netsummin_r0_10===obj.netsummin_r0_20
-        && obj.netsummax_r0_10===obj.netsummax_r0_20
-        && obj.netsummax_r0_40<0.1*obj.amount_ave_21
+    return true
+        && obj.netsum_r0_below<=0*obj.amount_ave_21
+        && obj.netsummin_r0_40>=-0.0*obj.amount_ave_21
+        && obj.netsummax_r0_10 <= 0.0 * obj.amount_ave_21
+        && function(){
 
+            var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
+            var rightTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
+            var middleBottom = klineutil.lowIndexOfUpTrend(klineJson, rightTop);
+
+            var leftTop = klineutil.highIndexOfDownTrend(klineJson, middleBottom);
+            var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, leftTop);
+            var outerHigh = klineutil.highItem(klineJson, leftBottom - 30, leftBottom, "low");
+
+            return klineutil.increase(klineJson[middleBottom].low, klineJson[rightBottom].low) > 0.3*obj.amplitude_ave_8
+                        && klineutil.increase(klineJson[leftTop].high, outerHigh) > 4 * obj.amplitude_ave_8;
+        }();        
 }
 
-function headShoulderBottom_2(klineJson, i) {
-    var obj = klineJson[i];
-    if (obj.netsummax_r0 === undefined) return false;
-
-    return obj.netsummax_r0_10<=0.0*obj.amount_ave_21
-        && obj.netsummin_r0_20>-0.1*obj.amount_ave_21
-        && obj.netsummin_r0x_5-obj.netsummin_r0x_10 < 0.3*obj.amount_ave_21
-}
-
-function headShoulderBottom_3(klineJson, i) {
-    var obj = klineJson[i];
-    if (obj.netsummax_r0 === undefined) return false;
-
-    return obj.netsummin_r0_40>-0.08*obj.amount_ave_21
-        && obj.netsummax_r0x_40>0.9*obj.netsummax_r0_40
-}
 
 function headShoulderBottom(klineJson, i) {
-    var obj = klineJson[i];
-    if (obj.netsummax_r0 === undefined) return false;
-
-    return headShoulderBottom_1(klineJson, i)
-          || headShoulderBottom_2(klineJson, i)
-          || headShoulderBottom_3(klineJson, i)
+    return headShoulderBottom_1(klineJson, i);
 }
 
 function morningStarA_1(klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
-    return obj.netsummin_r0_20>-0.1*obj.amount_ave_21
-        && obj.netsummin_r0_20<0.02*obj.amount_ave_21
-        && obj.netsummax_r0x_20>obj.netsummax_r0_20
-        && obj.netsum_r0_above>obj.netsum_r0_below*1.5
-        && obj.netsummin_r0x_5-0.3*obj.netsummin_r0x_10<0
+    return true
+        &&  obj.netsummax_r0_duration>60
+        && obj.netsum_r0_below===0.0*obj.amount_ave_21
+        && obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.1*obj.amount_ave_21
+        && obj.netsum_r0_20<0.02*obj.amount_ave_21
+        && obj.netsummin_r0_20>=0*obj.amount_ave_21
+        && klineutil.increase(klineJson[i-2].close, klineJson[i-1].open)<0.1*obj.amplitude_ave_8
+        //&& klineutil.increase(klineJson[i].open, klineJson[i].close)>0.3*obj.amplitude_ave_8
+        && obj.netsummax_r0x_40>0.1*obj.amount_ave_21
+        && function (m, n){
+            var lower = klineutil.lowerItemsIndex(klineJson, i-33, i-3, "close", klineJson[i].close);
+             return i - lower[0]>10+m && i - lower[0] < 22+n
+        }(-1, 1)
+        //     obj.netsummin_r0_20>-0.1*obj.amount_ave_21
+        // && obj.netsummin_r0_20<0.02*obj.amount_ave_21
+        // && obj.netsummax_r0x_20>obj.netsummax_r0_20
+        // && obj.netsum_r0_above>obj.netsum_r0_below*1.5
+        // && obj.netsummin_r0x_5-0.3*obj.netsummin_r0x_10<0
 }
 
 function morningStarA_2(klineJson, i) {
@@ -215,8 +222,8 @@ function morningStarA(klineJson, i) {
     if (obj.netsummax_r0 === undefined) return false;
 
     return  morningStarA_1(klineJson, i) 
-         || morningStarA_2(klineJson, i)
-         || morningStarA_3(klineJson, i)
+         // || morningStarA_2(klineJson, i)
+         // || morningStarA_3(klineJson, i)
 
 }
 

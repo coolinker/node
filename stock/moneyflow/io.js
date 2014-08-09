@@ -71,6 +71,7 @@ function updateMoneyFlowData(startIndex, callback) {
                   }
                 } else {
                   console.log("error", error)
+                  //updateMoneyFlowData(startIndex, callback);
                 }
 
             });
