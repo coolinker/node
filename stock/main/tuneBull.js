@@ -14,7 +14,7 @@ var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "morningStarA";
+var klineForm = "sidewaysCompression";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
@@ -40,8 +40,10 @@ if (cluster.isMaster) {
 
     var numCPUs = require('os').cpus().length;
     var forkStocks = Math.ceil(stocksLen/numCPUs);
+    var forkStocksArr = [0, forkStocks-80, 2*forkStocks-160,3*forkStocks-200, 4*forkStocks-220, 
+        5*forkStocks-270, 6*forkStocks-300, 7*forkStocks-160, stocksLen-1]
     var onForkMessage = function(msg){
-            //console.log(msg);
+            //console.log(msg._idx);
             // masterTotal += msg.total;
             // masterWins += msg.win;
 
@@ -80,8 +82,9 @@ if (cluster.isMaster) {
         }
 
     for (var i = 0; i < numCPUs; i++) {
-        if (i*forkStocks >= stocksLen) break;
-        var worker = cluster.fork({startIdx: i*forkStocks, endIdx: Math.min((i+1)*forkStocks, stocksLen)-1});        
+        //if (i*forkStocks >= stocksLen) break;
+        //var worker = cluster.fork({startIdx: i*forkStocks, endIdx: Math.min((i+1)*forkStocks, stocksLen)-1}); 
+        var worker = cluster.fork({startIdx: forkStocksArr[i], endIdx: forkStocksArr[i+1]});        
         worker.on('message', onForkMessage);
     }
 
@@ -202,13 +205,19 @@ if (cluster.isMaster) {
             })
             
             var isDupeCondition = function(str){
-                var depe = "obj.netsum_r0_below<=0*obj.amount_ave_21"
-        +"obj.netsummin_r0_40>=-0.0*obj.amount_ave_21"
-        +"obj.netsummax_r0_10 <= 0.0 * obj.amount_ave_21".replace(/ /g, "");
+                var depe = "obj.netsummax_r0_duration > 60"
+        +"obj.netsum_r0_below<=0.0*obj.amount_ave_21"
+        +"obj.netsummin_r0x_5===obj.netsummin_r0x_10"
+        +"obj.netsummin_r0_20===-0*obj.amount_ave_21"
+        +"obj.netsummax_r0_40<0.01*obj.amount_ave_21"
+        +"obj.netsum_r0_below===0.0*obj.amount_ave_21"
+        + "obj.netsummin_r0_40 > -0.1 * obj.amount_ave_21"
+        +"obj.netsum_r0x_10 > 0.05 * obj.amount_ave_21"
+        +" obj.netsummax_r0_10===-0.0*obj.amount_ave_21".replace(/ /g, "");
     
-                var cond = str.replace(/ /g, "").replace(/[><=]/g, " ").split(" ")[0];
+                var cond = str.replace(/<<<</g, "").replace(/ /g, "").replace(/[><=]/g, " ").split(" ")[0];
 
-                //console.log(depe.indexOf(cond), depe, cond);
+                //console.log(depe.indexOf(cond), cond, str);
                 return depe.indexOf(cond)>=0;
             }
 
@@ -334,6 +343,7 @@ if (cluster.isMaster) {
                 forkResult.detailedDateResult = detailedDateResult;
                 forkResult.conditionObj = conditionObj;
                 forkResult.__themastercount = __themastercount;
+                forkResult._idx = endIdx;
                 //console.log("__themastercount", __themastercount)
                 process.send(forkResult);
                 process.exit(0);

@@ -96,7 +96,8 @@ function headShoulderBottom (klineJson, i) {
  */
 function sidewaysCompression (klineJson, i) {
     var inc_ave = klineJson[i].inc_ave_8;
-
+    return true;
+    
     return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.028
         && klineutil.increase(klineJson[i].open, klineJson[i].close) < inc_ave*3
         //&& klineutil.increase(klineutil.highItem(klineJson, i-60, i-1, "high"), klineJson[i].close) < -2*inc_ave
@@ -127,7 +128,7 @@ function sidewaysCompression (klineJson, i) {
  * @return {[type]}           [description]
  */
 function morningStarA(klineJson, i) {
-    return true;
+    
     var inc_ave = klineJson[i].inc_ave_8;
     return klineutil.increase(klineJson[i-2].open, klineJson[i-2].close) < -inc_ave*1
         && klineutil.increase(klineJson[i].open, klineJson[i].close) > inc_ave*1
