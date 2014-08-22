@@ -76,7 +76,10 @@ function wBottomA_3(klineJson, i) {
 function wBottomA(klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
-    return (wBottomA_1(klineJson, i) || wBottomA_2(klineJson, i) || wBottomA_3(klineJson, i));
+    return (
+        wBottomA_2(klineJson, i) 
+        //|| wBottomA_2(klineJson, i) || wBottomA_3(klineJson, i)
+        );
 }
 
 function wBottom_1(klineJson, i) {
@@ -253,26 +256,26 @@ function sidewaysCompression_1 (klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
     return true
-        && obj.netsum_r0_below<1.2*obj.netsum_r0x_below
-        && obj.netsummax_r0>2.3*obj.amount_ave_21
-        && obj.netsummin_r0_20 === -0 * obj.amount_ave_21
-        && obj.netsummax_r0_10 === -0.0 * obj.amount_ave_21
+        && obj.netsummax_r0_10<0.05*obj.amount_ave_21
+        && obj.netsummax_r0>2*obj.amount_ave_21
+        && obj.netsummin_r0_20===-0*obj.amount_ave_21
+        && klineJson[i].volume < 2.5 *klineJson[i].volume_ave_8 
         && 1.015*klineJson[i].open<klineJson[i].close
-        && function(){
-            var hidx = klineutil.highItemIndex(klineJson, i-60, i-1, "close");
-            var hval = klineJson[hidx].close;
-            
-            var lidx = klineutil.lowItemIndex(klineJson, hidx, i, "close");
-            var lval = klineJson[lidx].close;
+        && function(m, n, k) {
+        var hidx = klineutil.highItemIndex(klineJson, i-m, i-1, "close");
+        var hval = klineJson[hidx].close;
+        
+        var lidx = klineutil.lowItemIndex(klineJson, hidx, i, "close");
+        var lval = klineJson[lidx].close;
 
-            var plidx = klineutil.lowItemIndex(klineJson, hidx-20, hidx, "close");
-            var plval = klineJson[plidx].close;
+        var plidx = klineutil.lowItemIndex(klineJson, hidx-n, hidx, "close");
+        var plval = klineJson[plidx].close;
 
-            var downhpl = klineutil.increase(plval, hval);    
-            var downhl = klineutil.increase(lval, hval);
-            
-            return downhpl<0.5*downhl;
-        }()
+        var downhpl = klineutil.increase(plval, hval);    
+        var downhl = klineutil.increase(lval, hval);
+    
+        return downhpl<k*downhl;;
+        }(30,40,0.4)
 }
 
 function sidewaysCompression_2 (klineJson, i) {
@@ -412,19 +415,44 @@ function sidewaysCompression_6 (klineJson, i) {
     }(30,40,0.6)
 }
 
+function sidewaysCompression_7 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+    return true
+        && obj.netsum_r0_above>obj.netsum_r0_below*4
+        && obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.5*obj.amount_ave_21
+        && obj.netsummax_r0_40<0.02*obj.amount_ave_21
+        && obj.netsummin_r0_20===-0*obj.amount_ave_21
+        && function(m, n, k) {
+        var hidx = klineutil.highItemIndex(klineJson, i-m, i-1, "close");
+        var hval = klineJson[hidx].close;
+        
+        var lidx = klineutil.lowItemIndex(klineJson, hidx, i, "close");
+        var lval = klineJson[lidx].close;
+
+        var plidx = klineutil.lowItemIndex(klineJson, hidx-n, hidx, "close");
+        var plval = klineJson[plidx].close;
+
+        var downhpl = klineutil.increase(plval, hval);    
+        var downhl = klineutil.increase(lval, hval);
+    
+        return downhpl<k*downhl;;
+        }(30,70,0.4)
+}
+
 function sidewaysCompression(klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
     return true
-         // && !(sidewaysCompression_1(klineJson, i) 
-         // //|| sidewaysCompression_2(klineJson, i)
-         // || sidewaysCompression_3(klineJson, i) 
-         // || sidewaysCompression_4(klineJson, i)
-         // || sidewaysCompression_5(klineJson, i)
-         // || sidewaysCompression_6(klineJson, i)
-         // )
-        &&sidewaysCompression_2(klineJson, i)
+         && (sidewaysCompression_1(klineJson, i) || 
+            sidewaysCompression_2(klineJson, i)
+         || sidewaysCompression_3(klineJson, i) 
+         || sidewaysCompression_4(klineJson, i)
+         || sidewaysCompression_5(klineJson, i)
+         || sidewaysCompression_6(klineJson, i)
+         || sidewaysCompression_7(klineJson, i)
+         )
 }
 
 
