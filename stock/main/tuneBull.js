@@ -14,7 +14,7 @@ var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "wBottomA";
+var klineForm = "morningStarB";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
@@ -205,15 +205,7 @@ if (cluster.isMaster) {
             })
             
             var isDupeCondition = function(str){
-                var depe = "obj.netsummax_r0_duration > 60"
-        +"obj.netsum_r0_below<=0.0*obj.amount_ave_21"
-        +"obj.netsummin_r0x_5===obj.netsummin_r0x_10"
-        +"obj.netsummin_r0_20===-0*obj.amount_ave_21"
-        +"obj.netsummax_r0_40<0.01*obj.amount_ave_21"
-        +"obj.netsum_r0_below===0.0*obj.amount_ave_21"
-        + "obj.netsummin_r0_40 > -0.1 * obj.amount_ave_21"
-        +"obj.netsum_r0x_10 > 0.05 * obj.amount_ave_21"
-        +" obj.netsummax_r0_10===-0.0*obj.amount_ave_21".replace(/ /g, "");
+                var depe = "".replace(/ /g, "");
     
                 var cond = str.replace(/<<<</g, "").replace(/ /g, "").replace(/[><=]/g, " ").split(" ")[0];
 
