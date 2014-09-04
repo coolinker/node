@@ -1,7 +1,7 @@
 console.time("run");
 /**********************/
 var startDate = new Date("01/01/2005"); 
-var endDate = new Date("12/01/2015"); 
+var endDate = new Date("08/01/2014"); 
 /**********************/
 
 var klineio =  require("../kline/klineio").config(startDate, endDate);
@@ -14,9 +14,12 @@ var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "morningStarB";
+var klineForm = "redNGreenRed";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
+
+var listLen = process.argv[2]?Number(process.argv[2]):20;
+
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
 //"wBottom, wBottomA, headShoulderBottom, on8While21UpVolumeHigh, on8While21Up, 
 //red3, redGreenRed, greenInRed, redNGreenRed";
@@ -213,7 +216,7 @@ if (cluster.isMaster) {
                 return depe.indexOf(cond)>=0;
             }
 
-            for (var ci=0; ci<20 && ci<conditionArr.length; ci++) {
+            for (var ci=0; ci<listLen && ci<conditionArr.length; ci++) {
                 catt = conditionArr[ci];
                 var wincon = masterConditionObj.win[catt];
                 var losecon = masterConditionObj.lose[catt];

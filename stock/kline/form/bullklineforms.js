@@ -176,6 +176,8 @@ function morningStarB(klineJson, i) {
  */
 
 function redNGreenRed (klineJson, i) {
+    return true;
+    
     var inc_ave = klineJson[i].inc_ave_8;
     
     return klineutil.increase(klineJson[i].open, klineJson[i].close) >  inc_ave*1.4
