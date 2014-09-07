@@ -205,6 +205,7 @@ function redNGreenRed (klineJson, i) {
  * @return {[type]}           [description]
  */
 function greenInRedA(klineJson, i) {
+    return true;
     var inc_ave = klineJson[i].inc_ave_8;
     return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.025
             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < 0.0

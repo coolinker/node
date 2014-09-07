@@ -14,7 +14,7 @@ var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
 
-var klineForm = "redNGreenRed";
+var klineForm = "greenInRedA";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = "";
 

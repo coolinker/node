@@ -2,7 +2,7 @@ var moneyflowforms = require("./moneyflowforms");
 var klineutil = require("../klineutil");
 
 function conditions(klineJson, idx, conditionObj, stockId) {
-    redNGreenRed(klineJson, idx, conditionObj, stockId);
+    greenInRedA(klineJson, idx, conditionObj, stockId);
     // moneyFlow(klineJson, idx, conditionObj, stockId);
     // rk(klineJson, idx, conditionObj, stockId);
 }
@@ -358,9 +358,57 @@ function redNGreenRed (klineJson, i, conditionObj, stockId) {
 
     //trueFalse("fun(1, 0.7, 120, 6, 20)", fun(1, 0.7, 120, 6, 20), keyObj);
     //trueFalse("fun(1.5, 0.7, 120, 6, 20)", fun(1.5, 0.7, 120, 6, 20), keyObj);
-    trueFalse("fun(2, 0.5, 120, 6, 20)", fun(2, 0.7, 120, 6, 20), keyObj);
-    trueFalse("fun(2, 0.7, 120, 6, 20)", fun(2, 0.7, 120, 6, 20), keyObj);
-    trueFalse("fun(2, 0.9, 120, 6, 20)", fun(2, 0.7, 120, 6, 20), keyObj);     
+    
+    trueFalse("fun(2, 1, 120, 6, 15)", fun(2, 1, 120, 6, 18), keyObj);
+    trueFalse("fun(2, 1, 120, 6, 20)", fun(2, 1, 120, 6, 20), keyObj);
+    trueFalse("fun(2, 1, 120, 6, 25)", fun(2, 1, 120, 6, 22), keyObj);
+}
+
+function greenInRedA(klineJson, i, conditionObj, stockId) {
+    var obj = klineJson[i];
+    var iswin = klineJson[i].winOrLose === "win";
+    if (!conditionObj.win) conditionObj.win = {};
+    if (!conditionObj.lose) conditionObj.lose = {};
+
+    var keyObj = iswin ? conditionObj.win : conditionObj.lose;    
+
+    // trueFalse("klineutil.increase(klineJson[i-1].open, klineJson[i-1].close)>-0.0", 
+    //     klineutil.increase(klineJson[i-1].open, klineJson[i-1].close)>-0.0, keyObj);
+
+
+    // trueFalse("klineutil.increase(klineJson[i-1].amont, klineJson[i].amont)<-0.2", 
+    //     klineutil.increase(klineJson[i-1].amount, klineJson[i].amount) < -0.2, keyObj);
+    // trueFalse("klineutil.increase(klineJson[i-1].amont, klineJson[i].amont)<-0", 
+    //     klineutil.increase(klineJson[i-1].amount, klineJson[i].amount) < -0, keyObj);
+    // trueFalse("klineutil.increase(klineJson[i-1].amont, klineJson[i].amont)<0.2", 
+    //     klineutil.increase(klineJson[i-1].amount, klineJson[i].amount) < 0.2, keyObj);
+
+
+    //  var fun = function(a, b, c, d, e){
+    //             var lowerItems = klineutil.lowerItemsIndex(klineJson, i-a, i, "close", klineJson[i].low);
+    //             return  klineutil.increase(klineJson[i].open, klineJson[i].close) > d
+    //                 && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < e
+    //                 && lowerItems.length > b && lowerItems.length < c;
+    //         }
+
+    // trueFalse("fun(100, 0, 35, 0.015, 0)", fun(100, 0, 35, 0.015, 0), keyObj);
+    // trueFalse("fun(120, 0, 40, 0.015, 0)", fun(120, 0, 40, 0.015, 0), keyObj);
+    // trueFalse("fun(120, 0, 40, 0.013, 0)", fun(120, 0, 40, 0.013, 0), keyObj);
+    // trueFalse("fun(150, 45, 0.015, 0)", fun(150, 0, 45, 0.015, 0), keyObj);
+
+    
+   //             return 
+
+    var fun = function(a, b, c, d){
+        //var higherItems = klineutil.higherItemsIndex(klineJson, i-a, i, "close", klineJson[i].high);
+        return  klineutil.increase(klineJson[i].open, klineJson[i].close) > a*obj.inc_ave_8
+            && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < b*obj.inc_ave_8
+            &&  klineutil.increase(klineJson[i-1].open, klineJson[i].close) > c
+            &&  klineutil.increase(klineJson[i-1].close, klineJson[i].open) <= d
+    }
+
+    trueFalse("fun(1.1, -0.4, 0, 0)", fun(1.1, -0.4, 0, 0), keyObj);
+    trueFalse("fun(1.1, -0.3 0.0, 0)", fun(1.1, -0.3, 0.0, 0), keyObj);
 }
 
 
