@@ -3,9 +3,8 @@ var startDate = new Date("01/01/2005");
 var endDate = new Date("12/01/2015"); 
 
 
-var bullklineforms = require("./bullklineforms");
+var bullklineforms = require("./moneyflowforms");// require("./bullklineforms");
 var bearklineforms = require("./bearklineforms");
-var moneyflowforms = require("./moneyflowforms");
 
 var klineforms = undefined;
 
@@ -117,8 +116,7 @@ function traverseForAppearance(methods, klineJson, intersections) {
         var matchForms = [];
         methods.forEach(function(mtd) {
             if(klineforms[mtd](klineJson, i) === true
-                && moneyflowforms[mtd] 
-                && moneyflowforms[mtd](klineJson, i)) {
+                ) {
                 matchForms.push(mtd);
                 if (intersections.formHandler) {
                     intersections.formHandler(mtd, klineJson, i);
@@ -159,8 +157,6 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
         if (options.passAll || 
             (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))
-            && moneyflowforms[method] && moneyflowforms[method](klineJson, i)
-            //intersectionResult(moneyflowforms, ["moneyFlowInOut"], klineJson, i)
             ) {
                 // var amp = klineJson[i].amplitude_ave_8;
                 // winStop = 1.25*amp;
@@ -259,9 +255,10 @@ function validateForm(formMethod, klineJson) {
     return result;
 }
 
-function unionResult (klineforms, methods, klineJson, idx) {
+function unionResult (_klineforms, methods, klineJson, idx) {
+    if (!_klineforms) _klineforms = klineforms
     for (var i=0; i<methods.length; i++) {
-        if (klineforms[methods[i]](klineJson, idx)) {
+        if (_klineforms[methods[i]](klineJson, idx)) {
             return true;
         }
     }
@@ -275,14 +272,6 @@ function intersectionResult (klineforms, methods, klineJson, idx) {
         }
     }
     return true;
-}
-
-function matchMoneyFlowForm (klineJson, idx) {
-    if (moneyflowforms.moneyFlowInOut(klineJson, idx)) {
-        return ["moneyFlowInOut"];
-    } else {
-        return [];
-    }
 }
 
 function selectedBullKLineFormMethods(arr) {
@@ -339,7 +328,6 @@ exports.config = config;
 
 exports.tryForms = tryForms;
 
-exports.matchMoneyFlowForm = matchMoneyFlowForm;
 exports.traverseForIntersection = traverseForIntersection;
 exports.selectedBullKLineFormMethods = selectedBullKLineFormMethods;
 
@@ -353,3 +341,4 @@ exports.traverseForLosing = traverseForLosing;
 exports.traverseForAppearance = traverseForAppearance;
 
 exports.validateForm = validateForm;
+exports.unionResult = unionResult;

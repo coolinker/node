@@ -1,16 +1,16 @@
 var bullOrBear = "bull";
-var startDate = new Date("01/01/2005");
-var endDate = new Date("01/01/2015");
+var startDate = new Date("01/01/2009"); 
+var endDate = new Date("01/01/2015"); 
 
-var displayMinCount = -1
-var displayInfoFromDate = new Date("01/01/2008");
-var displayInfoToDate = new Date("01/01/2009");
+var displayMinCount = 100;
+var displayInfoFromDate = new Date("01/01/2014");
+var displayInfoToDate = new Date("01/01/2015");
 var displayEveryCase = false;
-var displayInfo = "moreinfo";
-var klineForms = "bullPulsing"; //"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
+var displayInfo = "info";
+var klineForms = "";//bullPulsing"; //"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
-var klineio = require("../klineio").config(startDate, endDate);
+var klineio = require("../kline/klineio").config(startDate, endDate);
 var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
@@ -137,15 +137,15 @@ if (cluster.isMaster) {
 
 } else if (cluster.isWorker) {
 
-    var klineformanalyser = require("../klineform/analyser").config({
+    var klineformanalyser = require("../kline/form/analyser").config({
         bullorbear: bullOrBear,
         startDate: startDate,
         endDate: endDate
     });
 
-    var intersectionprocessor = require("../klineform/intersectionprocessor").config(3);
+    var intersectionprocessor = require("../kline/form/intersectionprocessor").config(3);
 
-    var klineutil = require("../klineutil");
+    var klineutil = require("../kline/klineutil");
     var resultTotal = {};
     var formsResultTotal = {};
     var startIdx = parseInt(process.env.startIdx, 10);

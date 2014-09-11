@@ -1,9 +1,5 @@
 var klineutil = require("../klineutil");
 var counter = 0;
-function moneyFlowInOut(klineJson, i, stockid) {
-    return true;
-    return moneyFlowInOutB(klineJson, i, stockid)
-}
 
 function toFixedString(str, len) {
     str = String(str);
@@ -839,7 +835,7 @@ function redNGreenRed (klineJson, i) {
 }
 
 
-function greenInRedA_1 (klineJson, i) {
+function greenInRed_1 (klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
@@ -856,121 +852,175 @@ function greenInRedA_1 (klineJson, i) {
         }(120, 0, 45, 0.02, 0)
 
 }
-function greenInRedB (klineJson, i) {
+
+// function greenInRedA_2 (klineJson, i) { // greenInRedB
+//     var obj = klineJson[i];
+//     if (obj.netsummax_r0 === undefined) return false;
+
+//     var inc_ave = klineJson[i].inc_ave_8;
+//     return klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.028
+//             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < -0.0
+//             && klineutil.increase(klineJson[i-1].close, klineJson[i].open) < 0.02
+//             && klineutil.increase(klineJson[i-1].close, klineJson[i].low) > -inc_ave*0.5
+//             && klineutil.increase(klineJson[i-1].open-klineJson[i-1].close, klineJson[i].close-klineJson[i].open) < 0.6
+//             && (function(){
+//                 var higherItems = klineutil.higherItemsIndex(klineJson, i-100, i, "high", klineJson[i].high);
+//                 return  i-higherItems[0] < 98;
+//             }())
+
+// }
+
+function greenInRed_2(klineJson, i) {   // greenInRedC
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
-
+    
     return true
-
+            && obj.amount_ave_8>0.5*obj.amount
+            && obj.netsummax_r0>obj.amount_ave_21
+            && obj.netsum_r0_below===0.0*obj.amount_ave_21
+            && obj.netsummin_r0_10>-0.05*obj.amount_ave_21
+            && obj.amount_ave_21<1.15*obj.amount_ave_8
+            && obj.netsummax_r0_5===0.0*obj.amount_ave_21
+            && klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.02
+            
 }
-function greenInRedA (klineJson, i) {
+
+// function greenInRed_3(klineJson, i) { //greenInRedD
+//     var obj = klineJson[i];
+//     if (obj.netsummax_r0 === undefined) return false;
+    
+//     var inc_ave = klineJson[i].inc_ave_8;
+//     return true
+//             && obj.amount_ave_21<1*obj.amount_ave_8
+//             && obj.netsummax_r0_5===0.0*obj.amount_ave_21
+//             && klineutil.increase(klineJson[i].open, klineJson[i].close) > 0.02
+//             && klineutil.increase(klineJson[i-1].open, klineJson[i-1].close) < -0.0
+//             //&& klineutil.increase(klineJson[i-1].close, klineJson[i].open) < 0.02
+//             //&& klineutil.increase(klineJson[i-1].close, klineJson[i].low) > -inc_ave*0.6
+//             && obj.netsum_r0_above>obj.netsum_r0_below*6
+//             // && klineutil.increase(klineJson[i-1].volume, klineJson[i-2].volume) > -0.3
+//             && klineutil.increase(klineJson[i-1].volume, klineJson[i].volume) < -0.15
+            
+// }
+
+function greenInRed (klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
     return true
-        && greenInRedB(klineJson, i) 
-        && !(false
-         || greenInRedA_1(klineJson, i) 
+        && (false
+        || greenInRed_1(klineJson, i) 
+        || greenInRed_2(klineJson, i) 
          )  
 }
 
-function moneyflow(klineJson, i) {
-    var klj = klineJson[i];
-    if (klj.date !== "07/28/2014") return false;
-    //return true;
-    var maxr0netsumidx = i-klj.netsummax_r0_duration;
-   
-    //var inc = klineutil.increase(klineJson[maxr0netsumidx].open, klineJson[i].close);
-    var duration = klj.netsummax_r0_duration;
 
-    
-    var low_index_20 = klineutil.lowItemIndex(klineJson, i-20, i, "low");
-    var low_index_40 = klineutil.lowItemIndex(klineJson, i-40, i-5, "low");
-    var longDownNeedle = 0, longDownNeedleDates = [];
-    var bigLowSmallVolume = 0, bigLowSmallVolumeDates = [];
-    var bigDownBigAmount = 0; 
-    for (var j=i; j>=1 && i-j<10; j--) {
-        //if (!klineJson[j]) console.log("stockId", stockId, j, klineJson.length)
-        if(klineutil.increase(klineJson[j].close, klineJson[j-1].close) > 0
-            //&& klineutil.increase(klineJson[j].amount, klineJson[j-1].amount_ave_8)>0
-            && (klineutil.increase(klineJson[j].low, klineJson[j-1].close) > 0.8*klineJson[j].amplitude_ave_21
-            && klineutil.increase(klineJson[j].amount_ave_21, klineJson[j].amount) < -0.1
-            && klineutil.increase(klineJson[j].low, klineJson[j-1].close) > 0.8*klineJson[j].amplitude_ave_8
-            && klineutil.increase(klineJson[j].amount_ave_8, klineJson[j].amount) < -0.1)) {
-            bigLowSmallVolume++;
-            bigLowSmallVolumeDates.push(klineJson[j].date)
-            //if (stockId==="SH600012")
-            //console.log(stockId, klineJson[j].date, klineutil.increase(klineJson[j].low, klineJson[j-1].close) , klineJson[j].inc_ave_8, klineJson[j].inc_ave_21)
-        }
-            
-        // console.log(klineJson[j].date, 
-        //     klineutil.increase(klineJson[j].close, klineJson[j].open),
-        //     0.3*klineJson[j].amplitude_ave_21,
-        //     klineutil.increase(klineJson[j].volume_ave_21, klineJson[j].volume),
-        //     klineutil.increase(klineJson[j].volume_ave_8, klineJson[j].volume),
-        //     klineutil.increase(klineJson[j-1].volume, klineJson[j].volume))
-        
-        if(i-j<5 && klineutil.increase(klineJson[j].close, klineJson[j].open) > 0
-            && (klineutil.increase(klineJson[j].close, klineJson[j].open) > 0.5*klineJson[j].amplitude_ave_21
-            && klineutil.increase(klineJson[j].volume_ave_21, klineJson[j].volume) > 0.1
-            || klineutil.increase(klineJson[j].close, klineJson[j].open) > 0.5*klineJson[j].amplitude_ave_8
-            && klineutil.increase(klineJson[j].volume_ave_8, klineJson[j].volume) > 0.1
-            || klineutil.increase(klineJson[j].close, klineJson[j].open) > 0.5*klineJson[j].amplitude_ave_8
-            && klineutil.increase(klineJson[j-1].volume, klineJson[j].volume) > 0.1)) {
-            bigDownBigAmount++;
-            //console.log("------")
-        }  
+// function redGreenRed (klineJson, i) {
+//     var obj = klineJson[i];
+//     if (obj.netsummax_r0 === undefined) return false;
 
-        // console.log(klineJson[j].date, klineutil.increase(klineJson[j].low, Math.min(klineJson[j].close, klineJson[j].open)), 0.5*klineJson[j].amplitude_ave_8,
-        //     "+++", klineutil.increase(Math.max(klineJson[j].close, klineJson[j].open), klineJson[j].high))
-        if ((klineutil.increase(klineJson[j].low, Math.min(klineJson[j].close, klineJson[j].open)) > 0.3*klineJson[j].amplitude_ave_8
-            || klineutil.increase(Math.max(klineJson[j].close, klineJson[j].open), klineJson[j].high) > 0.3*klineJson[j].amplitude_ave_8)
-            &&klineJson[j].r0_net>=0) {
-            longDownNeedle++;
-            longDownNeedleDates.push(klineJson[j].date)
-        }
-    }   
- // console.log( (longDownNeedle> 0 || bigLowSmallVolume>0)
- //        , i-low_index_40 > 10
- //        , klineJson[i].close > klineJson[low_index_40].low
- //        , klineutil.increase(klineJson[low_index_40].low, klineJson[i].close) < 5 * klineJson[i].inc_ave_21
- //        , klj.netsummax_r0+klj.netsummax_r0_netsum_r0x>klj.amount_ave_21
- //        , klj.netsum_r0_20 + klj.netsum_r0x_20 , klj.netsum_r0_40 + klj.netsum_r0x_40
- //        , klj.netsum_r0_above+klj.netsum_r0x_above>0.5*klj.amount_ave_21
- //        , klj.netsum_r0_above_60> 0.5*klj.amount_ave_21
- //        , klj.netsum_r0_above > klj.netsum_r0_below, klj.amount_ave_8, klj.amount_ave_21)
-    return  (duration>60
-          && (longDownNeedle> 0 || bigLowSmallVolume>0)
-        //  && longDownNeedle>0
-        // && bigLowSmallVolume>0
-         //&& bigDownBigAmount>=1
-        
-        // && i-low_index_20 > 13
-        // && klineJson[i].close > 0.99*klineJson[low_index_20].low
-        // && klineutil.increase(klineJson[low_index_20].low, klineJson[i].close) < 1.5*klineJson[i].amplitude_ave_21
+//     return true
+//         && redGreenRed_1(klineJson, i) 
+//         && !(false
+//         // || greenInRed_1(klineJson, i) 
+//         // || greenInRed_2(klineJson, i) 
+//          )  
+// }
 
-        && i-low_index_40 > 10
-        && klj.close > klineJson[low_index_40].low*0.99
-        && klineutil.increase(klineJson[low_index_40].low, klj.close) < 2 * klj.amplitude_ave_21
-        
-        && klj.netsummax_r0+klj.netsummax_r0_netsum_r0x>klj.amount_ave_21
-        && (klj.netsum_r0_20 > 0 || klj.netsum_r0_40 > 0)
+function reversedHammer_1(klineJson, i) {
+     var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
 
-        //&& klj.netsum_r0_above+klj.netsum_r0x_above>0.5*klj.amount_ave_21
-        && klj.netsum_r0_above_60> 0.5*klj.amount_ave_21
-        && klj.netsum_r0_above > klj.netsum_r0_below
-        ) 
-    
+    return true
+        && obj.netsummax_r0>1.5*obj.amount_ave_21
+        && obj.netsummax_r0_40===0.0*obj.amount_ave_21
+        && obj.netsummin_r0_20===-0*obj.amount_ave_21
+        && function(a, b, c, d, e) {
+                var hidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+                var higherItems = klineutil.higherItemsIndex(klineJson, i-b, i, "close", klineJson[i].low);
+                return true
+                    && higherItems.length>c 
+                    && higherItems.length<d
+                    && klineutil.increase(klineJson[i].high, klineJson[hidx].close) > e
+            }(55, 20, 0, 15, 5*klineJson[i].amplitude_ave_8)
+
 }
 
-exports.moneyflow = moneyflow;
+function reversedHammer_2(klineJson, i) {
+     var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.2*obj.amount_ave_21
+        && obj.netsum_r0_above>obj.netsum_r0_below*7
+        && obj.amount_ave_21<1*obj.amount_ave_8
+        && obj.netsummax_r0_10===-0.0*obj.amount_ave_21
+        //&& obj.netsum_r0x_10>obj.netsum_r0_10
+        && obj.netsummin_r0_20===-0*obj.amount_ave_21
+        && function(a, b, c, d, e) {
+                var hidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+                var higherItems = klineutil.higherItemsIndex(klineJson, i-b, i, "close", klineJson[i].low);
+                return true
+                    && higherItems.length>c 
+                    && higherItems.length<d
+                    && klineutil.increase(klineJson[i].high, klineJson[hidx].close) > e
+            }(55, 18, 0, 15, 4*klineJson[i].amplitude_ave_8)
+
+}
+
+function reversedHammer_3(klineJson, i) {
+     var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummax_r0>1.5*obj.amount_ave_21
+        && obj.netsum_r0_20<0.05*obj.amount_ave_21
+        && obj.amount_ave_8>0.5*obj.amount
+        && klineutil.increase(klineJson[i].open, klineJson[i].close)>0.02
+        && obj.amount_ave_21<1*obj.amount//
+        && obj.netsummin_r0_20===-0*obj.amount_ave_21
+        && function(a, b, c, d, e) {
+                var hidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+                var higherItems = klineutil.higherItemsIndex(klineJson, i-b, i, "close", klineJson[i].low);
+                return true
+                    && higherItems.length>c 
+                    && higherItems.length<d
+                    && klineutil.increase(klineJson[i].high, klineJson[hidx].close) > e
+            }(80, 15, 0, 13, 3.5*klineJson[i].amplitude_ave_8)
+
+}
+
+
+function reversedHammer_4(klineJson, i) {
+     var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        
+
+}
+
+function reversedHammer (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && reversedHammer_4(klineJson, i)
+        && !(false
+        // || reversedHammer_1(klineJson, i) 
+        // || reversedHammer_2(klineJson, i) 
+        // || reversedHammer_3(klineJson, i) 
+         )  
+}
 
 exports.sidewaysCompression = sidewaysCompression;
-exports.moneyFlowInOut = moneyFlowInOut;
+
 exports.wBottomA = wBottomA;
 exports.wBottom = wBottom;
 exports.headShoulderBottom = headShoulderBottom;
 exports.morningStarA = morningStarA;
 exports.morningStarB = morningStarB;
 exports.redNGreenRed = redNGreenRed;
-exports.greenInRedA = greenInRedA;
+exports.greenInRed = greenInRed;
+//exports.redGreenRed = redGreenRed;
+exports.reversedHammer = reversedHammer;

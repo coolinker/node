@@ -251,8 +251,6 @@ function greenInRedC(klineJson, i) {
             && klineutil.increase(klineJson[i-1].close, klineJson[i].open) < 0.02
             && klineutil.increase(klineJson[i-1].close, klineJson[i].low) > -inc_ave*0.5
             && klineutil.increase(klineJson[i-1].open-klineJson[i-1].close, klineJson[i].close-klineJson[i].open) < 0.6
-            //&& klineutil.increase(klineJson[i].volume, klineJson[i].volume_ave_8) > -0.1
-            //&& klineutil.increase(klineJson[i-1].volume, klineJson[i].volume) < 0.1
             && (function(){
                 var higherItems = klineutil.higherItemsIndex(klineJson, i-100, i, "high", klineJson[i].high);
                 return  i-higherItems[0] < 98;

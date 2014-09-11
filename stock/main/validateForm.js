@@ -1,14 +1,16 @@
 console.time("run");
-var klineio = require("../klineio");
-var cluster = require('cluster');
 
 var startDate = new Date("01/01/2005"); 
-var endDate = new Date("12/01/2013"); 
+var endDate = new Date("08/01/2014"); 
 
-var klineForm = "bullNeedle";
+var klineio = require("../kline/klineio").config(startDate, endDate);
+var cluster = require('cluster');
+
+var klineForm = process.argv[2]?process.argv[2]:"wBottom";
+//var klineForm = "wBottomA";
 
 var stocks = klineio.getAllStockIds();
-
+//var stocks = ["SH600061"]
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
     var masterTotal = 0;
@@ -42,13 +44,13 @@ if (cluster.isMaster) {
       
 } else if (cluster.isWorker) {
 
-    var klineformanalyser = require("../klineform/analyser").config({
+    var klineformanalyser = require("../kline/form/analyser").config({
         startDate: startDate,
         endDate: endDate,
         bullorbear: "bull"
     });
 
-    var klineutil = require("../klineutil");
+    var klineutil = require("../kline/klineutil");
     var forkTotal = 0;
     var forkValid = 0;
     var startIdx = parseInt(process.env.startIdx, 10);

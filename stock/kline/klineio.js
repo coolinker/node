@@ -3,7 +3,7 @@ var ajaxRequest = require('request');
 
 
 var startDate = new Date("01/01/2005"); 
-var endDate = new Date("12/01/2013"); 
+var endDate = new Date("12/01/2016"); 
 
 
 function config(start, end){

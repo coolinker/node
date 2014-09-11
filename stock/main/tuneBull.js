@@ -1,6 +1,6 @@
 console.time("run");
 /**********************/
-var startDate = new Date("01/01/2005"); 
+var startDate = new Date("01/01/2010"); 
 var endDate = new Date("08/01/2014"); 
 /**********************/
 
@@ -12,13 +12,16 @@ var detailedDateResultStart = new Date("01/01/2011");
 var detailedDateResultEnd = new Date("01/01/2012");
 var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
-var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010"), new Date("01/01/2011"), new Date("01/01/2012"), new Date("01/01/2013")]; 
+var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010")
+, new Date("01/01/2011"), new Date("01/01/2012"), new Date("06/01/2012"),
+new Date("01/01/2013"), new Date("06/01/2013"), new Date("01/01/2014"),
+new Date("06/01/2014")]; 
 
-var klineForm = "greenInRedA";
+var klineForm = process.argv[2]?process.argv[2]:"greenInRedA";
 var intersectionKLineForm = ""//moneyFlowInOut";
-var unionKLineForm = "";
+var unionKLineForm = ""//wBottomA,wBottom,headShoulderBottom,morningStarA,morningStarB,redNGreenRed,greenInRedA";
 
-var listLen = process.argv[2]?Number(process.argv[2]):20;
+var listLen = process.argv[3]?Number(process.argv[3]):20;
 
 //0.8313 'reversedHammerA,wBottom' ' of ' [ 'hammerA', 'reversedHammerA', 'wBottom
 //"wBottom, wBottomA, headShoulderBottom, on8While21UpVolumeHigh, on8While21Up, 
@@ -29,7 +32,7 @@ var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates =[]//["11/14/2011"];
 
 var stocks = klineio.getAllStockIds();
-//stocks = ['SH600509']//['SZ002371', "SZ002158", "SH600061"];
+//stocks = ['SH600061']//['SZ002371', "SZ002158", "SH600061"];
 var __themastercount = 0;
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
@@ -85,9 +88,9 @@ if (cluster.isMaster) {
         }
 
     for (var i = 0; i < numCPUs; i++) {
-        //if (i*forkStocks >= stocksLen) break;
-        //var worker = cluster.fork({startIdx: i*forkStocks, endIdx: Math.min((i+1)*forkStocks, stocksLen)-1}); 
-        var worker = cluster.fork({startIdx: forkStocksArr[i], endIdx: forkStocksArr[i+1]});        
+        if (i*forkStocks >= stocksLen) break;
+        var worker = cluster.fork({startIdx: i*forkStocks, endIdx: Math.min((i+1)*forkStocks, stocksLen)-1}); 
+        //var worker = cluster.fork({startIdx: forkStocksArr[i], endIdx: forkStocksArr[i+1]});        
         worker.on('message', onForkMessage);
     }
 
@@ -121,17 +124,38 @@ if (cluster.isMaster) {
             if (intersectionKLineForm) funName = klineForm+" && "+intersectionKLineForm;
             if (unionKLineForm) klineForm+" || "+unionKLineForm;
             
-            for (var att in masterResult) {
+            var sortedDates = [];
+             for (var att in masterResult) {    
                 if (att.length>12 && att.indexOf("master_total")===0) {
+                        sortedDates.push(att);
+                }
+            }
+
+            sortedDates.sort(function(att1, att2){
+                //console.log(att1, att2)
+                if (att1.indexOf("after_")) return -1;
+                if (att2.indexOf("after_")) return 1;
+
+                var d1 = new Date(att1.substring(13, 22));
+                var d2 = new Date(att2.substring(13, 22));
+
+                if (d1>d2) return 1;
+                else if (d2>d1) return -1;
+                return 0
+            })
+            //console.log("sortedDates:", sortedDates)
+            sortedDates.forEach (function(att) {
                     var winatt = "master_win"+att.substring(12);
                     console.log(att.substring(13)+" "+masterResult[winatt]+"/"+masterResult[att]
                     +"="+(masterResult[winatt]/masterResult[att]).toFixed(10));
-                }
-            }
+                
+            });
             
 
-            console.log(funName, masterResult.master_win+"/"+masterResult.master_total
-                +"="+(masterResult.master_win/masterResult.master_total).toFixed(3));
+            console.log(funName, "win:", masterResult.master_win+"/"+masterResult.master_total
+                +"="+(masterResult.master_win/masterResult.master_total).toFixed(3),
+                "   valid:", masterResult.master_valid+"/"+masterResult.master_total
+                +"="+(masterResult.master_valid/masterResult.master_total).toFixed(3));
 
             console.log("\r\ncondition tune result:");
             var conditionArr = [];
@@ -237,7 +261,6 @@ if (cluster.isMaster) {
 
             }
             
-
             console.timeEnd("run");
         }
     });
@@ -246,9 +269,13 @@ if (cluster.isMaster) {
 } else if (cluster.isWorker) {
 
     var klineformanalyser = require("../kline/form/analyser").config({
-        startDate: new Date("01/01/2010"),
+        startDate: startDate,
         endDate: endDate
     });
+    var bullKLineFormMethods = klineformanalyser.bullKLineFormMethods();
+    var mtdsidx = bullKLineFormMethods.indexOf(klineForm);
+    bullKLineFormMethods.splice(mtdsidx,1);
+//    console.log("bullKLineFormMethods:",bullKLineFormMethods)
     var conditionanalyser = require("../kline/form/conditionanalyser");
     //unionKLineForm = klineformanalyser.bullKLineFormMethods().join(",");
     var klineutil = require("../kline/klineutil");
@@ -281,6 +308,12 @@ if (cluster.isMaster) {
                     union:unionKLineForm,
                     intersection:intersectionKLineForm,
                     injection: function(stockId, klineJson, idx, mtd){
+
+                        if(!klineformanalyser.unionResult(null, bullKLineFormMethods, klineJson, idx)) {
+                            forkResult.valid = forkResult.valid?forkResult.valid+1:1;
+                        }
+
+
                         //console.log(stockId, date, iswin)
                         var date = new Date(klineJson[idx].date);
                         var iswin = klineJson[idx].winOrLose==="win";
