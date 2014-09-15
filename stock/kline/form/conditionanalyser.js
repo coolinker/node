@@ -9,12 +9,65 @@ function trueFalse(key, bool, keyObj) {
     bool ? keyObj[key]._true++ : keyObj[key]._false++;
 }
 
-function conditions(klineJson, idx, conditionObj, stockId) {
-    reversedHammerC(klineJson, idx, conditionObj, stockId);
-     // moneyFlow(klineJson, idx, conditionObj, stockId);
-     // rk(klineJson, idx, conditionObj, stockId);
+function _trueFalse(key, fun, keyObj) {
+    if (!keyObj[key]) keyObj[key] = {
+        "_true": 0,
+        "_false": 0
+    };
+    eval(key) ? keyObj[key]._true++ : keyObj[key]._false++;
 }
-function reversedHammerC(klineJson, i, conditionObj, stockId) {
+
+function conditions(klineJson, idx, conditionObj, stockId) {
+    flatBottom(klineJson, idx, conditionObj, stockId);
+    // moneyFlow(klineJson, idx, conditionObj, stockId);
+    // rk(klineJson, idx, conditionObj, stockId);
+}
+
+function flatBottom(klineJson, i, conditionObj, stockId) {
+    var obj = klineJson[i];
+    var iswin = klineJson[i].winOrLose === "win";
+    if (!conditionObj.win) conditionObj.win = {};
+    if (!conditionObj.lose) conditionObj.lose = {};
+
+    var keyObj = iswin ? conditionObj.win : conditionObj.lose;
+
+    var fun = function (a, b, c, d, e) {
+        var td = i-a;
+        var inc_ave = klineJson[i].inc_ave_8;
+        var hidx = klineutil.highItemIndex(klineJson, td-b, td, "close");
+        var higherItems = klineutil.higherItemsIndex(klineJson, td-c, i, "close", klineJson[i].close);
+        
+        return klineutil.increase(klineJson[i].close, klineJson[hidx].close) > 0.14//inc_ave*d 
+            && higherItems.length<e;
+    
+    }
+
+    // _trueFalse("fun(1, 35, 11, 6, 7)", fun, keyObj);
+    // _trueFalse("fun(1, 33, 11, 6, 7)", fun, keyObj);
+    // _trueFalse("fun(1, 35, 12, 6, 7)", fun, keyObj);
+    // _trueFalse("fun(1, 35, 10, 6, 7)", fun, keyObj);
+    // _trueFalse("fun(1, 35, 11, 7, 7)", fun, keyObj);
+    // _trueFalse("fun(1, 35, 11, 5, 7)", fun, keyObj);
+    // return
+ 
+
+
+    _trueFalse("fun(1, 45, 20, 6, 7)", fun, keyObj);
+    _trueFalse("fun(1, 45, 20, 4, 7)", fun, keyObj);
+    _trueFalse("fun(1, 45, 20, 6, 10)", fun, keyObj);
+    _trueFalse("fun(1, 45, 15, 6, 7)", fun, keyObj);
+    _trueFalse("fun(1, 40, 13, 6, 7)", fun, keyObj);
+    _trueFalse("fun(1, 35, 11, 6, 7)", fun, keyObj);
+     _trueFalse("fun(1, 70, 20, 13, 7)", fun, keyObj);
+     _trueFalse("fun(1, 70, 20, 8, 7)", fun, keyObj);
+
+     _trueFalse("fun(1, 70, 20, 16, 15)", fun, keyObj);
+     _trueFalse("fun(1, 70, 20, 16, 12)", fun, keyObj);
+     _trueFalse("fun(1, 70, 20, 16, 10)", fun, keyObj);
+
+}
+
+function hammerA(klineJson, i, conditionObj, stockId) {
     var obj = klineJson[i];
     var iswin = klineJson[i].winOrLose === "win";
     if (!conditionObj.win) conditionObj.win = {};
@@ -22,26 +75,31 @@ function reversedHammerC(klineJson, i, conditionObj, stockId) {
 
     var keyObj = iswin ? conditionObj.win : conditionObj.lose;
     
-    var fun = function(a, b, c,d) {
+    var fun = function(a, b, c, d) {
 
         var linehigh = klineJson[i].high - Math.max(klineJson[i].close, klineJson[i].open);
         var linelow = Math.min(klineJson[i].close, klineJson[i].open) - klineJson[i].low;
         var entity = Math.abs(klineJson[i].close - klineJson[i].open);
         var inc_ave = klineJson[i].inc_ave_8;
-
-        return true
-             && function() {
-                var hidx = klineutil.highItemIndex(klineJson, i-80, i, "close");
-                var higherItems = klineutil.higherItemsIndex(klineJson, i-20, i, "close", klineJson[i].low);
-                return higherItems.length<5
-                    && klineutil.increase(klineJson[i].open, klineJson[hidx].close) > inc_ave*9
-            }()
+        var hidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+        var higherItems = klineutil.higherItemsIndex(klineJson, i-b, i, "close", klineJson[i].low);
+        
+        return higherItems.length<c
+                    && klineutil.increase(klineJson[i].open, klineJson[hidx].close) > d * 0.015 *2
+        
     }
-
-    trueFalse("fun(80, 20, 5, 9)", fun(80, 20, 5, 9), keyObj);
-    trueFalse("fun(100, 20, 5, 9)", fun(100, 20, 5, 9), keyObj);
-    trueFalse("fun(60, 20, 5, 9)", fun(60, 20, 5, 9), keyObj);
-
+    
+    _trueFalse("fun(48, 14, 10, 4)", fun, keyObj);
+    _trueFalse("fun(48, 14, 10, 4.5)", fun, keyObj);
+    _trueFalse("fun(48, 14, 10, 3.5)", fun, keyObj);
+     _trueFalse("fun(45, 14, 10, 4)", fun, keyObj);
+    _trueFalse("fun(45, 14, 10, 4.5)", fun, keyObj);
+    _trueFalse("fun(45, 14, 10, 3.5)", fun, keyObj);
+    // trueFalse("fun(60, 15, 8, 9)", fun(60, 15, 8, 9 * klineJson[i].inc_ave_21), keyObj);
+    // trueFalse("fun(60, 15, 8, 8)", fun(60, 15, 8, 8 * klineJson[i].inc_ave_21), keyObj);
+    // trueFalse("fun(60, 15, 8, 10)", fun(60, 15, 8, 10 * klineJson[i].inc_ave_21), keyObj);
+    // trueFalse("fun(60, 15, 8, 3*amp)", fun(60, 15, 8, 3 * klineJson[i].amplitude_ave_21), keyObj);
+    // trueFalse("fun(60, 15, 8, 4*amp)", fun(60, 15, 8, 4 * klineJson[i].amplitude_ave_21), keyObj);
 }
 
 
