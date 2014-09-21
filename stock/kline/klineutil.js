@@ -87,7 +87,7 @@ function higherItemsIndex(klineJson, from, to, field, value) {
     var len = klineJson.length;
     var items = [];
     var exRight = 1;
-    for (var i=from; i<len && i<=to; i++) {
+    for (var i=from; i>=1 && i<len && i<=to; i++) {
         if (!ignoreEx && klineJson[i].exRightsDay) {
             if (exRight===1) {
                 exRight = klineJson[i].open/klineJson[i-1].close;

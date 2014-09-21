@@ -13,11 +13,11 @@ var detailedDateResultEnd = new Date("01/01/2012");
 var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010")
-, new Date("01/01/2011"), new Date("01/01/2012"), new Date("06/01/2012"),
+, new Date("01/01/2011"), new Date("01/01/2012"),
 new Date("01/01/2013"), new Date("06/01/2013"), new Date("01/01/2014"),
 new Date("06/01/2014")]; 
 
-var klineForm = process.argv[2]?process.argv[2]:"greenInRedA";
+var klineForm = process.argv[2]?process.argv[2]:"flatBottom";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = ""//wBottomA,wBottom,headShoulderBottom,morningStarA,morningStarB,redNGreenRed,greenInRedA";
 
@@ -308,9 +308,10 @@ if (cluster.isMaster) {
                     union:unionKLineForm,
                     intersection:intersectionKLineForm,
                     injection: function(stockId, klineJson, idx, mtd){
-
+                        var unionValid = false;
                         if(!klineformanalyser.unionResult(null, bullKLineFormMethods, klineJson, idx)) {
                             forkResult.valid = forkResult.valid?forkResult.valid+1:1;
+                            unionValid = true;
                         }
 
 
@@ -318,7 +319,7 @@ if (cluster.isMaster) {
                         var date = new Date(klineJson[idx].date);
                         var iswin = klineJson[idx].winOrLose==="win";
                         __themastercount++;
-                        conditionanalyser.conditions(klineJson, idx, conditionObj, stockId);
+                        conditionanalyser.conditions(klineJson, idx, conditionObj, unionValid, stockId);
                         if (dateSections.length===0) return;
                         var keytotal = "";
                         var keywin = "";

@@ -2,7 +2,7 @@ var bullOrBear = "bull";
 var startDate = new Date("01/01/2009"); 
 var endDate = new Date("01/01/2015"); 
 
-var displayMinCount = 100;
+var displayMinCount = 50;
 var displayInfoFromDate = new Date("01/01/2014");
 var displayInfoToDate = new Date("01/01/2015");
 var displayEveryCase = false;
