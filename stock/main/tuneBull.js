@@ -75,14 +75,21 @@ if (cluster.isMaster) {
 
             
             for (var att in conditionObj.win) {
-                if (!masterConditionObj.win[att]) masterConditionObj.win[att] = {"_true":0, "_false":0};
+                if (!masterConditionObj.win[att]) masterConditionObj.win[att] = {"_true":0, "_false":0, true_unionvalid:0, false_unionvalid:0};
                 masterConditionObj.win[att]._true+= conditionObj.win[att]._true;
                 masterConditionObj.win[att]._false+= conditionObj.win[att]._false;
+
+                masterConditionObj.win[att].true_unionvalid+= conditionObj.win[att].true_unionvalid;
+                masterConditionObj.win[att].false_unionvalid+= conditionObj.win[att].false_unionvalid;
             }
             for (var att in conditionObj.lose) {
-                if (!masterConditionObj.lose[att]) masterConditionObj.lose[att] = {"_true":0, "_false":0};
+                if (!masterConditionObj.lose[att]) masterConditionObj.lose[att] = {"_true":0, "_false":0, true_unionvalid:0, false_unionvalid:0};
                 masterConditionObj.lose[att]._true+= conditionObj.lose[att]._true;
                 masterConditionObj.lose[att]._false+= conditionObj.lose[att]._false;
+
+
+                masterConditionObj.lose[att].true_unionvalid+= conditionObj.lose[att].true_unionvalid;
+                masterConditionObj.lose[att].false_unionvalid+= conditionObj.lose[att].false_unionvalid;
             }
             
         }
@@ -162,17 +169,45 @@ if (cluster.isMaster) {
             for (var att in masterConditionObj.win) {
                 var wincon = masterConditionObj.win[att];
                 var losecon = masterConditionObj.lose[att];
-                var wintrueper = wincon._true/(wincon._true+wincon._false);
-                var losetrueper = losecon._true/(losecon._true+losecon._false);
-                
-                if (true || wintrueper>0.5 && wintrueper-losetrueper>0
-                    || wintrueper<0.5 && wintrueper-losetrueper<0) {
-                    conditionArr.push(att)
+
+                var truewinper = wincon._true/(wincon._true+losecon._true) ;
+                var losewinper = wincon._false/(wincon._false+losecon._false);
+                if (truewinper >= losewinper && wincon._true+losecon._true>2000) {
+                    conditionArr.push(att);
+                } else if (truewinper < losewinper && wincon._false+losecon._false>2000) {
+                    conditionArr.push(att);
                 }
+                // var wintrueper = wincon._true/(wincon._true+wincon._false);
+                // var losetrueper = losecon._true/(losecon._true+losecon._false);
+                
+                // if (true || wintrueper>0.5 && wintrueper-losetrueper>0
+                //     || wintrueper<0.5 && wintrueper-losetrueper<0) {
+                //     conditionArr.push(att)
+                // }
             }
             console.log("conditionArr", conditionArr.length);
-
             conditionArr.sort(function(att1, att2){
+                var wincon1 = masterConditionObj.win[att1];
+                var losecon1 = masterConditionObj.lose[att1];
+
+                var truewinper1 = wincon1._true/(wincon1._true+losecon1._true);
+                var losetrueper1 = wincon1._false/(wincon1._false+losecon1._false);
+                var per1 = Math.max(truewinper1, losetrueper1);
+
+                var wincon2 = masterConditionObj.win[att2];
+                var losecon2 = masterConditionObj.lose[att2];
+
+                var truewinper2 = wincon2._true/(wincon2._true+losecon2._true);
+                var losetrueper2 = wincon2._false/(wincon2._false+losecon2._false);
+                var per2 = Math.max(truewinper2, losetrueper2);
+                
+                if (per1>per2) return -1;
+                if (per1<per2) return 1;
+                return 0;
+            });
+
+            var conditionArr1 = [];
+            conditionArr1.sort(function(att1, att2){
 
                 var wincon1 = masterConditionObj.win[att1];
                 var wintrueper1 = wincon1 ? wincon1._true/(wincon1._true+wincon1._false) : 0;
@@ -244,20 +279,36 @@ if (cluster.isMaster) {
                 catt = conditionArr[ci];
                 var wincon = masterConditionObj.win[catt];
                 var losecon = masterConditionObj.lose[catt];
-                var wintrueper = wincon ? wincon._true/(wincon._true+wincon._false) : 0;
-                var losetrueper = losecon ? losecon._true/(losecon._true+losecon._false) : 0;
+                var truewinper = wincon._true/(wincon._true+losecon._true) ;
+                var losewinper = wincon._false/(wincon._false+losecon._false);
 
-                var per = wintrueper>losetrueper
-                   ? (masterConditionObj.win[catt]._true/(masterConditionObj.win[catt]._true+masterConditionObj.lose[catt]._true))
-                   : (masterConditionObj.win[catt]._false/(masterConditionObj.win[catt]._false+masterConditionObj.lose[catt]._false));
+                var per = Math.max(truewinper, losewinper);
+
+                var count_unionvalid = truewinper>losewinper 
+                    ? (wincon.true_unionvalid+losecon.true_unionvalid) 
+                    : (wincon.false_unionvalid+losecon.false_unionvalid);
+                if (isNaN(per)) console.log(wincon, losecon)
                 console.log(per.toFixed(3), 
-                    wintrueper>losetrueper 
-                    ? (masterConditionObj.win[catt]._true+masterConditionObj.lose[catt]._true)
-                    : (masterConditionObj.win[catt]._false+masterConditionObj.lose[catt]._false),
-                    wintrueper.toFixed(3), 
-                    losetrueper.toFixed(3), masterConditionObj.win[catt], masterConditionObj.lose[catt], 
-                    (isDupeCondition(catt)?"***":"")+catt
-                    );
+                    truewinper>losewinper 
+                    ? wincon._true+"/"+(wincon._true+losecon._true) 
+                    : wincon._false+"/"+(wincon._false+losecon._false)
+                    , truewinper>losewinper?"T":"F"
+                    , count_unionvalid
+                    , (isDupeCondition(catt)?"***":"")+catt)
+                // var wintrueper = wincon ? wincon._true/(wincon._true+wincon._false) : 0;
+                // var losetrueper = losecon ? losecon._true/(losecon._true+losecon._false) : 0;
+
+                // var per = wintrueper>losetrueper
+                //    ? (masterConditionObj.win[catt]._true/(masterConditionObj.win[catt]._true+masterConditionObj.lose[catt]._true))
+                //    : (masterConditionObj.win[catt]._false/(masterConditionObj.win[catt]._false+masterConditionObj.lose[catt]._false));
+                // console.log(per.toFixed(3), 
+                //     wintrueper>losetrueper 
+                //     ? (masterConditionObj.win[catt]._true+masterConditionObj.lose[catt]._true)
+                //     : (masterConditionObj.win[catt]._false+masterConditionObj.lose[catt]._false),
+                //     wintrueper.toFixed(3), 
+                //     losetrueper.toFixed(3), masterConditionObj.win[catt], masterConditionObj.lose[catt], 
+                //     (isDupeCondition(catt)?"***":"")+catt
+                //     );
 
             }
             
@@ -269,8 +320,7 @@ if (cluster.isMaster) {
 } else if (cluster.isWorker) {
 
     var klineformanalyser = require("../kline/form/analyser").config({
-        startDate: startDate,
-        endDate: endDate
+        startDate: startDate,        endDate: endDate
     });
     var bullKLineFormMethods = klineformanalyser.bullKLineFormMethods();
     var mtdsidx = bullKLineFormMethods.indexOf(klineForm);

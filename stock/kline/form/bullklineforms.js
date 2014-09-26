@@ -940,9 +940,6 @@ function bullNeedle(klineJson, i) {
         } ()
 }
 
-function moneyflow(klineJson, i) {
-    return true;
-}
 
 exports.moneyflow = moneyflow;
 exports.bullNeedle = bullNeedle;

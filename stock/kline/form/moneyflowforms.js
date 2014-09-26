@@ -1308,34 +1308,7 @@ function lowRedsB (klineJson, i) {
          )  
 }
 
-
-// function smallRedsAndGreensA_1(klineJson, i) {
-//     var obj = klineJson[i];
-//     if (obj.netsummax_r0 === undefined) return false;
-
-//     return true
-//         && obj.netsummin_r0_20===-0*obj.amount_ave_21
-//         && obj.amount_ave_21<2*obj.amount
-//         && function(a, b, c, d, e, f) {
-//             var n=i;
-//             for (; n>1; n--) {
-//                 var inc_ave = klineJson[n].inc_ave_21;
-//                 if (Math.abs(klineutil.increase(klineJson[n].open, klineJson[n].close)) > inc_ave*a
-//                     ) {
-//                     break;
-//                 } 
-//             }
-
-//             return true
-//                 && i-n>=b
-//                 && klineutil.increase(klineJson[i-c].close_ave_8, klineJson[i].close_ave_8) > 0.02*d
-//                 && function () {
-//                     var lowerItems = klineutil.higherItemsIndex(klineJson, i-e, i, "low", klineJson[i].high);
-//                     return lowerItems.length>f
-//                 }()
-//         }(1.3, 7, 4, 0.5, 70, 30)
-// }
-
+//********better**********//////////////////////////////////////
 
 function smallRedsAndGreensA_1(klineJson, i) {
     var obj = klineJson[i];
@@ -1377,9 +1350,9 @@ function smallRedsAndGreensA_2(klineJson, i) {
 
     return true
         && obj.netsummin_r0>=-0.1*obj.amount_ave_21
-        && obj.amount_ave_21<1*obj.amount_ave_8
+        && obj.amount_ave_21<1.5*obj.amount_ave_8
         && obj.netsum_r0_10>-0.02*obj.amount_ave_21
-        && obj.amount_ave_21<1*obj.amount
+        && obj.amount_ave_21<1.5*obj.amount
         && obj.netsummax_r0_10===-0.0*obj.amount_ave_21
         && function(a, b, c, d, e, f, g, h) {
        //     return true
@@ -1410,12 +1383,79 @@ function smallRedsAndGreensA_3(klineJson, i) {
     if (obj.netsummax_r0 === undefined) return false;
 
     return true
-        && obj.netsummin_r0_10>-0.05*obj.amount_ave_21
         && obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.3*obj.amount_ave_21
-        && obj.amount_ave_21<1*obj.amount
-        && obj.netsummax_r0_5===0.0*obj.amount_ave_21
+        && klineutil.increase(klineJson[i].open, klineJson[i].close)>0.015
+        && obj.netsummin_r0_20===-0*obj.amount_ave_21
         && function(a, b, c, d, e, f, g, h) {
        //     return true
+        var n=i;
+        for (; n>1; n--) {
+            var inc_ave = klineJson[n].inc_ave_21;
+            if (Math.abs(klineutil.increase(klineJson[n].open, klineJson[n].close)) > inc_ave*a) {
+                break;
+            } 
+        }
+
+        return true
+            && i-n>= b
+            && klineutil.increase(klineJson[i-c].close_ave_8, klineJson[i].close_ave_8) > d//-klineJson[i].inc_ave_8*0.8
+            && function () {    
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-e, i, "high", klineJson[i].low);
+            var lidx = klineutil.lowItem(klineJson, i-f, i, "low");
+            return true
+                && i-lowerItems[0] <g 
+                && klineutil.increase(lidx, klineJson[i].close) > klineJson[i].inc_ave_8*h
+        }()
+    }(2, 5, 4, 0, 80, 80, 37, 4)
+}
+
+
+function smallRedsAndGreensA_4(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummin_r0_40>-0.15*obj.amount_ave_21
+        && obj.amount_ave_8<1*obj.amount
+        && obj.netsummax_r0_10===-0.0*obj.amount_ave_21
+        && function(a, b, c, d, e, f, g, h) {
+//           return true
+        var n=i;
+        for (; n>1; n--) {
+            var inc_ave = klineJson[n].inc_ave_21;
+            if (Math.abs(klineutil.increase(klineJson[n].open, klineJson[n].close)) > inc_ave*a) {
+                break;
+            } 
+        }
+
+        return true
+            && i-n>= b
+            && klineutil.increase(klineJson[i-c].close_ave_8, klineJson[i].close_ave_8) > d//-klineJson[i].inc_ave_8*0.8
+            && function () {    
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-e, i, "high", klineJson[i].low);
+            var lidx = klineutil.lowItem(klineJson, i-f, i, "low");
+            return true
+                && i-lowerItems[0] <g 
+                && klineutil.increase(lidx, klineJson[i].close) > klineJson[i].inc_ave_8*h
+        }()
+    }(2, 4, 4, 0, 80, 80, 38, 4)
+}
+
+
+function smallRedsAndGreensA_5(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsum_r0_below<0.04*obj.amount_ave_21
+        && obj.netsum_r0_above>obj.netsum_r0_below*6
+        && obj.amount_ave_21<1*obj.amount_ave_8
+        && obj.netsummax_r0_20<0.1*obj.amount_ave_21
+        && obj.amount_ave_21<1*obj.amount
+        && klineutil.increase(klineJson[i].open, klineJson[i].close)<0.7*obj.amplitude_ave_8
+        && obj.netsummax_r0_10===-0.0*obj.amount_ave_21//&& obj.netsum_r0_20>=0.0*obj.amount_ave_21//&& obj.netsummin_r0_20===-0*obj.amount_ave_21
+        && function(a, b, c, d, e, f, g, h) {
+          // return true
         var n=i;
         for (; n>1; n--) {
             var inc_ave = klineJson[n].inc_ave_21;
@@ -1432,9 +1472,109 @@ function smallRedsAndGreensA_3(klineJson, i) {
             var lidx = klineutil.lowItem(klineJson, i-f, i, "low");
             return true
                 && i-lowerItems[0] <g 
-                && klineutil.increase(lidx, klineJson[i].close) > klineJson[i].inc_ave_8*h
+                && klineutil.increase(lidx, klineJson[i].close) >  0.015*h//klineJson[i].inc_ave_8*h
         }()
-    }(2, 5, 4, 0, 80, 80, 35, 4)
+    }(3, 5, 4, 0, 80, 85, 40, 4.5)
+}
+
+
+function smallRedsAndGreensA_6(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsum_r0_80>-0.1*obj.amount_ave_21
+        && obj.netsum_r0_below>-0.02*obj.amount_ave_21
+        && obj.netsummax_r0_r0x<0.5*obj.amount_ave_21
+        && obj.netsum_r0_above_60>0.3*obj.amount_ave_21
+        && obj.netsummax_r0_20<0.13*obj.amount_ave_21
+        && obj.netsummin_r0_20>=-0*obj.amount_ave_21
+        && function(a, b, c, d, e, f, g, h) {
+        // return true
+        var n=i;
+        for (; n>1; n--) {
+            var inc_ave = klineJson[n].inc_ave_21;
+            if (Math.abs(klineutil.increase(klineJson[n].open, klineJson[n].close)) > inc_ave*a) {
+                break;
+            } 
+        }
+
+        return true
+            && i-n>= b
+            //&& klineutil.increase(klineJson[i-c].close_ave_8, klineJson[i].close_ave_8) > d//-klineJson[i].inc_ave_8*0.8
+            && function () {    
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-e, i, "high", klineJson[i].low);
+            var lidx = klineutil.lowItem(klineJson, i-f, i, "low");
+            return true
+                && i-lowerItems[0] <g 
+                && klineutil.increase(lidx, klineJson[i].close) >  0.015*h//klineJson[i].inc_ave_8*h
+        }()
+    }(3, 5, 4, 0, 80, 80, 40, 4)
+}
+
+
+
+function smallRedsAndGreensA_7(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsum_r0_below>-0.02*obj.amount_ave_21
+        &&   obj.netsummax_r0_40<0.09*obj.amount_ave_21
+         && obj.netsummin_r0_20>=-0*obj.amount_ave_21
+        && function(a, b, c, d, e, f, g, h) {
+         // return true
+        var n=i;
+        for (; n>1; n--) {
+            var inc_ave = klineJson[n].inc_ave_21;
+            if (Math.abs(klineutil.increase(klineJson[n].open, klineJson[n].close)) > inc_ave*a) {
+                break;
+            } 
+        }
+
+        return true
+            && i-n>= b
+            && function () {    
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-e, i, "high", klineJson[i].low);
+            var lidx = klineutil.lowItem(klineJson, i-f, i, "low");
+            return true
+                && i-lowerItems[0] <g 
+                && klineutil.increase(lidx, klineJson[i].low) >  0.015*h//klineJson[i].inc_ave_8*h
+        }()
+    }(3, 5, 4, 0, 80, 80, 40, 4) 
+}
+
+
+function smallRedsAndGreensA_8(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummax_r0_10===obj.netsummax_r0_20
+        && obj.netsum_r0_above_60>0.1*obj.amount_ave_21// obj.netsum_r0_above_60>1.5*obj.netsum_r0_below_60
+        && obj.netsummax_r0>2.5*obj.amount_ave_21 // <<<<obj.netsum_r0_above_60>0.5*obj.amount_ave_21
+        && obj.amount_ave_21<1.5*obj.amount
+        && obj.netsummin_r0_20===-0*obj.amount_ave_21
+        && function(a, b, c, d, e, f, g, h) {
+         // return true
+        var n=i;
+        for (; n>1; n--) {
+            var inc_ave = klineJson[n].inc_ave_21;
+            if (Math.abs(klineutil.increase(klineJson[n].open, klineJson[n].close)) > inc_ave*a) {
+                break;
+            } 
+        }
+
+        return true
+            && i-n>= b
+            && function () {    
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-e, i, "high", klineJson[i].low);
+            var lidx = klineutil.lowItem(klineJson, i-f, i, "low");
+            return true
+                && i-lowerItems[0] <g 
+                && klineutil.increase(lidx, klineJson[i].low) >  0.015*h//klineJson[i].inc_ave_8*h
+        }()
+    }(3, 5, 4, 0, 80, 80, 40, 4) // (3, 5, 4, 0, 80, 80, 40, 4)
 }
 
 function smallRedsAndGreensA (klineJson, i) {
@@ -1442,11 +1582,75 @@ function smallRedsAndGreensA (klineJson, i) {
     if (obj.netsummax_r0 === undefined) return false;
 
     return true
-        && smallRedsAndGreensA_3(klineJson, i)
-        && !(false
+        //&& smallRedsAndGreensA_6(klineJson, i)
+        && (false
             || smallRedsAndGreensA_1(klineJson, i) 
-            || smallRedsAndGreensA_2(klineJson, i)
+            || smallRedsAndGreensA_3(klineJson, i)
+            || smallRedsAndGreensA_4(klineJson, i)
+            || smallRedsAndGreensA_5(klineJson, i)
+            || smallRedsAndGreensA_6(klineJson, i)
+            || smallRedsAndGreensA_7(klineJson, i)
+            || smallRedsAndGreensA_8(klineJson, i)
          )  
+}
+
+
+function bullPulsing_1(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsum_r0_below>-0.05*obj.amount_ave_21
+        && obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.2*obj.amount_ave_21
+        && obj.netsum_r0_below<=0.02*obj.amount_ave_21
+        && obj.netsummin_r0_10>-0.07*obj.amount_ave_21
+        && obj.amount_ave_21<1*obj.amount_ave_8
+        && obj.netsummax_r0_10<0.05*obj.amount_ave_21
+        && function(a, b, c, d, e, f) {
+            // return true
+            var n=i;
+            var biginc = 0;
+            for (; n>1; n--) {
+                var inc_ave = klineJson[n].inc_ave_21;
+                if (klineutil.increase(klineJson[n].open, klineJson[n].close) > 0.01*a//inc_ave*a
+                    ) {
+                    biginc = klineutil.increase(klineJson[n].open, klineJson[n].close);
+                    break;
+                } 
+            }
+            for (var j=n+1; j<=i; j++) {
+                var inc_ave = klineJson[n-1].inc_ave_8;
+                if (klineutil.increase(klineJson[n].close, klineJson[j].close) < b*inc_ave
+                    )
+                    return false;
+            }
+
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, n-c, n, "close", klineJson[n].open);
+            var higherItems = klineutil.higherItemsIndex(klineJson, n-d, n, "low", klineJson[n].close);
+            return n-lowerItems[0] <e //&& n-higherItems[higherItems.length-1] > f;
+        }(2, -0.8, 65, 20, 50, 5) //(1.5, -1.5, 65, 20, 50, 5)
+        
+}
+
+function bullPulsing (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        //&& bullPulsing_2(klineJson, i)
+        &&(false
+            || bullPulsing_1(klineJson, i) 
+         )  
+}
+
+function _201404_08(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+    
+    return true
+        && obj.netsummax_r0_5===0.0*obj.amount_ave_21
+        && obj.netsummin_r0x_5-obj.netsummin_r0x_10>0.5*obj.amount_ave_21
+        && obj.amount_ave_21<1*obj.amount_ave_8
 }
 
 exports.sidewaysCompression = sidewaysCompression;
@@ -1463,3 +1667,82 @@ exports.hammer = hammer
 exports.flatBottom = flatBottom
 exports.lowRedsB = lowRedsB;
 exports.smallRedsAndGreensA = smallRedsAndGreensA;
+exports.bullPulsing = bullPulsing;
+exports._201404_08 = _201404_08;
+
+
+
+/*
+{"date": "06/06/2012",
+"open": 2.98,
+"high": 3,
+"low": 2.95,
+"close": 2.96,
+"volume": 6427968,
+"amount": 19091024,
+"close_ave_8": 3.002,
+"close_ave_21": 3.003,
+"close_ave_55": 2.952,
+"close_ave_144": 2.935,
+"close_ave_233": 3.209,
+"volume_ave_8": 15081743.75,
+"volume_ave_21": 19125609.238,
+"amount_ave_8": 46714972,
+"amount_ave_21": 60674279.762,
+"amplitude_ave_8": 0.031,
+"amplitude_ave_21": 0.035,
+"amplitude_ave_55": 0.026,
+"inc_ave_8": 0.015,
+"inc_ave_21": 0.018,
+"netamount": -2414830.86,
+"ratioamount": -0.12649,
+"r0_net": -2605338.72,
+"r0_ratio": -0.1364693,
+"netsum_r0_5": -2375487.91,
+"netsum_r0x_5": -27950244.999999996,
+"netsum_r0_10": 918978.0699999998,
+"netsum_r0x_10": -24908457.509999998,
+"netsum_r0_20": 41817219.620000005,
+"netsum_r0x_20": 13550372.33,
+"netsum_r0_40": 43795189.38,
+"netsum_r0x_40": -18379307.540000003,
+"netsum_r0_80": 43517119.57000001,
+"netsum_r0x_80": -65560520.599999964,
+"netsummax_r0_r0x": 74249632.34,
+"netsummax_r0_r0x_duration": 15,
+"netsummax_r0_duration": 135,
+"netsummax_r0_netsum_r0x": -121715313.02,
+"netsummax_r0": 55637417.980000004,
+"netsummax_r0_5": 153855.38999999966,
+"netsummax_r0_10": 1519571.0899999999,
+"netsummax_r0_20": 46149776.300000004,
+"netsummax_r0_40": 46149776.300000004,
+"netsummin_r0": -3100641.59,
+"netsummin_r0_5": -2605338.72,
+"netsummin_r0_10": -2605338.72,
+"netsummin_r0_20": -3100641.59,
+"netsummin_r0_40": -3100641.59,
+"netsummax_r0x": 28238048.13,
+"netsummax_r0x_5": 190507.86000000034,
+"netsummax_r0x_10": 190507.86000000034,
+"netsummax_r0x_20": 28238048.13,
+"netsummax_r0x_40": 28238048.13,
+"netsummin_r0x": -127723158.01999998,
+"netsummin_r0x_5": -27950244.999999996,
+"netsummin_r0x_10": -38974521.39,
+"netsummin_r0x_20": -40770819.41,
+"netsummin_r0x_40": -40770819.41,
+"netsum_r0_above": 49509712.980000004,
+"netsum_r0_above_60": 44947371.38,
+"netsum_r0_below": 6127705,
+"netsum_r0_below_60": -1180000,
+"netsum_r0x_above": -91464971.56,
+"netsum_r0x_above_60": -37266638.6,
+"netsum_r0x_below": -32205046.159999996,
+"netsum_r0x_below_60": -22564650.080000002,
+"incStop": -0.07853006067291766,
+"winOrLose": "lose"
+}
+
+
+*/
