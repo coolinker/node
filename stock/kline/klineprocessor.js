@@ -1,5 +1,4 @@
 var klineutil = require("./klineutil");
-var intersectionprocessor = require("./form/intersectionprocessor").config(1);
 var moneyflowforms = require("./form/moneyflowforms");
 var moneyflowio = require("../moneyflow/io").config();
 
@@ -14,247 +13,6 @@ function config(start, end){
     });
 
     return this;
-}
-
-function highCeilBoxCompare(json1, json2, midValue, offset) {
-    var low = midValue - offset;
-    var high = midValue + offset;
-    var entityHigh1 = json1.high;
-    var entityHigh2 = Math.max(json2.close, json2.open);
-
-    var hh = klineutil.inBetween(klineutil.increase(json1.high, json2.high), low, high);
-    var ch = klineutil.inBetween(klineutil.increase(entityHigh1, json2.high), low, high);
-    var hc = klineutil.inBetween(klineutil.increase(json1.high, entityHigh2), low, high);
-    var cc = klineutil.inBetween(klineutil.increase(entityHigh1, entityHigh2), low, high);
-
-  
-    if (hh===0 || ch ===0 || hc===0 || cc === 0) return 0;
-    if (hh>0) return 1;
-    return -1;
-
-}
-
-function markBoxs(klineJson, peakValueField, peakFlag, compareFun) {
-    var len = klineJson.length;
-    var peaks = [];
-
-    for (var i=0; i<len; i++) {
-        if (klineJson[i][peakFlag]) {
-            peaks.push(klineJson[i]);
-        }
-    }
-
-    len = peaks.length;
-    for (var m=len-1; m>=0; m--) {
-        var startJson = peaks[m];
-        var results = [startJson.date];
-        for (var n=m-1; n>=0; n--) {
-            var curJson = peaks[n];
-            var compare = compareFun(startJson, curJson);
-            if (compare === 0) {
-                results.push(curJson.date);
-            } else if (compare > 0) {
-                break;
-            }
-        }
-
-
-        if (results.length>1) {
-            startJson[peakValueField+"Box"+compareFun.name] = results;
-            console.log("results", results)
-        }
-    }
-}
-
-function mergeTroughs(klineJson, field, interval, threshold) {
-    var troughField = field+"_trough";
-    var lastTroughIdx = -1;
-    var peakIdxInBetween = 0;
-
-    for (var i=0; i<klineJson.length; i++) {
-        
-        if (klineJson[peakIdxInBetween].low < klineJson[i].low) {
-            peakIdxInBetween = i;
-        }
-
-        if (klineJson[i][troughField]!==true) {
-            continue;
-        }
-        
-        if (lastTroughIdx===-1) {
-            lastTroughIdx = i;
-            peakIdxInBetween = lastTroughIdx;
-        } else {
-
-            if (i - lastTroughIdx <= interval) {
-                var j=i+1;
-                for (; j<klineJson.length; j++) {
-                    if (klineJson[j][troughField]===true) {
-                        break;
-                    }
-                }
-            
-                if (j===klineJson.length) break;
-
-                if (i - lastTroughIdx <= j-i) {
-                    if(klineJson[lastTroughIdx].low <= klineJson[i].low){
-                        delete klineJson[i][troughField];
-                    } else {
-                        delete klineJson[lastTroughIdx][troughField];
-                        lastTroughIdx = i;
-                        peakIdxInBetween = lastTroughIdx;
-                    } 
-                } else {
-                    if(klineJson[i].low <= klineJson[j].low){
-                        delete klineJson[j][troughField];
-                        i--;
-                    } else {
-                        delete klineJson[i][troughField];
-                    }
-                }
-                
-            } else {
-                lastTroughIdx = i;
-                peakIdxInBetween = lastTroughIdx;
-            }
-
-        }
-
-    }
-
-}
-
-
-function mergePeaks(klineJson, field, interval, threshold) {
-    var peakField = field+"_peak";
-    var lastPeakIdx = -1;
-    var troughIdxInBetween = 0;
-
-    for (var i=0; i<klineJson.length; i++) {
-        if (klineJson[troughIdxInBetween].high > klineJson[i].high) {
-            troughIdxInBetween = i;
-        }
-
-        if (klineJson[i][peakField]!==true) {
-            continue;
-        }
-        
-        if (lastPeakIdx===-1) {
-            lastPeakIdx = i;
-            troughIdxInBetween = lastPeakIdx;
-        } else {
-            
-            if (i - lastPeakIdx <= interval) {
-                var j=i+1;
-                for (; j<klineJson.length; j++) {
-                    if (klineJson[j][peakField]===true) {
-                        break;
-                    }
-                }
-                
-                if (j===klineJson.length) break;
-
-                if (i - lastPeakIdx <= j-i) {
-                    if(klineJson[lastPeakIdx].high>=klineJson[i].high){
-                        delete klineJson[i][peakField];
-                    } else {
-                        delete klineJson[lastPeakIdx][peakField];
-                        lastPeakIdx = i;
-                        troughIdxInBetween = lastPeakIdx;
-                    } 
-                } else {
-                    if(klineJson[i].high>=klineJson[j].high){
-                        delete klineJson[j][peakField];
-                        i--;
-                    } else {
-                        delete klineJson[i][peakField];
-                    }
-                }
-                
-            } else {
-                lastPeakIdx = i;
-                troughIdxInBetween = lastPeakIdx;
-            }
-
-        }
-
-    }
-
-}
-
-function markPeaks(klineJson, field, increaseMin, minInterval) {
-    var jsonLen = klineJson.length;
-    var prePeak = Infinity;
-    var prePeakIdx = 0;
-    var highLowIdx = 0;
-    var highLow = Infinity;
-    var peakField = field+"_peak";
-    for (var i=0; i<jsonLen; i++) {
-        
-        if (prePeakIdx===-1) {
-            
-            if(highLow >= klineJson[i][field]) {
-                highLowIdx = i;
-                highLow = klineJson[i][field];
-            } else {
-                if (klineutil.increase(highLow, klineJson[i][field])>increaseMin) {
-                    prePeakIdx = i;
-                }
-            }
-            continue;
-        }
-
-        if (klineJson[prePeakIdx][field] < klineJson[i][field]) {
-            prePeakIdx = i;
-        } else {
-            if ((i-prePeakIdx) >= minInterval
-                && klineutil.increase(klineJson[i][field], klineJson[prePeakIdx][field]) > increaseMin) {
-                klineJson[prePeakIdx][peakField] = true;
-                prePeakIdx = -1;
-                highLowIdx = i;
-                highLow = klineJson[highLowIdx][field];
-            }
-        }
-
-    }
-
-}
-
-function markTroughs(klineJson, field, increaseMin, minInterval) {
-    var jsonLen = klineJson.length;
-    var preTrough = Infinity;
-    var preTroughIdx = 0;
-    var lowHighIdx = 0;
-    var lowHigh = 0;
-    var troughField = field+"_trough";
-    for (var i=0; i<jsonLen; i++) {
-        if (preTroughIdx===-1) {
-            if(lowHigh <= klineJson[i].low) {
-                //preTroughIdx = i;
-                lowHigh = klineJson[i].low;
-                lowHighIdx = i;
-            } else {
-                if (klineutil.increase(klineJson[i].low, lowHigh)>increaseMin) {
-                    preTroughIdx = i;
-                }
-            }
-            continue;
-        }
-
-        if (klineJson[preTroughIdx].low > klineJson[i].low) {
-            preTroughIdx = i;
-        } else {
-            if ((i-preTroughIdx) >= minInterval
-                && klineutil.increase(klineJson[preTroughIdx].low, klineJson[i].low) > increaseMin) {
-                klineJson[preTroughIdx][troughField] = true;
-                preTroughIdx = -1;
-                lowHighIdx = i;
-                lowHigh = klineJson[lowHighIdx].low;
-            }
-        }
-
-    }
-
 }
 
 function average(klineJson, field, interval, ignoreEx, valFun) {
@@ -307,58 +65,17 @@ function exRightsDay(stockId, klineJson) {
             klineJson[i].exRightsDay = true;
             //console.log(stockId, date, open, rightJson[date].open, inc, rightinc);
         }
-       // if (inc < -0.01) {
-       //      klineJson[i].exRightsDay = true;
-       //  } else if (klineutil.increase(preclose, open) > 0.105) {
-
-       //      klineJson[i].exRightsDay = true;
-       //  } 
-
-        // if (klineutil.increase(prehigh, low) > 0 && open < close) {
-        //     klineJson[i].gapUp = klineutil.increase(prehigh, low);
-        // } else if(klineutil.increase(prelow, high) < 0 && open > close) {
-        //     klineJson[i].gapDown = klineutil.increase(prelow, high);
-        // }
 
     }
 }
 
 function matchForms(kLineJson) {
     var jsonLen = kLineJson.length;
-    var bullforms = klineformanalyser.bullKLineFormMethods();
+    var bullforms = klineformanalyser.kLineFormMethods();
      klineformanalyser.traverseForAppearance(bullforms, kLineJson, {
                 formHandler: function(form, klineJson, i) {},
                 formsHandler: function(forms, klineJson, i) {
                     klineJson[i].match = forms;
-
-                    var reObj = {};
-                    var inc_ave_8 = kLineJson[i].inc_ave_8;
-                    if (!inc_ave_8) return;
-
-                    var winStop = Math.min(3.7*inc_ave_8, 0.15);
-                    var lossStop = Math.max(-3.7*inc_ave_8, -0.15);
-
-                    var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100, reObj);
-                    var days = reObj.days;
-                    var date = kLineJson[i].date;
-                    var j=1;
-                    for (; j<days && i+j<jsonLen; j++) {
-                        if(!kLineJson[i+j].pendings) {
-                            kLineJson[i+j].pendings = {};
-                        }
-                        var pobj = {"day": j};
-                        //pobj.date = date;
-                        pobj.ratio = intersectionprocessor.matchRatio(forms);
-                        kLineJson[i+j].pendings[date] = pobj;
-
-                    }
-                    if (j===days && i+j<jsonLen) {
-                        if(!kLineJson[i+j].stop) kLineJson[i+j].stop = {};
-                        kLineJson[i+j].stop[date] = kLineJson[i].winOrLose;
-                        // var wl = (rel >= winStop? "win": (rel<=lossStop?"lose":"pending"));
-                        // if (kLineJson[i].winOrLose!=wl) console.log("error",wl, kLineJson[i].winOrLose, date);
-                    }
-
                 }
             });
 }
@@ -371,17 +88,8 @@ function winOrLose(kLineJson) {
 
         var winStop = Math.min(5*inc_ave_8, 0.15);
         var lossStop = Math.max(-5*inc_ave_8, -0.15);
-        //var reObj = {};
+
         var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100/*, reObj*/);
-        //var days = reObj.days;
-        // var date = kLineJson[i].date;
-        // for (var j=1; j<days && i+j<jsonLen; j++) {
-        //     if(!kLineJson[i+j].pendings) {
-        //         kLineJson[i+j].pendings = {};
-        //     }
-        //     kLineJson[i+j].pendings[date] = j;
-        // }
-        //if (kLineJson[i].date==="06/19/2014") console.log(kLineJson[i].date, rel, kLineJson[i].close*(1+ lossStop), kLineJson[i].close*(1+ winStop));
         kLineJson[i].incStop = rel;
         kLineJson[i].winOrLose = rel>=winStop ? "win" : (rel<=lossStop?"lose":"pending");
     }
@@ -438,10 +146,12 @@ function mergeMoneyFlow(stockId, kLineJson) {
                  console.log("mergeMoneyFlow error:", stockId, i, klj.date, mfj.opendate, mfj);
             break;
         } else {
+            klj.turnover = mfj.turnover;
             klj.netamount = mfj.netamount;
             klj.ratioamount = mfj.ratioamount;
             klj.r0_net = mfj.r0_net;
             klj.r0_ratio = mfj.r0_ratio;
+
         }
 
     }
@@ -647,6 +357,7 @@ function processChain(stockId, kLineJson) {
     average(kLineJson, "amount", 8, true);
     average(kLineJson, "amount", 21, true);
 
+
     average(kLineJson, "amplitude", 8, true, function (klj, n) { 
         var kl = klj[n];
         return klineutil.increase(kl.low, kl.high);
@@ -682,9 +393,12 @@ function processChain(stockId, kLineJson) {
     //console.log(stockId);
     mergeMoneyFlow(stockId, kLineJson);
     processMoneyFlow(kLineJson);
-    
+
+    average(kLineJson, "turnover", 8, true);
+    average(kLineJson, "turnover", 21, true);
+
     winOrLose(kLineJson);
-    //matchForms(kLineJson);
+    matchForms(kLineJson);
 
     klineio.writeKLineSync(stockId, kLineJson);
   }
@@ -692,9 +406,5 @@ exports.config = config;
 exports.updateKLinesFromBase = updateKLinesFromBase;
 exports.updateKLinesFromAjax = updateKLinesFromAjax;
 
-exports.mergeTroughs = mergeTroughs;
-exports.mergePeaks = mergePeaks;
-exports.markPeaks = markPeaks;
-exports.markTroughs = markTroughs;
 //exports.average = average;
 exports.exRightsDay = exRightsDay;

@@ -1643,16 +1643,6 @@ function bullPulsing (klineJson, i) {
          )  
 }
 
-function _201404_08(klineJson, i) {
-    var obj = klineJson[i];
-    if (obj.netsummax_r0 === undefined) return false;
-    
-    return true
-        && obj.netsummax_r0_5===0.0*obj.amount_ave_21
-        && obj.netsummin_r0x_5-obj.netsummin_r0x_10>0.5*obj.amount_ave_21
-        && obj.amount_ave_21<1*obj.amount_ave_8
-}
-
 exports.sidewaysCompression = sidewaysCompression;
 exports.wBottomA = wBottomA;
 exports.wBottom = wBottom;
@@ -1668,7 +1658,6 @@ exports.flatBottom = flatBottom
 exports.lowRedsB = lowRedsB;
 exports.smallRedsAndGreensA = smallRedsAndGreensA;
 exports.bullPulsing = bullPulsing;
-exports._201404_08 = _201404_08;
 
 
 

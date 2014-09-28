@@ -38,8 +38,8 @@ function _trueFalse(key, fun, keyObj, unionvalid) {
 
 function conditions(klineJson, idx, conditionObj, unionvalid, stockId) {
      // bullPulsing(klineJson, idx, conditionObj, unionvalid, stockId);
-    moneyFlow(klineJson, idx, conditionObj, unionvalid, stockId);
-    rk(klineJson, idx, conditionObj, unionvalid, stockId);
+    // moneyFlow(klineJson, idx, conditionObj, unionvalid, stockId);
+    // rk(klineJson, idx, conditionObj, unionvalid, stockId);
 }
 
 function bullPulsing(klineJson, i, conditionObj, unionvalid, stockId) {
@@ -1035,6 +1035,39 @@ function moneyFlow(klineJson, i, conditionObj, unionvalid, stockId) {
     trueFalse("<<<<obj.netsum_r0_below_60>0.05*obj.amount_ave_21", obj.netsum_r0_below_60 > 0.05 * obj.amount_ave_21, keyObj, unionvalid);
     trueFalse("obj.netsum_r0_below_60>0.03*obj.amount_ave_21", obj.netsum_r0_below_60 > 0.03 * obj.amount_ave_21, keyObj, unionvalid);
     trueFalse("<<<<obj.netsum_r0_below_60>0.0*obj.amount_ave_21", obj.netsum_r0_below_60 > 0.0 * obj.amount_ave_21, keyObj, unionvalid);
+
+    trueFalse("obj.turnover_ave_8>obj.turnover", obj.turnover_ave_8>obj.turnover, keyObj, unionvalid);
+    trueFalse("obj.turnover_ave_8>0.8*obj.turnover", obj.turnover_ave_8>0.8*obj.turnover, keyObj, unionvalid);
+    trueFalse("obj.turnover_ave_8>1.2*obj.turnover", obj.turnover_ave_8>1.2*obj.turnover, keyObj, unionvalid);
+
+    trueFalse("obj.turnover_ave_21>obj.turnover", obj.turnover_ave_21>obj.turnover, keyObj, unionvalid);
+    trueFalse("obj.turnover_ave_21>0.8*obj.turnover", obj.turnover_ave_21>0.8*obj.turnover, keyObj, unionvalid);
+    trueFalse("obj.turnover_ave_21>1.2*obj.turnover", obj.turnover_ave_21>1.2*obj.turnover, keyObj, unionvalid);
+
+    trueFalse("obj.turnover_ave_8>obj.turnover_ave_21", obj.turnover_ave_8>obj.turnover_ave_21, keyObj, unionvalid);
+    trueFalse("obj.turnover_ave_8>0.8*obj.turnover_ave_21", obj.turnover_ave_8>0.8*obj.turnover_ave_21, keyObj, unionvalid);
+    trueFalse("obj.turnover_ave_8>1.2*obj.turnover_ave_21", obj.turnover_ave_8>1.2*obj.turnover_ave_21, keyObj, unionvalid);
+
+    trueFalse("obj.turnover>0.5", obj.turnover>0.5, keyObj, unionvalid);
+    trueFalse("obj.turnover>1", obj.turnover>1, keyObj, unionvalid);
+    trueFalse("obj.turnover>3", obj.turnover>3, keyObj, unionvalid);
+    trueFalse("obj.turnover>5", obj.turnover>5, keyObj, unionvalid);
+
+    trueFalse("obj.ratioamount>0.05", obj.ratioamount>0.05, keyObj, unionvalid);
+    trueFalse("obj.ratioamount>0.1", obj.ratioamount>0.1, keyObj, unionvalid);
+    trueFalse("obj.ratioamount>0.2", obj.ratioamount>0.2, keyObj, unionvalid);
+
+    trueFalse("obj.ratioamount<-0.05", obj.ratioamount<-0.05, keyObj, unionvalid);
+    trueFalse("obj.ratioamount<-0.1", obj.ratioamount<-0.1, keyObj, unionvalid);
+    trueFalse("obj.ratioamount<-0.2", obj.ratioamount<-0.2, keyObj, unionvalid);
+ 
+     trueFalse("obj.r0_ratio>0.05", obj.r0_ratio>0.05, keyObj, unionvalid);
+    trueFalse("obj.r0_ratio>0.1", obj.r0_ratio>0.1, keyObj, unionvalid);
+    trueFalse("obj.r0_ratio>0.2", obj.r0_ratio>0.2, keyObj, unionvalid);
+
+    trueFalse("obj.r0_ratio<-0.05", obj.r0_ratio<-0.05, keyObj, unionvalid);
+    trueFalse("obj.r0_ratio<-0.1", obj.r0_ratio<-0.1, keyObj, unionvalid);
+    trueFalse("obj.r0_ratio<-0.2", obj.r0_ratio<-0.2, keyObj, unionvalid);
 }
 
 exports.conditions = conditions;

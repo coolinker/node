@@ -1,20 +1,27 @@
+var extend = require('util')._extend;
+
 var bullOrBear = "bull";
-var startDate = new Date("01/01/2009"); 
+var startDate = new Date("01/01/2010"); 
 var endDate = new Date("01/01/2015"); 
 
-var displayMinCount = 50;
+var displayMinCount = 0;
 var displayInfoFromDate = new Date("01/01/2014");
 var displayInfoToDate = new Date("01/01/2015");
 var displayEveryCase = false;
-var displayInfo = "info";
+var showDetailOn = "all";
 var klineForms = "";//bullPulsing"; //"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 console.time("run");
 var klineio = require("../kline/klineio").config(startDate, endDate);
+var intersectionratehelper = require("../kline/form/intersectionratehelper").config(startDate, endDate);
+
+// intersectionratehelper.getIntersectionRate(["wBottom"])
+// return;
+
 var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
-//stocks = ["SH600089"];
+//stocks = ["SZ002558"];
 
 if (cluster.isMaster) {
     var fs = require("fs");
@@ -30,10 +37,12 @@ if (cluster.isMaster) {
     var onForkMessage = function(formsDateTotal) {
         
         for (var date in formsDateTotal) {
-            if (!masterformsDateTotal[date]) masterformsDateTotal[date] = {total:0, win:0};
+            if (!masterformsDateTotal[date]) masterformsDateTotal[date] = {total:0, win:0, lose:0, stocks:{}};
             masterformsDateTotal[date].total += formsDateTotal[date].total;
             masterformsDateTotal[date].win += formsDateTotal[date].win;
+            masterformsDateTotal[date].lose += formsDateTotal[date].lose;
 
+            masterformsDateTotal[date].stocks = extend(masterformsDateTotal[date].stocks, formsDateTotal[date].stocks)
         }
     }
 
@@ -69,8 +78,18 @@ if (cluster.isMaster) {
             sortedDates.forEach(function(date) {
                 var dObj = new Date(date);
                 if (dObj < displayInfoFromDate || dObj > displayInfoToDate) return;
-                console.log(date, masterformsDateTotal[date].win, "/", masterformsDateTotal[date].total, 
-                    (masterformsDateTotal[date].win/masterformsDateTotal[date].total).toFixed(4))
+                console.log(date, "(",masterformsDateTotal[date].win, masterformsDateTotal[date].lose, ")/", masterformsDateTotal[date].total,                     
+                    (masterformsDateTotal[date].win/masterformsDateTotal[date].total).toFixed(4));
+
+                if (showDetailOn==="all" || showDetailOn.indexOf(date)>-1) {
+                    var stks = masterformsDateTotal[date].stocks;
+                    for (var stockId in stks) {
+                        var forms = stks[stockId];
+                        console.log(stockId, forms, intersectionratehelper.getIntersectionRate(forms));
+                    }
+                    
+
+                }
             });
 
             console.timeEnd("run");
@@ -86,7 +105,6 @@ if (cluster.isMaster) {
         endDate: endDate
     });
 
-    var intersectionprocessor = require("../kline/form/intersectionprocessor").config(3);
 
     var klineutil = require("../kline/klineutil");
     var formsDateTotal = {};
@@ -108,9 +126,11 @@ if (cluster.isMaster) {
             klineformanalyser.traverseForAppearance(mtds, kLineJson, {
                 formsHandler: function(forms, klineJson, i) {
                     var date = klineJson[i].date;
-                    if (!formsDateTotal[date]) formsDateTotal[date] = {total:0, win:0};
+                    if (!formsDateTotal[date]) formsDateTotal[date] = {total:0, win:0, lose:0, stocks:{}};
                     formsDateTotal[date].total++;
                     if (klineJson[i].winOrLose === "win") formsDateTotal[date].win++;
+                    if (klineJson[i].winOrLose === "lose") formsDateTotal[date].lose++;
+                    formsDateTotal[date].stocks[stockId] = forms;
                 }
             });
 

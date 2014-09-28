@@ -1,4 +1,5 @@
 var klineutil = require("../klineutil");
+
 var startDate = new Date("01/01/2005"); 
 var endDate = new Date("12/01/2015"); 
 
@@ -8,15 +9,24 @@ var bearklineforms = require("./bearklineforms");
 
 var klineforms = undefined;
 
-function traverseForIntersection(methods, klineJson, result) {
-    var len = klineJson.length;
-    var mthsStr = methods.toString();
-    if (!result[mthsStr])  {
-        result[mthsStr] = {total:0, win:0, lose:0, pending:0};
+
+function config(options){  
+    if (options.bullorbear==="bear") {
+        klineforms = bearklineforms;
+    } else {
+        klineforms = bullklineforms;
     }
 
-    var mthsObj = result[mthsStr];
+    if (options.startDate) startDate = options.startDate;
+    if (options.endDate) endDate = options.endDate;
 
+    return this;
+}
+
+function traverseForIntersection(methods, klineJson) {
+    var len = klineJson.length;
+    var result = {total:0, win:0, lose:0, pending:0};
+    
     for (var i=50; i<len; i++) {
         var date = new Date(klineJson[i].date);
 
@@ -25,81 +35,19 @@ function traverseForIntersection(methods, klineJson, result) {
 
                 
         var arr = [];
-        var inc_ave_8 = klineJson[i].inc_ave_8;
-        winStop = 3.7*inc_ave_8;
-        lossStop = -3.7*inc_ave_8;
-
         if (intersectionResult(bullklineforms, methods, klineJson, i)) {
-            var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 100);
-            mthsObj.total++;
-            // if (klineJson[i].winOrLose=="win") mthsObj.win++;
-            // else if (klineJson[i].winOrLose=="lose") mthsObj.lose++;
-             if (rel>=winStop) mthsObj.win++;
-            else if (rel<=lossStop) mthsObj.lose++;
-            else  mthsObj.pending++;
-        }
-
-
-    }
-
-}
-
-function ___traverseForAppearance(methods, klineJson, options, incResult, formsResult) {
-    var len = klineJson.length;
-    var displayEveryCase = options.displayEveryCase;
-    var displayInfoToDate = options.displayInfoToDate;
-    var displayInfoFromDate = options.displayInfoFromDate;
-    
-    for (var i=50; i<len; i++) {
-        var date = new Date(klineJson[i].date);
-
-        if (date < startDate) continue;
-        if (date > endDate) break;
-
-        var inc_ave_8 = klineJson[i].inc_ave_8;
-        winStop = 3.7*inc_ave_8;
-        lossStop = -3.7*inc_ave_8;
-
-        //var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 100);
-        var date = klineJson[i].date;
-        var mtdsNumber = 0;
-        var matchForms = [];
-        methods.forEach(function(mtd) {
-            if(klineforms[mtd](klineJson, i) === true) {
-                /*******************/
-                //if (mtdsNumber>0) return;
-                /******************/
-                mtdsNumber ++;
-                matchForms.push(mtd);
-                
-                if (incResult[mtd] === undefined) {
-                    incResult[mtd] = [];
-                }
-                //incResult[mtd].push({date:date, inc:rel, win: rel>=winStop, lose: rel<=lossStop});
-                incResult[mtd].push({date:date, inc:klineJson[i].incStop, win: klineJson[i].winOrLose=="win", lose: klineJson[i].winOrLose=="lose"});
-                
-                if (!displayEveryCase) return;
-
-                var dObj = new Date(date);
-                if (dObj >= displayInfoFromDate && dObj <= displayInfoToDate) {
-                    console.log(date, options.stockId);
-                }
-
-            }
-        });
-
-        if (matchForms.length>0) {
-            if (!formsResult[date]) {
-                formsResult[date] = {};
-            }
-
-            formsResult[date][options.stockId] =  matchForms;
+           
+            result.total++;
+            if (klineJson[i].winOrLose=="win") result.win++;
+            else if (klineJson[i].winOrLose=="lose") result.lose++;
+            else result.pending++;
+             
         }
 
     }
-    
-}
 
+    return result;
+}
 
 function traverseForAppearance(methods, klineJson, intersections) {
     var len = klineJson.length;
@@ -158,26 +106,11 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
             (bullklineforms[method](klineJson, i) || (options.union && unionResult(bullklineforms, options.union.split(","), klineJson, i))) 
             && (!options.intersection|| intersectionResult(bullklineforms, options.intersection.split(","), klineJson, i))
             ) {
-                // var amp = klineJson[i].amplitude_ave_8;
-                // winStop = 1.25*amp;
-                // lossStop = -1.25*amp;
-
-                var inc_ave_8 = klineJson[i].inc_ave_8;
-                winStop = 3.7*inc_ave_8;
-                lossStop = -3.7*inc_ave_8;
-
-                //var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, daysStop);
-                //var rel = klineJson[i].incStop;
-               
+                
                 // '02/20/2013' '03/05/2013'
                 if (showLog) console.log(options.stockId, klineJson[i].date);
                 else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, klineJson[i].winOrLose);
                 
-                /*if (klineJson[i].winOrLose=="win" && rel<winStop) {
-                    console.log(klineJson[i].date, options.stockId, rel, lossStop, winStop)
-
-                }*/
-
                 if (klineJson[i].winOrLose=="win"/*rel>=winStop*/) {
                     result.win++;
 
@@ -185,15 +118,6 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
                 result.total++;
                 
                 if (options.injection) options.injection(options.stockId, klineJson, i, method);
-                // if (dateSections !== undefined) {
-                //     var sec = getDateSection(date, dateSections);
-                //     result['total_'+sec]++;
-                    
-                //     if (rel>winStop) {
-                //         result['win_'+sec]++;
-                //     }
-
-                // }
             }
 
     }
@@ -309,19 +233,6 @@ function kLineFormMethods() {
     }
 
     return methods.sort();
-}
-
-function config(options){  
-    if (options.bullorbear==="bear") {
-        klineforms = bearklineforms;
-    } else {
-        klineforms = bullklineforms;
-    }
-
-    if (options.startDate) startDate = options.startDate;
-    if (options.endDate) endDate = options.endDate;
-
-    return this;
 }
 
 exports.config = config;
