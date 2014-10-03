@@ -1643,6 +1643,204 @@ function bullPulsing (klineJson, i) {
          )  
 }
 
+
+function sz002424_201401_1(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && klineutil.increase(klineJson[i].open, klineJson[i].close)>0.015
+        && obj.netsummax_r0_5===0.0*obj.amount_ave_21
+        && obj.netsummax_r0>2*obj.amount_ave_21
+        && obj.netsummin_r0_20>=-0*obj.amount_ave_21
+        && function(a, b, c, d, e, f, g) {
+            //return true;
+            var n = i;
+            for (; i-n<a; n--) {
+                if (klineutil.increase(klineJson[i].amount_ave_8, klineJson[n].amount_ave_8)>b)
+                    break;
+            }
+
+            if (i-n>=a) return false;
+
+            var lidx = klineutil.lowItemIndex(klineJson, n-c, i, "close");
+            var hidx = klineutil.highItemIndex(klineJson, n-d, n, "close");
+            var re = true
+                && n-lidx<e
+                && klineutil.increase(klineJson[i].close, klineJson[n].close)>f*0.03//klineJson[i].amplitude_ave_8
+                && klineutil.increase(klineJson[n].close, klineJson[hidx].close)>g*0.03//klineJson[n].amplitude_ave_8
+               
+            return re;
+        }(60, 0.5, 30, 60, 10, 2.5, 0)
+ }
+
+
+function sz002424_201401 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        //&& sz002424_201401_2(klineJson, i)
+        && (false
+            || sz002424_201401_1(klineJson, i) 
+         )  
+}
+
+function sz002424_201405_1(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsum_r0_below===0.0*obj.amount_ave_21
+        && obj.netsummax_r0>2.2*obj.amount_ave_21
+        && obj.turnover_ave_8>1.1*obj.turnover_ave_21
+        && obj.netsummin_r0_5>-0.05*obj.amount_ave_21
+        && function(m, n) {
+            // return true;
+            var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
+            var middleTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
+            var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, middleTop);
+
+            var outerHigh = klineutil.highItem(klineJson, leftBottom - m, leftBottom, "high");
+            return klineJson[leftBottom].netsum_r0_below_60<=0
+                && klineutil.increase(klineJson[leftBottom].high, outerHigh) > n* klineJson[leftBottom].amplitude_ave_21
+        }(25,5.5)
+}
+
+        
+function sz002424_201405_2(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.amount_ave_8>0.5*obj.amount
+        && obj.turnover_ave_8>0.8*obj.turnover_ave_21
+        && obj.netsum_r0_below===0.0*obj.amount_ave_21
+        && klineutil.increase(klineJson[i].open, klineJson[i].close)>0.021
+        && function(m, n) {
+            // return true;
+            var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
+            var middleTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
+            var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, middleTop);
+
+            var outerHigh = klineutil.highItem(klineJson, leftBottom - m, leftBottom, "high");
+            return klineJson[leftBottom].netsum_r0_below_60<=0
+                && klineutil.increase(klineJson[leftBottom].high, outerHigh) > n* klineJson[leftBottom].amplitude_ave_21
+        }(25,6)
+}
+
+
+function sz002424_201405_3(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.2*obj.amount_ave_21
+        && obj.netsum_r0_below===0.0*obj.amount_ave_21
+        && obj.amount_ave_21<1*obj.amount_ave_8
+        && obj.amount_ave_21>0.6*obj.amount_ave_8
+        && obj.netsummax_r0_5===obj.netsummax_r0_10
+        && obj.netsummin_r0_10===obj.netsummin_r0_20
+        && function(m, n) {
+            // return true;
+            var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
+            var middleTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
+            var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, middleTop);
+
+            var outerHigh = klineutil.highItem(klineJson, leftBottom - m, leftBottom, "high");
+            return klineJson[leftBottom].netsum_r0_below_60<=0
+                && klineutil.increase(klineJson[leftBottom].high, outerHigh) > n* klineJson[leftBottom].amplitude_ave_21
+        }(25,6.5)
+}
+
+
+function sz002424_201405_4(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsum_r0_5<0.05*obj.amount_ave_21
+        && obj.netsummin_r0_40>-0.15*obj.amount_ave_21
+        && obj.netsum_r0_above>obj.netsum_r0_below*5
+        && obj.netsummax_r0>2.3*obj.amount_ave_21
+        && obj.netsum_r0_40<0.1*obj.amount_ave_21
+        && function(m, n) {
+            // return true;
+            var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
+            var middleTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
+            var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, middleTop);
+
+            var outerHigh = klineutil.highItem(klineJson, leftBottom - m, leftBottom, "high");
+            return klineJson[leftBottom].netsum_r0_below_60<=0 
+                && klineutil.increase(klineJson[leftBottom].high, outerHigh) > 0.22
+        }(25,6.7)
+}
+
+
+function sz002424_201405_5(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummin_r0_20>-0.1*obj.amount_ave_21
+        && obj.netsum_r0_below_60===0.0*obj.amount_ave_21
+        && obj.turnover_ave_8>0.8*obj.turnover_ave_21
+        && obj.close_ave_233>1*obj.close
+        && obj.close_ave_144> obj.close_ave_233
+        && obj.netsummax_r0_duration>40// && obj.close_ave_144>1*obj.close
+
+        && obj.netsummax_r0_10<0.2*obj.amount_ave_21//&& obj.netsummax_r0_5===0.0*obj.amount_ave_21
+        && function(m, n) {
+            //return true;
+            var rightBottom = klineutil.lowIndexOfUpTrend(klineJson, i);
+            var middleTop = klineutil.highIndexOfDownTrend(klineJson, rightBottom);
+            var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, middleTop);
+
+            var outerHigh = klineutil.highItem(klineJson, leftBottom - m, leftBottom, "high");
+            return true
+                // && klineJson[leftBottom].netsum_r0_below_60<= 1*klineJson[leftBottom].amount_ave_21 //0 
+                && klineutil.increase(klineJson[leftBottom].high, outerHigh) > 0.15
+        }(18,6.7)
+}
+
+function sz002424_201405 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        //&& sz002424_201405_6(klineJson, i)
+        && (false
+            || sz002424_201405_1(klineJson, i) 
+            || sz002424_201405_2(klineJson, i) 
+            || sz002424_201405_3(klineJson, i) 
+            || sz002424_201405_4(klineJson, i)
+            || sz002424_201405_5(klineJson, i)
+         )  
+}
+
+function exp (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        //&& obj.netsummax_r0_40===0.0*obj.amount_ave_21
+        //&& obj.amount_ave_21<1*obj.amount
+        // && obj.netsummax_r0>1.5*obj.amount_ave_21
+        // && obj.netsum_r0_below_60===0.0*obj.amount_ave_21
+        //&& obj.amount_ave_21<1*obj.amount_ave_8
+        // && obj.netsum_r0_below===0.0*obj.amount_ave_21
+        && obj.netsummax_r0_10===-0.0*obj.amount_ave_21
+        &&obj.netsummax_r0x_20>obj.netsummax_r0_20
+        && obj.netsummin_r0_10>-0.05*obj.amount_ave_21
+        && obj.netsummax_r0>obj.amount_ave_21
+        && obj.amount_ave_8>0.5*obj.amount
+        && obj.amount_ave_21<1.5*obj.amount
+        && obj.turnover_ave_8>obj.turnover_ave_21
+}
+
+exports.exp = exp;
+exports.sz002424_201405 = sz002424_201405;
+exports.sz002424_201401 = sz002424_201401;
 exports.sidewaysCompression = sidewaysCompression;
 exports.wBottomA = wBottomA;
 exports.wBottom = wBottom;

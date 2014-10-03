@@ -13,9 +13,11 @@ var detailedDateResultEnd = new Date("01/01/2012");
 var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010")
-, new Date("01/01/2011"), new Date("01/01/2012"),
-new Date("01/01/2013"), new Date("06/01/2013"), new Date("01/01/2014"),
-new Date("06/01/2014")]; 
+, new Date("01/01/2011"), 
+// new Date("03/01/2011"), new Date("04/01/2011"), new Date("05/01/2011"), new Date("06/01/2011"), 
+// new Date("07/01/2011"), new Date("08/01/2011"), new Date("09/01/2011"), new Date("10/01/2011"), 
+new Date("01/01/2012"),
+new Date("01/01/2013"), new Date("01/01/2014")]; 
 
 var klineForm = process.argv[2]?process.argv[2]:"flatBottom";
 var intersectionKLineForm = ""//moneyFlowInOut";
@@ -172,9 +174,15 @@ if (cluster.isMaster) {
 
                 var truewinper = wincon._true/(wincon._true+losecon._true) ;
                 var losewinper = wincon._false/(wincon._false+losecon._false);
-                if (truewinper >= losewinper && wincon._true+losecon._true>2000) {
+                if (truewinper >= losewinper 
+                    //&& wincon._true+losecon._true>2000
+                    && wincon.true_unionvalid+losecon.true_unionvalid > 800
+                    ) {
                     conditionArr.push(att);
-                } else if (truewinper < losewinper && wincon._false+losecon._false>2000) {
+                } else if (truewinper < losewinper 
+                    //&& wincon._false+losecon._false>2000
+                    && wincon.false_unionvalid+losecon.false_unionvalid > 800
+                    ) {
                     conditionArr.push(att);
                 }
                 // var wintrueper = wincon._true/(wincon._true+wincon._false);
@@ -327,7 +335,9 @@ if (cluster.isMaster) {
     bullKLineFormMethods.splice(mtdsidx,1);
 //    console.log("bullKLineFormMethods:",bullKLineFormMethods)
     var conditionanalyser = require("../kline/form/conditionanalyser");
-    //unionKLineForm = klineformanalyser.bullKLineFormMethods().join(",");
+    
+    // unionKLineForm = klineformanalyser.bullKLineFormMethods().join(",");
+    
     var klineutil = require("../kline/klineutil");
     var forkResult = {total:0, win:0};
     var conditionObj = {win:{}, lose:{}};
@@ -358,6 +368,7 @@ if (cluster.isMaster) {
                     union:unionKLineForm,
                     intersection:intersectionKLineForm,
                     injection: function(stockId, klineJson, idx, mtd){
+                        
                         var unionValid = false;
                         if(!klineformanalyser.unionResult(null, bullKLineFormMethods, klineJson, idx)) {
                             forkResult.valid = forkResult.valid?forkResult.valid+1:1;

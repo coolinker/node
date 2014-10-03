@@ -23,7 +23,7 @@ function config(start, end){
 
 function getIntersectionRate(forms) {
     if (intersectionConfig[forms.toString()]) return intersectionConfig[forms.toString()];
-    console.log("getIntersectionRate:", forms, "...");
+    console.log("getIntersectionRate:", forms.toString(), "...");
 
     var result = {total:0, win:0, lose:0, pending:0};
     stocks.forEach(function(stockId) {
@@ -33,16 +33,8 @@ function getIntersectionRate(forms) {
         result.win += re.win;
     });
     var rate = result.total>0?result.win/result.total:0;
-    intersectionConfig[forms.toString()] = rate;
-    fs.writeFile("../config/intersection.json", JSON.stringify(intersectionConfig), function(err) {
-        
-        if(err) {
-          console.log("--------------------",err);
-        } else {
-          console.log("getIntersectionRate write:", forms, rate);
-        }
-  
-    });
+    intersectionConfig[forms.toString()] = Number(rate.toFixed(4));
+    fs.writeFileSync("../config/intersection.json", JSON.stringify(intersectionConfig));
     return rate;
 }
  

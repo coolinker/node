@@ -83,13 +83,13 @@ function matchForms(kLineJson) {
 function winOrLose(kLineJson) {
     var jsonLen = kLineJson.length;
     for (var i=0; i<jsonLen; i++) {
-        var inc_ave_8 = kLineJson[i].inc_ave_8;
+        var inc_ave_8 = 0.48*kLineJson[i].amplitude_ave_8;
         if (!inc_ave_8) continue;
 
         var winStop = Math.min(5*inc_ave_8, 0.15);
         var lossStop = Math.max(-5*inc_ave_8, -0.15);
 
-        var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 100/*, reObj*/);
+        var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 50/*, reObj*/);
         kLineJson[i].incStop = rel;
         kLineJson[i].winOrLose = rel>=winStop ? "win" : (rel<=lossStop?"lose":"pending");
     }

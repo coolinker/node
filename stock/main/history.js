@@ -25,9 +25,7 @@ var stocks = klineio.getAllStockIds();
 
 if (cluster.isMaster) {
     var fs = require("fs");
-    var content = fs.readFileSync("../config/daypendings.json","utf8");
-    var pendings = JSON.parse(content);
-
+    
     var stocksLen = stocks.length;
     var masterformsDateTotal = {};
     var funName;
@@ -85,7 +83,7 @@ if (cluster.isMaster) {
                     var stks = masterformsDateTotal[date].stocks;
                     for (var stockId in stks) {
                         var forms = stks[stockId];
-                        console.log(stockId, forms, intersectionratehelper.getIntersectionRate(forms));
+                        console.log(stockId, forms.toString(), intersectionratehelper.getIntersectionRate(forms));
                     }
                     
 

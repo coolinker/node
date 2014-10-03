@@ -111,7 +111,17 @@ function traverseForWinning(method, klineJson, lossStop, winStop, daysStop, opti
                 if (showLog) console.log(options.stockId, klineJson[i].date);
                 else if (showLogDates.indexOf(klineJson[i].date)>-1) console.log(options.stockId, klineJson[i].date, klineJson[i].winOrLose);
                 
-                if (klineJson[i].winOrLose=="win"/*rel>=winStop*/) {
+                // var inc_ave_8 = 0.48*klineJson[i].amplitude_ave_8;
+                // if (!inc_ave_8) continue;
+
+                // var winStop = Math.min(5*inc_ave_8, 0.15);
+                // var lossStop = Math.max(-5*inc_ave_8, -0.15);
+
+                // var rel = klineutil.winOrLoss(klineJson, i, lossStop, winStop, 50/*, reObj*/);
+                if (klineJson[i].winOrLose=="win"
+                    //rel>=winStop
+                    ) {
+
                     result.win++;
 
                 }
