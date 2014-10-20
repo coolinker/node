@@ -88,17 +88,28 @@ function winOrLose(kLineJson) {
 
         var winStop = Math.min(5*inc_ave_8, 0.15);
         var lossStop = Math.max(-5*inc_ave_8, -0.15);
-
-        var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 50/*, reObj*/);
+        
+        var reObj = {};
+        var rel = klineutil.winOrLoss(kLineJson, i, lossStop, winStop, 50, reObj);
+              
         kLineJson[i].incStop = rel;
         kLineJson[i].winOrLose = rel>=winStop ? "win" : (rel<=lossStop?"lose":"pending");
+
+        if (!kLineJson[i].match || kLineJson[i].match.length<2) continue;
+
+        //kLineJson[i].stopObj = reObj;
+        for (var j=i; j<i+reObj.days; j++) {
+            if (!kLineJson[j].pending) kLineJson[j].pending = 0;
+            kLineJson[j].pending++;
+        }
+
     }
 }
 
 function updateKLinesFromBase(match) {
     var stocks = klineio.getAllStockIds(match);
     //stocks = ["SH600012"];
-    
+     // stocks = ["SZ000420"];
     stocks.forEach(function(stockId) {
         klineio.readKLineBaseSync(stockId, processChain);   
     });
@@ -397,8 +408,9 @@ function processChain(stockId, kLineJson) {
     average(kLineJson, "turnover", 8, true);
     average(kLineJson, "turnover", 21, true);
 
-    winOrLose(kLineJson);
     matchForms(kLineJson);
+    winOrLose(kLineJson);
+    
 
     klineio.writeKLineSync(stockId, kLineJson);
   }

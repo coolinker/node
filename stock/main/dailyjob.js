@@ -5,8 +5,8 @@ var spawn = require('child_process').spawn;
 var now = new Date();
 var hours = now.getHours();
 var mins = now.getMinutes()/60;
-var wait = ((24-(hours+mins)+15.2)%24)*3600*1000;
-console.log("wait", (24-(hours+mins)+15.2)%24);
+var wait = ((24-(hours+mins)+6.4)%24)*3600*1000;
+console.log("wait", (24-(hours+mins)+6.4)%24);
 setTimeout(doCommand, wait);
 
 function doCommand () {

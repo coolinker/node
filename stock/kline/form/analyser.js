@@ -9,7 +9,7 @@ var bearklineforms = require("./bearklineforms");
 
 var klineforms = undefined;
 
-
+var formsSortMap = {};
 function config(options){  
     if (options.bullorbear==="bear") {
         klineforms = bearklineforms;
@@ -20,6 +20,10 @@ function config(options){
     if (options.startDate) startDate = options.startDate;
     if (options.endDate) endDate = options.endDate;
 
+    var forms = this.bullKLineFormMethods();
+    for(var i=0; i<forms.length; i++) {
+        formsSortMap[forms[i]] = i;
+    }
     return this;
 }
 
@@ -36,7 +40,7 @@ function traverseForIntersection(methods, klineJson) {
                 
         var arr = [];
         if (intersectionResult(bullklineforms, methods, klineJson, i)) {
-           
+           // console.log("traverseForIntersection", klineJson[i].date, methods)
             result.total++;
             if (klineJson[i].winOrLose=="win") result.win++;
             else if (klineJson[i].winOrLose=="lose") result.lose++;
@@ -56,11 +60,7 @@ function traverseForAppearance(methods, klineJson, intersections) {
 
         if (date < startDate) continue;
         if (date > endDate) break;
-
-        var inc_ave_8 = klineJson[i].inc_ave_8;
-        winStop = 3.7*inc_ave_8;
-        lossStop = -3.7*inc_ave_8;
-
+        
         var matchForms = [];
         methods.forEach(function(mtd) {
             if(klineforms[mtd](klineJson, i) === true
@@ -198,6 +198,28 @@ function unionResult (_klineforms, methods, klineJson, idx) {
     }
     return false;
 }
+
+// function _intersectionResult (klineforms, methods, klineJson, idx) {
+//     var match = klineJson[idx].match;
+//     if (!match || methods.length>match.length) return false;
+//     var j=0;
+//     for (var i=0; i<methods.length; i++) {
+//         var mi = methods[i];
+//         var contains = false;
+//         if (formsSortMap[match[j]] > formsSortMap[mi]) {
+//             return false;
+//         }
+//         for (; j<match.length; j++) {
+//             if (match[j] === mi) {
+//                 j++;
+//                 contains = true;
+//                 break;
+//             }
+//         }
+//         if (!contains) return false;
+//     }
+//     return true;
+// }
 
 function intersectionResult (klineforms, methods, klineJson, idx) {
     for (var i=0; i<methods.length; i++) {

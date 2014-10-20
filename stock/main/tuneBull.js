@@ -1,7 +1,7 @@
 console.time("run");
 /**********************/
 var startDate = new Date("01/01/2010"); 
-var endDate = new Date("08/01/2014"); 
+var endDate = new Date("08/01/2015"); 
 /**********************/
 
 var klineio =  require("../kline/klineio").config(startDate, endDate);
@@ -34,7 +34,7 @@ var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates =[]//["11/14/2011"];
 
 var stocks = klineio.getAllStockIds();
-//stocks = ['SH600061']//['SZ002371', "SZ002158", "SH600061"];
+// stocks = ['SH600523']//['SZ002371', "SZ002158", "SH600061"];
 var __themastercount = 0;
 if (cluster.isMaster) {
     var stocksLen = stocks.length;

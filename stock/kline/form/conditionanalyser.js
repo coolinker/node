@@ -37,9 +37,70 @@ function _trueFalse(key, fun, keyObj, unionvalid) {
 }
 
 function conditions(klineJson, idx, conditionObj, unionvalid, stockId) {
-     // sz002424_201405(klineJson, idx, conditionObj, unionvalid, stockId);
+     // sh600523_201406(klineJson, idx, conditionObj, unionvalid, stockId);
     moneyFlow(klineJson, idx, conditionObj, unionvalid, stockId);
     rk(klineJson, idx, conditionObj, unionvalid, stockId);
+}
+
+
+function sh600523_201406(klineJson, i, conditionObj, unionvalid, stockId) {
+    var obj = klineJson[i];
+    var iswin = klineJson[i].winOrLose === "win";
+    if (!conditionObj.win) conditionObj.win = {};
+    if (!conditionObj.lose) conditionObj.lose = {};
+
+    var keyObj = iswin ? conditionObj.win : conditionObj.lose;
+    var fun = function(a, b, c, d) {
+            var higherItems = klineutil.higherItemsIndex(klineJson, i-a, i, "close", klineJson[i].close);
+            var highIdx = klineutil.highItemIndex(klineJson, i-a, i , "high");
+            var amountHighIdx = klineutil.highItemIndex(klineJson, i-a, i , "amount_ave_8");
+            var leftBottom = klineutil.lowIndexOfUpTrend(klineJson, highIdx);
+
+            var lefthigherItems = klineutil.higherItemsIndex(klineJson, leftBottom-b, leftBottom, "high", klineJson[i].close);
+            var leftlow = klineutil.lowItem(klineJson, leftBottom-b, leftBottom, "close");
+            return true
+                && higherItems.length<c
+                && lefthigherItems.length<3
+                && lefthigherItems.length>0
+                && klineJson[amountHighIdx].amount_ave_8> 1.5*klineJson[i].amount_ave_8
+                //&& klineutil.increase(leftlow, klineJson[i].close) < 5*klineJson[i].amplitude_ave_8 //0.15
+                && klineutil.increase(klineJson[i].close, klineJson[highIdx].high) > 3*klineJson[i].amplitude_ave_8
+                // && function(){
+                //     console.log("-------------",klineJson[i].date, leftlow, klineJson[i].close, klineutil.increase(leftlow, klineJson[i].close) )
+                //     return true
+                // }()
+        }
+
+    _trueFalse("fun(20, 40, 15, 5)", fun, keyObj, unionvalid);    
+    _trueFalse("fun(25, 40, 15, 5)", fun, keyObj, unionvalid);
+    _trueFalse("fun(20, 40, 10, 5)", fun, keyObj, unionvalid); 
+    _trueFalse("fun(20, 40, 15, 10)", fun, keyObj, unionvalid); 
+}
+
+function sh600802_201406 (klineJson, i, conditionObj, unionvalid, stockId) {
+    var obj = klineJson[i];
+    var iswin = klineJson[i].winOrLose === "win";
+    if (!conditionObj.win) conditionObj.win = {};
+    if (!conditionObj.lose) conditionObj.lose = {};
+
+    var keyObj = iswin ? conditionObj.win : conditionObj.lose;
+    var fun = function(a, b, c, d) {
+            //return true;
+            var lidx = klineutil.lowItemIndex(klineJson, i-a, i, "low");
+            var rhidx = klineutil.highItemIndex(klineJson, lidx, i, "high");
+            var lhidx = klineutil.highItemIndex(klineJson, lidx-b, lidx, "high");
+
+            return true
+                && klineutil.increase(klineJson[rhidx].high, klineJson[lhidx].high) > c
+                //&& klineutil.increase(klineJson[lidx].low, klineJson[rhidx].high) < 6*klineJson[i].amplitude_ave_21
+                && klineutil.increase(klineJson[lidx].low, klineJson[i].close) > d
+        }
+
+        _trueFalse("fun(30, 30, 0.2, 0.02)", fun, keyObj, unionvalid); 
+        _trueFalse("fun(30, 35, 0.2, 0.02)", fun, keyObj, unionvalid); 
+        _trueFalse("fun(30, 35, 0.15, 0.02)", fun, keyObj, unionvalid); 
+        _trueFalse("fun(30, 40, 0.2, 0.02)", fun, keyObj, unionvalid); 
+        _trueFalse("fun(30, 35, 0.1, 0.02)", fun, keyObj, unionvalid); 
 }
 
 function sz002424_201405 (klineJson, i, conditionObj, unionvalid, stockId) {

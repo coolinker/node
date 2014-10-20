@@ -12,7 +12,7 @@ function config(start, end){
         endDate: end
     });
     stocks = klineio.getAllStockIds();
-    //stocks = ["SZ300302"];
+    // stocks = ["SZ000420"];
     var content = fs.readFileSync("../config/intersection.json","utf8");
     if (content) {
 

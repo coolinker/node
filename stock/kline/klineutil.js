@@ -227,6 +227,7 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop, resultObj) {
             if (resultObj) {
                 resultObj.inc = inc;
                 resultObj.days = i-start;
+                resultObj.stopDate = klineJson[i].date;
             }
             return inc;
         }
@@ -236,6 +237,7 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop, resultObj) {
             if (resultObj) {
                 resultObj.inc = inc;
                 resultObj.days = i-start;
+                resultObj.stopDate = klineJson[i].date;
             }
             return inc;
         } 
