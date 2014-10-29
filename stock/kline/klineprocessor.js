@@ -4,6 +4,7 @@ var moneyflowio = require("../moneyflow/io").config();
 
 var klineio;
 var klineformanalyser;
+var minMatch = 2;
 
 function config(start, end){
     klineio  = require("./klineio").config(start, end);
@@ -95,7 +96,7 @@ function winOrLose(kLineJson) {
         kLineJson[i].incStop = rel;
         kLineJson[i].winOrLose = rel>=winStop ? "win" : (rel<=lossStop?"lose":"pending");
 
-        if (!kLineJson[i].match || kLineJson[i].match.length<2) continue;
+        if (!kLineJson[i].match || kLineJson[i].match.length<minMatch) continue;
 
         //kLineJson[i].stopObj = reObj;
         for (var j=i; j<i+reObj.days; j++) {
@@ -352,6 +353,8 @@ function processDayMoneyFlow(klineJson, i) {
     obj.netsum_r0x_above_60 = netsum_r0x_above_60;
     obj.netsum_r0x_below = netsum_r0x_below;
     obj.netsum_r0x_below_60 = netsum_r0x_below_60;
+
+    obj.marketCap = obj.close*obj.volume/(obj.turnover/10000)
     //console.log("netsummax_days<20", klineJson[i].amount_ave_8, klineJson[i].amount_ave_21)
 
 }

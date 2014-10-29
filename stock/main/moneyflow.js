@@ -57,6 +57,9 @@ stocks.forEach(function(stockId) {
     var longDownNeedle = 0, longDownNeedleDates = [];
     var bigLowSmallVolume = 0, bigLowSmallVolumeDates = [];
     var bigDownBigAmount = 0;
+
+    var marketCap = klj.close*klj.volume/(klj.turnover/10000)
+
     for (var j=i; j>=1 && i-j<10; j--) {
         //if (!klineJson[j]) console.log("stockId", stockId, j, klineJson.length)
         if(klineutil.increase(klineJson[j].close, klineJson[j-1].close) > 0
@@ -112,22 +115,17 @@ stocks.forEach(function(stockId) {
     if (duration>60
         //&& bigDownBigAmount < 1
         && (longDownNeedle> 0 || bigLowSmallVolume>0)
-        
-        // && i-low_index_20 > 13
-        // && klineJson[i].close > 0.99*klineJson[low_index_20].low
-        // && klineutil.increase(klineJson[low_index_20].low, klineJson[i].close) < 1.5*klineJson[i].amplitude_ave_21
 
         && i-low_index_40 > 10
         // && klj.close > klineJson[low_index_40].low*0.99
         && klineutil.increase(klineJson[low_index_40].low, klj.close) < 2 * klj.amplitude_ave_21
         
-        && klj.netsummax_r0+klj.netsummax_r0_netsum_r0x>klj.amount_ave_21
+        && klj.netsummax_r0+klj.netsummax_r0_netsum_r0x>klj.amount_ave_21//0.1*marketCap//
         && (klj.netsum_r0_20 > 0 || klj.netsum_r0_40 > 0)
 
-        //&& klj.netsum_r0_above+klj.netsum_r0x_above>0.5*klj.amount_ave_21
-        && klj.netsum_r0_above_60> 0.5*klj.amount_ave_21
-        //&& klj.netsum_r0_above > klj.netsum_r0_below
-        //***********&& klj.netsummin_r0x_10 + klj.netsummax_r0_10 > -0.8*klj.amount_ave_8
+        && klj.netsum_r0_above+klj.netsum_r0x_above>0.5*klj.amount_ave_21//0.1*marketCap//
+        && klj.netsum_r0_above_60>0.5*klj.amount_ave_21// 0.1*marketCap//
+        && klj.netsum_r0_above > klj.netsum_r0_below//&& klj.netsum_r0_above>0.1*marketCap
         ) {
         counter++;
         if (klj.winOrLose === "win") {

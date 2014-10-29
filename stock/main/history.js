@@ -21,6 +21,7 @@ var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
 //stocks = ["SZ000420"];
+var minMatch = 2;
 
 if (cluster.isMaster) {
 
@@ -143,7 +144,7 @@ if (cluster.isMaster) {
 
             klineformanalyser.traverseForAppearance(mtds, kLineJson, {
                 formsHandler: function(forms, klineJson, i) {
-                    if (forms.length<2) return;
+                    if (forms.length<minMatch) return;
                     var date = klineJson[i].date;
                     if (!formsDateTotal[date]) formsDateTotal[date] = {total:0, win:0, lose:0, pending:0, stocks:{}};
                     formsDateTotal[date].total++;

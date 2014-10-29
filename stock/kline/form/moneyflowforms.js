@@ -2311,8 +2311,33 @@ function sh600802_201406 (klineJson, i) {
             || sh600802_201406_11(klineJson, i)
          )  
 }
-//
 
+function sh600716_201410 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && function(a, b, c, d) {
+            // return true;
+            var duration = obj.netsummax_r0_r0x_duration
+
+            var lower = klineutil.lowerItemsIndex(klineJson, i-duration, i, "close", klineJson[i].close);
+
+            var durationlowidx = klineutil.lowItemIndex(klineJson, i-duration, i, "close");
+            var durationlow = klineJson[durationlowidx].close;
+
+            var durationhighidx = klineutil.highItemIndex(klineJson, i-duration, i, "close");
+            var durationhigh = klineJson[durationhighidx].close;
+            return true
+                
+                && obj.netsum_r0_above - obj.netsum_r0_above_60 > 5*obj.amount_ave_8 //0.05*obj.marketCap
+                && obj.netsum_r0_above - obj.netsum_r0_above_60 < 1500000000//
+                // && function(){
+                //     console.log("=============",obj.date)
+                //     return true;
+                // }()
+        }()
+ }   
 
 // function sh600523_201406(klineJson, i) {
 //     var obj = klineJson[i];
@@ -2340,6 +2365,7 @@ function sh600802_201406 (klineJson, i) {
 //         }(25, 40, 15, 5)
 // }
 
+// exports.sh600716_201410 = sh600716_201410;
 // exports.sh600523_201406 = sh600523_201406
 exports.sh600802_201406 = sh600802_201406;
 exports.sz002424_201405 = sz002424_201405;

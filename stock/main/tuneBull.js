@@ -8,18 +8,18 @@ var klineio =  require("../kline/klineio").config(startDate, endDate);
 var cluster = require('cluster');
 
 var detailedDateResult = {};
-var detailedDateResultStart = new Date("01/01/2011");
-var detailedDateResultEnd = new Date("01/01/2012");
+var detailedDateResultStart = new Date("01/01/2013");
+var detailedDateResultEnd = new Date("01/01/2015");
 var detailedDateResultTotalMin = 10000;
 //var dateSections = [new Date("01/01/2008"), new Date("01/01/2009")]; 
 var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01/01/2010")
 , new Date("01/01/2011"), 
-// new Date("03/01/2011"), new Date("04/01/2011"), new Date("05/01/2011"), new Date("06/01/2011"), 
-// new Date("07/01/2011"), new Date("08/01/2011"), new Date("09/01/2011"), new Date("10/01/2011"), 
+new Date("03/01/2011"), new Date("04/01/2011"), new Date("05/01/2011"), new Date("06/01/2011"), 
+new Date("07/01/2011"), new Date("08/01/2011"), new Date("09/01/2011"), new Date("10/01/2011"), 
 new Date("01/01/2012"),
 new Date("01/01/2013"), new Date("01/01/2014")]; 
 
-var klineForm = process.argv[2]?process.argv[2]:"flatBottom";
+var klineForm = process.argv[2]?process.argv[2]:"sh600716_201410";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = ""//wBottomA,wBottom,headShoulderBottom,morningStarA,morningStarB,redNGreenRed,greenInRedA";
 
@@ -34,7 +34,7 @@ var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates =[]//["11/14/2011"];
 
 var stocks = klineio.getAllStockIds();
-// stocks = ['SH600523']//['SZ002371', "SZ002158", "SH600061"];
+// stocks = ['SH600802']//['SZ002371', "SZ002158", "SH600061"];
 var __themastercount = 0;
 if (cluster.isMaster) {
     var stocksLen = stocks.length;

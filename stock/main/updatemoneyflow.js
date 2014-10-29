@@ -1,7 +1,9 @@
 console.time("run");
 var moneyflowio = require("../moneyflow/io").config();
  
- moneyflowio.updateMoneyFlowData(0, function(){
+ var start = Number(process.argv[2]?process.argv[2]:"0");
+
+ moneyflowio.updateMoneyFlowData(start, function(){
       console.timeEnd("run");
  })
 
