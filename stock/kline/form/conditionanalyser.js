@@ -37,11 +37,49 @@ function _trueFalse(key, fun, keyObj, unionvalid) {
 }
 
 function conditions(klineJson, idx, conditionObj, unionvalid, stockId) {
-     // sh600523_201406(klineJson, idx, conditionObj, unionvalid, stockId);
+     // sh600716_201410(klineJson, idx, conditionObj, unionvalid, stockId);
     moneyFlow(klineJson, idx, conditionObj, unionvalid, stockId);
     rk(klineJson, idx, conditionObj, unionvalid, stockId);
 }
 
+function sh600716_201410(klineJson, i, conditionObj, unionvalid, stockId) {
+    var obj = klineJson[i];
+    var iswin = klineJson[i].winOrLose === "win";
+    if (!conditionObj.win) conditionObj.win = {};
+    if (!conditionObj.lose) conditionObj.lose = {};
+
+    var keyObj = iswin ? conditionObj.win : conditionObj.lose;
+    var fun = function(a, b, c, d, e){
+            var highidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+            if (klineutil.increase(obj.close, klineJson[highidx].close) < b*klineJson[highidx].amplitude_ave_21) 
+                return false;
+            if (obj.amount_ave_21 > c*klineJson[highidx].amount_ave_21)
+                return false;
+
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, highidx-d, highidx, "close", obj.close);
+            var fstlowidx = lowerItems.length === 0 ? Math.max(0, highidx-d) : lowerItems[lowerItems.length-1];
+                
+            var r0sum = 0, r0xsum = 0;
+            for (var j=fstlowidx; j<=i; j++) {
+                r0sum += klineJson[j].r0_net;
+                r0xsum += (klineJson[j].netamount-klineJson[j].r0_net);
+            }
+
+            return r0sum> e*obj.amount_ave_21
+                
+        }
+_trueFalse("fun(40, 4.5, 1, 100, 0.25)", fun, keyObj, unionvalid);
+_trueFalse("fun(40, 5.5, 1, 100, 0.25)", fun, keyObj, unionvalid);
+        _trueFalse("fun(40, 5, 1, 100, 0.25)", fun, keyObj, unionvalid);
+        _trueFalse("fun(45, 5, 1, 100, 0.3)", fun, keyObj, unionvalid);
+        _trueFalse("fun(55, 5, 1, 100, 0.3)", fun, keyObj, unionvalid);
+        _trueFalse("fun(40, 5, 1.2, 100, 0.3)", fun, keyObj, unionvalid);
+        _trueFalse("fun(40, 5, 1.5, 100, 0.2)", fun, keyObj, unionvalid);
+        _trueFalse("fun(50, 5.5, 1, 100, 0.3)", fun, keyObj, unionvalid);
+        _trueFalse("fun(50, 5, 1, 120, 0.25)", fun, keyObj, unionvalid);
+        _trueFalse("fun(50, 5, 0.8, 100, 0.3)", fun, keyObj, unionvalid);
+        _trueFalse("fun(50, 5, 1.2, 120, 0.25)", fun, keyObj, unionvalid);
+}
 
 function sh600523_201406(klineJson, i, conditionObj, unionvalid, stockId) {
     var obj = klineJson[i];
@@ -1214,6 +1252,12 @@ function moneyFlow(klineJson, i, conditionObj, unionvalid, stockId) {
     trueFalse("obj.r0_ratio<-0.05", obj.r0_ratio<-0.05, keyObj, unionvalid);
     trueFalse("obj.r0_ratio<-0.1", obj.r0_ratio<-0.1, keyObj, unionvalid);
     trueFalse("obj.r0_ratio<-0.2", obj.r0_ratio<-0.2, keyObj, unionvalid);
+
+    trueFalse("obj.marketCap < 500000000", obj.marketCap < 500000000, keyObj, unionvalid);
+    trueFalse("obj.marketCap < 1000000000", obj.marketCap < 1000000000, keyObj, unionvalid);
+    trueFalse("obj.marketCap < 2000000000", obj.marketCap < 2000000000, keyObj, unionvalid);
+    trueFalse("obj.marketCap < 5000000000", obj.marketCap < 5000000000, keyObj, unionvalid);
+
 }
 
 exports.conditions = conditions;

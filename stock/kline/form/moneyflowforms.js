@@ -2312,33 +2312,184 @@ function sh600802_201406 (klineJson, i) {
          )  
 }
 
+function sh600716_201410_1 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.5*obj.amount_ave_21
+        && obj.netsummax_r0_10===-0.0*obj.amount_ave_21
+        && obj.close_ave_8>obj.close_ave_21
+        && obj.marketCap < 1800000000
+        && function(a, b, c, d, e){
+            // return true;
+            var highidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+            if (klineutil.increase(obj.close, klineJson[highidx].close) < b*klineJson[highidx].amplitude_ave_21) 
+                return false;
+            if (obj.amount_ave_21 > c*klineJson[highidx].amount_ave_21)
+                return false;
+
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, highidx-d, highidx, "close", obj.close);
+            var fstlowidx = lowerItems.length === 0 ? Math.max(0, highidx-d) : lowerItems[lowerItems.length-1];
+            var r0sum = 0, r0xsum = 0;
+            for (var j=fstlowidx; j<=i; j++) {
+                r0sum += klineJson[j].r0_net;
+                r0xsum += (klineJson[j].netamount-klineJson[j].r0_net);
+            }
+
+            return r0sum> e*obj.amount_ave_21
+                
+        }(50, 5, 1, 120, 0.3)
+ }   
+
+
+function sh600716_201410_2 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummax_r0x_10>0.2*obj.amount_ave_21
+        && obj.amount_ave_21>0.5*obj.amount
+        && obj.netsummax_r0x_40>obj.netsummax_r0_40
+        && obj.marketCap < 1800000000
+        && klineutil.increase(klineJson[i].open, klineJson[i].close)>0.015
+        && function(a, b, c, d, e){
+            // return true;
+            var highidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+            if (klineutil.increase(obj.close, klineJson[highidx].close) < b*klineJson[highidx].amplitude_ave_21) 
+                return false;
+            if (obj.amount_ave_21 > c*klineJson[highidx].amount_ave_21)
+                return false;
+
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, highidx-d, highidx, "close", obj.close);
+            var fstlowidx = lowerItems.length === 0 ? Math.max(0, highidx-d) : lowerItems[lowerItems.length-1];
+            var r0sum = 0, r0xsum = 0;
+            for (var j=fstlowidx; j<=i; j++) {
+                r0sum += klineJson[j].r0_net;
+                r0xsum += (klineJson[j].netamount-klineJson[j].r0_net);
+            }
+
+            return r0sum> e*obj.amount_ave_21
+                
+        }(45, 5, 1, 100, 0.3)
+ }   
+
+
+function sh600716_201410_3 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.amount_ave_8>0.5*obj.amount
+        && obj.amount_ave_21<1*obj.amount
+        && obj.close_ave_8<obj.close_ave_233
+        && obj.marketCap < 5000000000
+        && obj.netsummax_r0x_10>obj.netsummax_r0_10
+        && obj.netsummax_r0_20<0.3*obj.amount_ave_21
+        && obj.netsummin_r0_10>-0.05*obj.amount_ave_21
+        && obj.amount_ave_21<1*obj.amount_ave_8
+        && function(a, b, c, d, e){
+            // return true;
+            var highidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+            if (klineutil.increase(obj.close, klineJson[highidx].close) < b*klineJson[highidx].amplitude_ave_21) 
+                return false;
+            if (obj.amount_ave_21 > c*klineJson[highidx].amount_ave_21)
+                return false;
+
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, highidx-d, highidx, "close", obj.close);
+            var fstlowidx = lowerItems.length === 0 ? Math.max(0, highidx-d) : lowerItems[lowerItems.length-1];
+            var r0sum = 0, r0xsum = 0;
+            for (var j=fstlowidx; j<=i; j++) {
+                r0sum += klineJson[j].r0_net;
+                r0xsum += (klineJson[j].netamount-klineJson[j].r0_net);
+            }
+
+            return r0sum> e*obj.amount_ave_21
+                
+        }(45, 5, 1, 100, 0.3)
+ }  
+
+
+function sh600716_201410_4 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && obj.netsummax_r0_10===-0.0*obj.amount_ave_21
+        && obj.netsummax_r0>1.5*obj.amount_ave_21
+        && obj.marketCap < 2000000000
+        && klineutil.increase(klineJson[i].open, klineJson[i].close)>0.02
+        && function(a, b, c, d, e){
+            // return true;
+            var highidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+            if (klineutil.increase(obj.close, klineJson[highidx].close) < b*klineJson[highidx].amplitude_ave_21) 
+                return false;
+            if (obj.amount_ave_21 > c*klineJson[highidx].amount_ave_21)
+                return false;
+
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, highidx-d, highidx, "close", obj.close);
+            var fstlowidx = lowerItems.length === 0 ? Math.max(0, highidx-d) : lowerItems[lowerItems.length-1];
+            var r0sum = 0, r0xsum = 0;
+            for (var j=fstlowidx; j<=i; j++) {
+                r0sum += klineJson[j].r0_net;
+                r0xsum += (klineJson[j].netamount-klineJson[j].r0_net);
+            }
+
+            return r0sum> e*obj.amount_ave_21
+                
+        }(40, 5.3, 1, 100, 0.25)
+ }
+
+
+function sh600716_201410_5 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        // && obj.netsum_r0_10>-0.02*obj.amount_ave_21
+        && obj.close_ave_144>0.98*obj.close
+        && obj.amount_ave_21<1*obj.amount_ave_8
+        && obj.turnover_ave_8>0.8*obj.turnover
+        && obj.netsummin_r0_10>-0.05*obj.amount_ave_21
+        && obj.netsum_r0_above>obj.netsum_r0_below*6
+        && obj.close_ave_8<1.02*obj.close
+        && obj.turnover_ave_8>obj.turnover_ave_21
+        && obj.marketCap < 4000000000
+        && function(a, b, c, d, e){
+            // return true;
+            var highidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+            if (klineutil.increase(obj.close, klineJson[highidx].close) < b*0.05)//klineJson[highidx].amplitude_ave_21) 
+                return false;
+            if (obj.amount_ave_21 > c*klineJson[highidx].amount_ave_21)
+                return false;
+
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, highidx-d, highidx, "close", obj.close);
+            var fstlowidx = lowerItems.length === 0 ? Math.max(0, highidx-d) : lowerItems[lowerItems.length-1];
+            var r0sum = 0, r0xsum = 0;
+            for (var j=fstlowidx; j<=i; j++) {
+                r0sum += klineJson[j].r0_net;
+                r0xsum += (klineJson[j].netamount-klineJson[j].r0_net);
+            }
+
+            return r0sum> e*obj.amount_ave_21
+                
+        }(50, 5.5, 1, 100, 0.3)
+ }  
+
 function sh600716_201410 (klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
     return true
-        && function(a, b, c, d) {
-            // return true;
-            var duration = obj.netsummax_r0_r0x_duration
-
-            var lower = klineutil.lowerItemsIndex(klineJson, i-duration, i, "close", klineJson[i].close);
-
-            var durationlowidx = klineutil.lowItemIndex(klineJson, i-duration, i, "close");
-            var durationlow = klineJson[durationlowidx].close;
-
-            var durationhighidx = klineutil.highItemIndex(klineJson, i-duration, i, "close");
-            var durationhigh = klineJson[durationhighidx].close;
-            return true
-                
-                && obj.netsum_r0_above - obj.netsum_r0_above_60 > 5*obj.amount_ave_8 //0.05*obj.marketCap
-                && obj.netsum_r0_above - obj.netsum_r0_above_60 < 1500000000//
-                // && function(){
-                //     console.log("=============",obj.date)
-                //     return true;
-                // }()
-        }()
- }   
-
+        // && sh600716_201410_6(klineJson, i)
+        && (false
+            || sh600716_201410_1(klineJson, i)
+            || sh600716_201410_2(klineJson, i)
+            || sh600716_201410_3(klineJson, i)
+            || sh600716_201410_4(klineJson, i)
+            || sh600716_201410_5(klineJson, i)
+         )  
+}
 // function sh600523_201406(klineJson, i) {
 //     var obj = klineJson[i];
 //     if (obj.netsummax_r0 === undefined) return false;
@@ -2365,7 +2516,7 @@ function sh600716_201410 (klineJson, i) {
 //         }(25, 40, 15, 5)
 // }
 
-// exports.sh600716_201410 = sh600716_201410;
+exports.sh600716_201410 = sh600716_201410;
 // exports.sh600523_201406 = sh600523_201406
 exports.sh600802_201406 = sh600802_201406;
 exports.sz002424_201405 = sz002424_201405;
