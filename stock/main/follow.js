@@ -70,7 +70,7 @@ if (cluster.isMaster) {
 
             for (var j=0; j<20 && j<stockIds.length; j++) {
                 var stkid = stockIds[j];
-                console.log(stkid, (masterToFollow[stkid].sum_r0/10000).toFixed(2), 
+                console.log(stkid, masterToFollow[stkid].date, (masterToFollow[stkid].sum_r0/10000).toFixed(2), 
                     (masterToFollow[stkid].sum_r0x/10000).toFixed(2))
             }
             
@@ -122,8 +122,8 @@ if (cluster.isMaster) {
                 }
             }
 
-            if (_idx>0 && kLineJson.length-_idx<100
-                && klj.match.length>1
+            if (_idx>0 && kLineJson.length-_idx<40
+                && klj.match.length>0
                 && sum_r0 > 100000000//1.5*kLineJson[kLineJson.length-1].amount_ave_8
                 && sum_r0+sum_r0x > 100000000//1.5*kLineJson[kLineJson.length-1].amount_ave_8
                 ) {

@@ -2446,7 +2446,6 @@ function sh600716_201410_5 (klineJson, i) {
     if (obj.netsummax_r0 === undefined) return false;
 
     return true
-        // && obj.netsum_r0_10>-0.02*obj.amount_ave_21
         && obj.close_ave_144>0.98*obj.close
         && obj.amount_ave_21<1*obj.amount_ave_8
         && obj.turnover_ave_8>0.8*obj.turnover
@@ -2476,18 +2475,49 @@ function sh600716_201410_5 (klineJson, i) {
         }(50, 5.5, 1, 100, 0.3)
  }  
 
+function sh600716_201410_6 (klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        // && obj.close_ave_8<obj.close_ave_233
+        // && obj.close_ave_144>obj.close_ave_233
+        && obj.netsummax_r0_5===0.0*obj.amount_ave_21
+        && obj.turnover_ave_8>0.8*obj.turnover_ave_21
+        && obj.marketCap < 2000000000
+        && function(a, b, c, d, e){
+            // return true;
+            var highidx = klineutil.highItemIndex(klineJson, i-a, i, "close");
+            if (klineutil.increase(obj.close, klineJson[highidx].close) < b*0.05)//klineJson[highidx].amplitude_ave_21) 
+                return false;
+            if (obj.amount_ave_21 > c*klineJson[highidx].amount_ave_21)
+                return false;
+
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, highidx-d, highidx, "close", obj.close);
+            var fstlowidx = lowerItems.length === 0 ? Math.max(0, highidx-d) : lowerItems[lowerItems.length-1];
+            var r0sum = 0, r0xsum = 0;
+            for (var j=fstlowidx; j<=i; j++) {
+                r0sum += klineJson[j].r0_net;
+                r0xsum += (klineJson[j].netamount-klineJson[j].r0_net);
+            }
+
+            return r0sum> e*obj.amount_ave_21
+                
+        }(50, 5.5, 1, 100, 0.3)
+ }  
+
 function sh600716_201410 (klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
     return true
-        // && sh600716_201410_6(klineJson, i)
-        && (false
-            || sh600716_201410_1(klineJson, i)
-            || sh600716_201410_2(klineJson, i)
-            || sh600716_201410_3(klineJson, i)
-            || sh600716_201410_4(klineJson, i)
-            || sh600716_201410_5(klineJson, i)
+        && sh600716_201410_6(klineJson, i)
+        && !(false
+            // || sh600716_201410_1(klineJson, i)
+            // || sh600716_201410_2(klineJson, i)
+            // || sh600716_201410_3(klineJson, i)
+            // || sh600716_201410_4(klineJson, i)
+            // || sh600716_201410_5(klineJson, i)
          )  
 }
 // function sh600523_201406(klineJson, i) {

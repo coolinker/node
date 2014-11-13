@@ -36,6 +36,32 @@ function _trueFalse(key, fun, keyObj, unionvalid) {
     }
 }
 
+function conditionCheck(key, obj, keyObj, injection) {
+    if (!keyObj[key]) keyObj[key] = {
+        "_true": 0,
+        "_false": 0
+    };
+    // key = key.replace(/<<<</g, "").replace(/ /g, "")
+    var checkBool = eval(key.replace(/<<<</g, "").replace(/ /g, ""));
+    if (checkBool) {
+        keyObj[key]._true++;
+        // if (unionvalid) keyObj[key].true_unionvalid++;
+    } else {
+        keyObj[key]._false++;
+        // if (unionvalid) keyObj[key].false_unionvalid++;
+    }
+
+    injection(key, obj, keyObj, checkBool);
+
+    return checkBool;
+}
+
+function scanConditions(klineJson, idx, conditionObj, injection) {
+     // sh600716_201410(klineJson, idx, conditionObj, unionvalid, stockId);
+    moneyFlowConditions(klineJson, idx, conditionObj, injection);
+    rkCondiitons(klineJson, idx, conditionObj, injection);
+}
+
 function conditions(klineJson, idx, conditionObj, unionvalid, stockId) {
      // sh600716_201410(klineJson, idx, conditionObj, unionvalid, stockId);
     moneyFlow(klineJson, idx, conditionObj, unionvalid, stockId);
@@ -1260,4 +1286,369 @@ function moneyFlow(klineJson, i, conditionObj, unionvalid, stockId) {
 
 }
 
+
+
+function rkCondiitons(klineJson, i, conditionObj, injection) {
+    
+    var obj = klineJson[i];
+
+    var iswin = klineJson[i].winOrLose === "win";
+    if (!conditionObj.win) conditionObj.win = {};
+    if (!conditionObj.lose) conditionObj.lose = {};
+
+    var keyObj = iswin ? conditionObj.win : conditionObj.lose;
+
+    conditionCheck("klineutil.increase(obj.open, obj.close)>-0.015", 
+        obj, keyObj, injection);
+    conditionCheck("klineutil.increase(obj.open, obj.close)>-0.01", 
+        obj, keyObj, injection);
+    conditionCheck("klineutil.increase(obj.open, obj.close)>0.0", 
+        obj, keyObj, injection);
+    conditionCheck("klineutil.increase(obj.open, obj.close)>0.01", 
+        obj, keyObj, injection);
+    conditionCheck("klineutil.increase(obj.open, obj.close)>0.015", 
+        obj, keyObj, injection);
+    conditionCheck("klineutil.increase(obj.open, obj.close)>0.02", 
+        obj, keyObj, injection);
+
+    conditionCheck("<<<<klineutil.increase(obj.open, obj.close)>0.5*obj.amplitude_ave_8", 
+        obj, keyObj, injection);
+    conditionCheck("klineutil.increase(obj.open, obj.close)>0.7*obj.amplitude_ave_8", 
+        obj, keyObj, injection);
+    conditionCheck("<<<<klineutil.increase(obj.open, obj.close)>0.9*obj.amplitude_ave_8", 
+        obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.close_ave_8<1.05*obj.close", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_8<1.03*obj.close", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_8<1.02*obj.close", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_8<1*obj.close", obj, keyObj, injection);
+    conditionCheck("<<<<obj.close_ave_8<0.98*obj.close", obj, keyObj, injection);
+
+
+    conditionCheck("<<<<obj.close_ave_21<1.05*obj.close", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_21<1.03*obj.close", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_21<1.02*obj.close", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_21<1*obj.close", obj, keyObj, injection);
+    conditionCheck("<<<<obj.close_ave_21<0.98*obj.close", obj, keyObj, injection);
+
+
+    conditionCheck("<<<<obj.close_ave_233<1.05*obj.close", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_233<1*obj.close", obj, keyObj, injection);
+    conditionCheck("<<<<obj.close_ave_233<0.98*obj.close", obj, keyObj, injection);
+
+
+    conditionCheck("<<<<obj.close_ave_144<1.05*obj.close", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_144<1*obj.close", obj, keyObj, injection);
+    conditionCheck("<<<<obj.close_ave_144<0.98*obj.close", obj, keyObj, injection);
+
+    conditionCheck("obj.close_ave_8<obj.close_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_21<obj.close_ave_144", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_144<obj.close_ave_233", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_8<obj.close_ave_144", obj, keyObj, injection);
+    conditionCheck("obj.close_ave_8<obj.close_ave_233", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.amount_ave_8<0.5*obj.amount", obj, keyObj, injection);
+    conditionCheck("obj.amount_ave_8<1.1*obj.amount", obj, keyObj, injection);
+    conditionCheck("obj.amount_ave_8<1*obj.amount", obj, keyObj, injection);
+    conditionCheck("obj.amount_ave_8<0.9*obj.amount", obj, keyObj, injection);
+    conditionCheck("<<<<obj.amount_ave_8<1.5*obj.amount", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.amount_ave_21<0.5*obj.amount", obj, keyObj, injection);
+    conditionCheck("obj.amount_ave_21<1*obj.amount", obj, keyObj, injection);
+    conditionCheck("<<<<obj.amount_ave_21<1.5*obj.amount", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.amount_ave_21<0.7*obj.amount_ave_8", obj, keyObj, injection);
+    conditionCheck("obj.amount_ave_21<1*obj.amount_ave_8", obj, keyObj, injection);
+    conditionCheck("<<<<obj.amount_ave_21<1.5*obj.amount_ave_8", obj, keyObj, injection);
+
+
+
+}
+
+
+function moneyFlowConditions(klineJson, i, conditionObj, injection) {
+    
+    var obj = klineJson[i];
+
+    var iswin = klineJson[i].winOrLose === "win";
+    if (!conditionObj.win) conditionObj.win = {};
+    if (!conditionObj.lose) conditionObj.lose = {};
+
+    var keyObj = iswin ? conditionObj.win : conditionObj.lose;
+
+    conditionCheck("<<<<obj.netsummax_r0_r0x_duration>40", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_r0x_duration>35", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_r0x_duration>25", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_r0x_duration>20", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_r0x_duration>15", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_r0x_duration>10", obj, keyObj, injection);
+
+    conditionCheck("obj.netsummax_r0_duration>30", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_duration>40", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_duration>20", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_duration>60", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_duration>80", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0_r0x>0.5*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_r0x>2*obj.amount_ave_21", obj , keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_r0x>5*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.netsummax_r0>1.5*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.netsummax_r0>1.8*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0>2.2*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.netsummax_r0>2*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0>2.5*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0>2.3*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0>2.7*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0>obj.amount_ave_21", obj, keyObj, injection);
+
+
+    conditionCheck("<<<<obj.netsummax_r0_netsum_r0x<0.5*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_netsum_r0x<0", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_netsum_r0x<-0.3*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_netsum_r0x<-0.5*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_netsum_r0x<-0.8*obj.amount_ave_21", obj, keyObj, injection);
+
+
+
+    conditionCheck("<<<<obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>0", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0+obj.netsummax_r0_netsum_r0x>obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0_5>0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_5>0.03*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_5===0.0*obj.amount_ave_21", obj, keyObj, injection);
+    
+
+    conditionCheck("obj.netsummax_r0_10>0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_10>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_10===-0.0*obj.amount_ave_21", obj, keyObj, injection);
+
+
+    conditionCheck("<<<<obj.netsummax_r0_20>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_20>0.3*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_20>0.5*obj.amount_ave_21", obj, keyObj, injection);
+    //conditionCheck("obj.netsummax_r0_20>0.15*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.netsummax_r0_40===0.0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_40>0.01*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck(" obj.netsummax_r0_40>0.02*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_40>0.03*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0_40>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_40>0.15*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummin_r0<-0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0_5<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0_10<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+
+
+    conditionCheck("<<<<obj.netsummin_r0_20<-0.2*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummin_r0_20<-0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummin_r0_20<-0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummin_r0_20===-0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0_20<0.1*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummin_r0_40<-0.2*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummin_r0_40<-0.15*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummin_r0_40<-0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummin_r0_40<-0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummin_r0_40<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0_40<0.1*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0x_5>0.05*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0x_10>0.0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0x_10>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0x_10>0.2*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0x_10>0.25*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0x_10>0.3*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0x_20>0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0x_20>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsummax_r0x_20>0.15*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0x_20>0.20*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0x_40>0.1*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummin_r0x<-0.3*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_5<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+    
+    conditionCheck("obj.netsummin_r0x_10<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_10<-0.02*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_10<-0.08*obj.amount_ave_21", obj, keyObj, injection);
+    
+    conditionCheck("<<<<obj.netsummin_r0x_20<-0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_40<-0.2*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0+obj.netsummin_r0x>0", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_5+obj.netsummin_r0x_5>0", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_10+obj.netsummin_r0x_10>0", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_20+obj.netsummin_r0x_20>0", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_40+obj.netsummin_r0x_40>0", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0_5===obj.netsummax_r0_10", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0_10===obj.netsummax_r0_20", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0_5===obj.netsummin_r0_10", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummin_r0_10===obj.netsummin_r0_20", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0_10>obj.netsummin_r0_20", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0x_5===obj.netsummax_r0x_10", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0x_5>obj.netsummax_r0x_10", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0x_5<obj.netsummax_r0x_10", obj, keyObj, injection);
+
+    
+    conditionCheck("obj.netsummin_r0x_5-obj.netsummin_r0x_10<0*obj.amount_ave_21", obj, keyObj, injection);
+    
+    conditionCheck("obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.1*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.2*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.3*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.4*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.5*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_5-obj.netsummin_r0x_10<-0.2*obj.amount_ave_21", obj, keyObj, injection);
+
+
+    conditionCheck("<<<<obj.netsummax_r0x_10===obj.netsummax_r0x_20", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_5===obj.netsummin_r0x_10", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_10===obj.netsummin_r0x_20", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummax_r0x_5>obj.netsummax_r0_5", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummax_r0x_10>obj.netsummax_r0_10", obj, keyObj, injection);
+    
+    conditionCheck("<<<<obj.netsummax_r0x_20>obj.netsummax_r0_20", obj, keyObj, injection);
+    
+    conditionCheck("<<<<obj.netsummax_r0x_40>obj.netsummax_r0_40", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsummin_r0x_5>obj.netsummin_r0_5", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_10>obj.netsummin_r0_10", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_20>obj.netsummin_r0_20", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsummin_r0x_40>obj.netsummin_r0_40", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0x_5>obj.netsum_r0_5", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_10>obj.netsum_r0_10", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_20>obj.netsum_r0_20", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_40>obj.netsum_r0_40", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_80>obj.netsum_r0_80", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0x_5>0.05*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0x_10>0.07*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0x_10>0.03*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0x_10>0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_10>-0.05*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0x_20>0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_40>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_80>0.1*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0x_5<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+    
+    conditionCheck("<<<<obj.netsum_r0x_20<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_40<-0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0x_80<-0.1*obj.amount_ave_21", obj, keyObj, injection);
+
+
+    conditionCheck("<<<<obj.netsum_r0_5<0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_5<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_10<0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_10<-0.02*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_10<-0.05*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_20>0.08*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_20>0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_20>0.02*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_20>=0.0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_20>-0.05*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_40>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_40>-0.1*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_80>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_80>-0.1*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_above>obj.netsum_r0_below*6", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_above>obj.netsum_r0_below*5", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_above>obj.netsum_r0_below*4", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_above>obj.netsum_r0_below*2", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_above>obj.netsum_r0_below*1", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_above>obj.netsum_r0_below*0.5", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_above_60>1.5*obj.netsum_r0_below_60", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_above_60>obj.netsum_r0x_above_60", obj, keyObj, injection);
+    
+    conditionCheck("<<<<obj.netsum_r0_above_60>0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_above_60>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_above_60>0.3*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_above_60>0.5*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_above>obj.netsum_r0x_above", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_below> 0.8*obj.netsum_r0x_below", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_below>obj.netsum_r0x_below", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_below>1.2*obj.netsum_r0x_below", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_below_60>obj.netsum_r0x_below_60", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_above>0.1*obj.amount_ave_21", obj, keyObj, injection);
+    
+    conditionCheck("obj.netsum_r0_below>0.04*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_below>0.02*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_below>0.0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_below===0.0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_below>-0.01*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_below>-0.02*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("<<<<obj.netsum_r0_below_60>0.05*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.netsum_r0_below_60>0.03*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_below_60===0.0*obj.amount_ave_21", obj, keyObj, injection);
+    conditionCheck("<<<<obj.netsum_r0_below_60>0.0*obj.amount_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.turnover_ave_8>obj.turnover", obj, keyObj, injection);
+    conditionCheck("obj.turnover_ave_8>0.8*obj.turnover", obj, keyObj, injection);
+    conditionCheck("obj.turnover_ave_8>1.2*obj.turnover", obj, keyObj, injection);
+
+    conditionCheck("obj.turnover_ave_21>obj.turnover", obj, keyObj, injection);
+    conditionCheck("obj.turnover_ave_21>0.8*obj.turnover", obj, keyObj, injection);
+    conditionCheck("obj.turnover_ave_21>1.2*obj.turnover", obj, keyObj, injection);
+
+    conditionCheck("obj.turnover_ave_8>obj.turnover_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.turnover_ave_8>0.8*obj.turnover_ave_21", obj, keyObj, injection);
+    conditionCheck("obj.turnover_ave_8>1.2*obj.turnover_ave_21", obj, keyObj, injection);
+
+    conditionCheck("obj.turnover>0.5", obj, keyObj, injection);
+    conditionCheck("obj.turnover>1", obj, keyObj, injection);
+    conditionCheck("obj.turnover>3", obj, keyObj, injection);
+    conditionCheck("obj.turnover>5", obj, keyObj, injection);
+
+    conditionCheck("obj.ratioamount>0.05", obj, keyObj, injection);
+    conditionCheck("obj.ratioamount>0.1", obj, keyObj, injection);
+    conditionCheck("obj.ratioamount>0.2", obj, keyObj, injection);
+
+    conditionCheck("obj.ratioamount<-0.05", obj, keyObj, injection);
+    conditionCheck("obj.ratioamount<-0.1", obj, keyObj, injection);
+    conditionCheck("obj.ratioamount<-0.2", obj, keyObj, injection);
+ 
+     conditionCheck("obj.r0_ratio>0.05", obj, keyObj, injection);
+    conditionCheck("obj.r0_ratio>0.1", obj, keyObj, injection);
+    conditionCheck("obj.r0_ratio>0.2", obj, keyObj, injection);
+
+    conditionCheck("obj.r0_ratio<-0.05", obj, keyObj, injection);
+    conditionCheck("obj.r0_ratio<-0.1", obj, keyObj, injection);
+    conditionCheck("obj.r0_ratio<-0.2", obj, keyObj, injection);
+
+    conditionCheck("obj.marketCap < 500000000", obj, keyObj, injection);
+    conditionCheck("obj.marketCap < 1000000000", obj, keyObj, injection);
+    conditionCheck("obj.marketCap < 2000000000", obj, keyObj, injection);
+    conditionCheck("obj.marketCap < 5000000000", obj, keyObj, injection);
+
+}
+
 exports.conditions = conditions;
+exports.scanConditions = scanConditions;

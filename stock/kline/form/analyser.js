@@ -258,10 +258,10 @@ function bearKLineFormMethods() {
     return methods.sort();
 }
 
-function kLineFormMethods() {
+function kLineFormMethods(except) {
     var methods = [];
     for (var attr in klineforms) {
-        methods.push(attr);
+        if (attr != except) methods.push(attr);
     }
 
     return methods.sort();
