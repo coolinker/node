@@ -206,11 +206,11 @@ function readKLineBase(stockId, callback) {
   
 }
 
-function readKLineSync(stockId) {
+function readKLineSync(stockId, cacheIO) {
   var kLineJson = [];
   if (cacheIO &&  cacheIOObj[stockId]) {
-    callback(cacheIOObj[stockId]);
-    return;
+    //callback(cacheIOObj[stockId]);
+    return cacheIOObj[stockId];
   }
 
   var content = fs.readFileSync("../datasource/klines/"+stockId+".json","utf8");

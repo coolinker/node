@@ -2481,10 +2481,11 @@ function sh600716_201410_6 (klineJson, i) {
 
     return true
         // && obj.close_ave_8<obj.close_ave_233
-        // && obj.close_ave_144>obj.close_ave_233
-        && obj.netsummax_r0_5===0.0*obj.amount_ave_21
-        && obj.turnover_ave_8>0.8*obj.turnover_ave_21
-        && obj.marketCap < 2000000000
+        // && !(obj.close_ave_144<obj.close_ave_233)
+
+        // && obj.netsummax_r0_5===0.0*obj.amount_ave_21
+        // && obj.turnover_ave_8>0.8*obj.turnover_ave_21
+        // && obj.marketCap < 2000000000
         && function(a, b, c, d, e){
             // return true;
             var highidx = klineutil.highItemIndex(klineJson, i-a, i, "close");

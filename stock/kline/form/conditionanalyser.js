@@ -1,5 +1,6 @@
 var moneyflowforms = require("./moneyflowforms");
 var klineutil = require("../klineutil");
+var evalFuncitonCache = {};
 
 function trueFalse(key, bool, keyObj, unionvalid) {
     if (!keyObj[key]) keyObj[key] = {
@@ -36,13 +37,22 @@ function _trueFalse(key, fun, keyObj, unionvalid) {
     }
 }
 
+function getEval(key, obj) {
+    if (evalFuncitonCache[key] === undefined) {
+        funstr = "evalFuncitonCache[key] = function(obj) { return "+key.replace(/<<<</g, "")+"}";
+        eval(funstr);
+    }
+
+    return evalFuncitonCache[key](obj);
+}
+
 function conditionCheck(key, obj, keyObj, injection) {
     if (!keyObj[key]) keyObj[key] = {
         "_true": 0,
         "_false": 0
     };
-    // key = key.replace(/<<<</g, "").replace(/ /g, "")
-    var checkBool = eval(key.replace(/<<<</g, "").replace(/ /g, ""));
+    // var checkBool = eval(key.replace(/<<<</g, "").replace(/ /g, ""));
+    var checkBool = getEval(key, obj);
     if (checkBool) {
         keyObj[key]._true++;
         // if (unionvalid) keyObj[key].true_unionvalid++;
