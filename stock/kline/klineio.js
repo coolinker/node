@@ -8,6 +8,7 @@ var endDate = new Date("12/01/2016");
 var cacheIO = false;
 var cacheIOObj = {};
 var cacheSampleObj = {};
+var loadingCallbackQueue = {};
 
 function config(start, end, cache){
   startDate = start;
@@ -229,12 +230,20 @@ function readKLineSync(stockId, cacheIO) {
   return kLineJson;
 }
 
+
 function readKLine(stockId, callback) {
   //console.log("Read K line data:"+stockId, startDate, endDate);
   var kLineJson = [];
   if (cacheIO &&  cacheIOObj[stockId]) {
     callback(cacheIOObj[stockId]);
     return;
+  }
+
+  if (loadingCallbackQueue[stockId]) {
+    loadingCallbackQueue[stockId].push(callback);
+    return;
+  } else {
+    loadingCallbackQueue[stockId] = [callback];
   }
 
   fs.readFile("../datasource/klines/"+stockId+".json","utf8", function(error, content) {
@@ -254,7 +263,13 @@ function readKLine(stockId, callback) {
 
     }
     if (cacheIO) cacheIOObj[stockId] = kLineJson;
-    callback(kLineJson);
+
+    for (var qidx = 0; qidx < loadingCallbackQueue[stockId].length; qidx++){
+      loadingCallbackQueue[stockId][qidx](kLineJson);
+    }
+    
+    delete loadingCallbackQueue[stockId];
+
   });
   
 }

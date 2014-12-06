@@ -4,21 +4,21 @@ var startDate = new Date("01/01/2005");
 var endDate = new Date("12/01/2015"); 
 
 
-var bullklineforms = require("./moneyflowforms");// require("./bullklineforms");
+var bullklineforms;// = require("./moneyflowforms");// require("./bullklineforms");
 var bearklineforms = require("./bearklineforms");
 
 var klineforms = undefined;
 
 var formsSortMap = {};
-function config(options){  
-    if (options.bullorbear==="bear") {
-        klineforms = bearklineforms;
-    } else {
-        klineforms = bullklineforms;
-    }
+function config(options){
+    klineforms = require(options.form);
+    bullklineforms = klineforms;
+    
+    module.exports.klineforms = klineforms;
 
     if (options.startDate) startDate = options.startDate;
     if (options.endDate) endDate = options.endDate;
+
 
     var forms = this.bullKLineFormMethods();
     for(var i=0; i<forms.length; i++) {

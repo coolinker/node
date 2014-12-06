@@ -10,7 +10,8 @@ function config(start, end){
     klineio  = require("./klineio").config(start, end);
     klineformanalyser = require("./form/analyser").config({
         startDate: start,
-        endDate: end
+        endDate: end,
+        form: "./moneyflowforms"
     });
 
     return this;

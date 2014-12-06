@@ -19,7 +19,7 @@ var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01
 new Date("01/01/2012"),
 new Date("01/01/2013"), new Date("01/01/2014"), new Date("08/01/2014")]; 
 
-var klineForm = process.argv[2]?process.argv[2]:"sh600716_201410";
+var klineForm = process.argv[2]?process.argv[2]:"wBottomA_b";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = ""//wBottomA,wBottom,headShoulderBottom,morningStarA,morningStarB,redNGreenRed,greenInRedA";
 
@@ -328,12 +328,14 @@ if (cluster.isMaster) {
 } else if (cluster.isWorker) {
 
     var klineformanalyser = require("../kline/form/analyser").config({
-        startDate: startDate,        endDate: endDate
+        startDate: startDate,        
+        endDate: endDate,
+        form: "./moneyflowforms.js"//"./form80.js"
     });
     var bullKLineFormMethods = klineformanalyser.bullKLineFormMethods();
     var mtdsidx = bullKLineFormMethods.indexOf(klineForm);
     bullKLineFormMethods.splice(mtdsidx,1);
-//    console.log("bullKLineFormMethods:",bullKLineFormMethods)
+    // console.log("bullKLineFormMethods:",bullKLineFormMethods)
     var conditionanalyser = require("../kline/form/conditionanalyser");
     
     // unionKLineForm = klineformanalyser.bullKLineFormMethods().join(",");
@@ -370,13 +372,11 @@ if (cluster.isMaster) {
                     injection: function(stockId, klineJson, idx, mtd){
                         
                         var unionValid = false;
+
                         if(!klineformanalyser.unionResult(null, bullKLineFormMethods, klineJson, idx)) {
                             forkResult.valid = forkResult.valid?forkResult.valid+1:1;
                             unionValid = true;
                         }
-
-
-                        //console.log(stockId, date, iswin)
                         var date = new Date(klineJson[idx].date);
                         var iswin = klineJson[idx].winOrLose==="win";
                         __themastercount++;

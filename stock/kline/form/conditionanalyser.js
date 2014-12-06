@@ -1653,9 +1653,11 @@ function moneyFlowConditions(klineJson, i, conditionObj, injection) {
     conditionCheck("obj.r0_ratio<-0.1", obj, keyObj, injection);
     conditionCheck("obj.r0_ratio<-0.2", obj, keyObj, injection);
 
-    conditionCheck("obj.marketCap < 500000000", obj, keyObj, injection);
+    conditionCheck("obj.marketCap < 10000000000", obj, keyObj, injection);
     conditionCheck("obj.marketCap < 1000000000", obj, keyObj, injection);
     conditionCheck("obj.marketCap < 2000000000", obj, keyObj, injection);
+    conditionCheck("obj.marketCap < 3000000000", obj, keyObj, injection);
+    conditionCheck("obj.marketCap < 4000000000", obj, keyObj, injection);
     conditionCheck("obj.marketCap < 5000000000", obj, keyObj, injection);
 
 }
