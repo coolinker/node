@@ -1,6 +1,16 @@
 var moneyflowforms = require("./moneyflowforms");
 var klineutil = require("../klineutil");
 var evalFuncitonCache = {};
+var conditionMap = {};
+var conditionArr = [];
+var conditionMapIdx = 0;
+
+exports.getConditionIdx = function(cond){
+    return conditionMap[cond];
+}
+exports.getConditionByIdx = function(idx){
+    return conditionArr[idx];
+}
 
 function trueFalse(key, bool, keyObj, unionvalid) {
     if (!keyObj[key]) keyObj[key] = {
@@ -39,6 +49,8 @@ function _trueFalse(key, fun, keyObj, unionvalid) {
 
 function getEval(key, obj) {
     if (evalFuncitonCache[key] === undefined) {
+        conditionMap[key] = conditionMapIdx++;
+        if (conditionArr[conditionMap[key]] != key) conditionArr[conditionMap[key]] = key;
         funstr = "evalFuncitonCache[key] = function(obj) { return "+key.replace(/<<<</g, "")+"}";
         eval(funstr);
     }
@@ -61,7 +73,7 @@ function conditionCheck(key, obj, keyObj, injection) {
         // if (unionvalid) keyObj[key].false_unionvalid++;
     }
 
-    injection(key, obj, keyObj, checkBool);
+    if (injection) injection(key, obj, keyObj, checkBool);
 
     return checkBool;
 }

@@ -9,6 +9,7 @@ var cacheIO = false;
 var cacheIOObj = {};
 var cacheSampleObj = {};
 var loadingCallbackQueue = {};
+var stockIdIdxMap = {};
 
 function config(start, end, cache){
   startDate = start;
@@ -28,9 +29,12 @@ function getSample(stockId, index) {
 function getAllStockIds (match) {
     var klinefiles = fs.readdirSync("../datasource/klines_base/");
     var stockIds = [];
+    var cnt = 0;
     klinefiles.forEach(function (fileName) {
         if (match===undefined || fileName.indexOf(match) >= 0) {
-            stockIds.push(fileName.substring(0, fileName.indexOf(".")));
+            var sid = fileName.substring(0, fileName.indexOf("."));
+            stockIds.push(sid);
+            stockIdIdxMap[sid] = cnt++;
         }
     });
     return stockIds;
@@ -329,6 +333,11 @@ function writeKLine(stockId, jsonData, callback) {
   });
 }
 
+function getStockIdx (sid) {
+  return stockIdIdxMap[sid];
+}
+
+exports.getStockIdx = getStockIdx;
 exports.config = config;
 
 exports.readLatestKLineAjax = readLatestKLineAjax;
