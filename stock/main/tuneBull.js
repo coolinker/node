@@ -19,7 +19,7 @@ var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01
 new Date("01/01/2012"),
 new Date("01/01/2013"), new Date("01/01/2014"), new Date("08/01/2014")]; 
 
-var klineForm = process.argv[2]?process.argv[2]:"wBottomA_b";
+var klineForm = process.argv[2]?process.argv[2]:"morningStarA_1_0";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = ""//wBottomA,wBottom,headShoulderBottom,morningStarA,morningStarB,redNGreenRed,greenInRedA";
 
@@ -193,86 +193,31 @@ if (cluster.isMaster) {
                 //     conditionArr.push(att)
                 // }
             }
+            var baseper = masterResult.master_win/masterResult.master_total;
             console.log("conditionArr", conditionArr.length);
-            conditionArr.sort(function(att1, att2){
-                var wincon1 = masterConditionObj.win[att1];
-                var losecon1 = masterConditionObj.lose[att1];
+            
+            conditionArr.sort(function(att1, att2) {
+                        return conditionSortFun(att1, att2, masterConditionObj, baseper);
+                    });
+            // conditionArr.sort(function(att1, att2){
+            //     var wincon1 = masterConditionObj.win[att1];
+            //     var losecon1 = masterConditionObj.lose[att1];
 
-                var truewinper1 = wincon1._true/(wincon1._true+losecon1._true);
-                var losetrueper1 = wincon1._false/(wincon1._false+losecon1._false);
-                var per1 = Math.max(truewinper1, losetrueper1);
+            //     var truewinper1 = wincon1._true/(wincon1._true+losecon1._true);
+            //     var losetrueper1 = wincon1._false/(wincon1._false+losecon1._false);
+            //     var per1 = Math.max(truewinper1, losetrueper1);
 
-                var wincon2 = masterConditionObj.win[att2];
-                var losecon2 = masterConditionObj.lose[att2];
+            //     var wincon2 = masterConditionObj.win[att2];
+            //     var losecon2 = masterConditionObj.lose[att2];
 
-                var truewinper2 = wincon2._true/(wincon2._true+losecon2._true);
-                var losetrueper2 = wincon2._false/(wincon2._false+losecon2._false);
-                var per2 = Math.max(truewinper2, losetrueper2);
+            //     var truewinper2 = wincon2._true/(wincon2._true+losecon2._true);
+            //     var losetrueper2 = wincon2._false/(wincon2._false+losecon2._false);
+            //     var per2 = Math.max(truewinper2, losetrueper2);
                 
-                if (per1>per2) return -1;
-                if (per1<per2) return 1;
-                return 0;
-            });
-
-            var conditionArr1 = [];
-            conditionArr1.sort(function(att1, att2){
-
-                var wincon1 = masterConditionObj.win[att1];
-                var wintrueper1 = wincon1 ? wincon1._true/(wincon1._true+wincon1._false) : 0;
-                var losecon1 = masterConditionObj.lose[att1];
-                var losetrueper1 = losecon1 ? losecon1._true/(losecon1._true+losecon1._false) : 0;
-
-                // if (att1=="klineutil.increase(klineJson[idx].close_ave_21,klineJson[idx].close_ave_8)>0.05")
-                //     console.log("1:", wintrueper1, losetrueper1, wincon1, losecon1, att2)
-
-                // if (att2=="klineutil.increase(klineJson[idx].close_ave_21,klineJson[idx].close_ave_8)>0.05")
-                //     console.log("2:", wintrueper1, losetrueper1, wincon1, losecon1, att1) 
-               
-                // if (att1==="obj.netsum_r0_below_60>0.0*obj.amount_ave_21" || att2==="obj.netsum_r0_below_60>0.0*obj.amount_ave_21") {
-                //     console.log("abs1:", wincon1,losecon1, att1);
-                //     console.log("abs2:", masterConditionObj.win[att2], masterConditionObj.lose[att2], att2)
-                // }
-                //if (wintrueper1===0 && losetrueper1===0 || wintrueper1===1 && losetrueper1===1) return 1;
-                //if (wintrueper1<0.1 && losetrueper1<0.1 || wintrueper1>0.9 && losetrueper1>0.9) return 1;
-                // if (wintrueper1>losetrueper1 
-                //     && ((wincon1._true+losecon1._true < 1000
-                //             && wincon1._true/(wincon1._true+losecon1._true)<0.8) 
-                //         || wincon1._true+losecon1._true < 1000)) return 1;
-                // if (wintrueper1<losetrueper1 
-                //     && ((wincon1._false+losecon1._false < 1000
-                //     && wincon1._false/(wincon1._false+losecon1._false)<0.8)
-                //     || wincon1._false+losecon1._false < 1000)) return 1;
-                
-               if (losetrueper1===1) return 1;
-                var abs1 =  wintrueper1>losetrueper1? wintrueper1/losetrueper1: (1-wintrueper1)/(1-losetrueper1) //Math.abs(wintrueper1-losetrueper1);
-
-
-                var wincon2 = masterConditionObj.win[att2];
-                var wintrueper2 = wincon2 ? wincon2._true/(wincon2._true+wincon2._false) : 0;
-                var losecon2 = masterConditionObj.lose[att2];
-                var losetrueper2 = losecon2 ? losecon2._true/(losecon2._true+losecon2._false) : 0;
-
-                //if (wintrueper2===0 && losetrueper2===0|| wintrueper2===1 && losetrueper2===1) return -1;
-                //if (wintrueper2<0.1 && losetrueper2<0.1 || wintrueper2>0.9 && losetrueper2>0.9) return -1;
-                // if (wintrueper2>losetrueper2
-                //     && ((wincon2._true+losecon2._true < 1000
-                //             && wincon2._true/(wincon2._true+losecon2._true)<0.8)
-                //         || wincon2._true+losecon2._true < 1000)) return -1;
-                // if (wintrueper2<losetrueper2
-                //     && ((wincon2._false+losecon2._false < 1000
-                //             && wincon2._false/(wincon2._false+losecon2._false)<0.8)
-                //         || wincon2._false+losecon2._false < 1000)) return -1;
-
-                if (losetrueper2===1) return -1;
-                var abs2 = wintrueper2>losetrueper2? wintrueper2/losetrueper2:  (1-wintrueper2)/(1-losetrueper2)  //Math.abs(wintrueper2-losetrueper2);
-
-                var totalremain1 = wintrueper1>losetrueper1?(wincon1._true+losecon1._true): (wincon1._false+losecon1._false);
-                var totalremain2 = wintrueper2>losetrueper2?(wincon2._true+losecon2._true): (wincon2._false+losecon2._false);
-                if (abs1>abs2) return -1;
-                if (abs1<abs2) return 1;
-                return 0;
-
-            })
+            //     if (per1>per2) return -1;
+            //     if (per1<per2) return 1;
+            //     return 0;
+            // });
             
             var isDupeCondition = function(str){
                 var depe = "".replace(/ /g, "");
@@ -330,7 +275,7 @@ if (cluster.isMaster) {
     var klineformanalyser = require("../kline/form/analyser").config({
         startDate: startDate,        
         endDate: endDate,
-        form: "./moneyflowforms.js"//"./form80.js"
+        form: "./form80.js"//"./moneyflowforms.js"//
     });
     var bullKLineFormMethods = klineformanalyser.bullKLineFormMethods();
     var mtdsidx = bullKLineFormMethods.indexOf(klineForm);
@@ -380,7 +325,20 @@ if (cluster.isMaster) {
                         var date = new Date(klineJson[idx].date);
                         var iswin = klineJson[idx].winOrLose==="win";
                         __themastercount++;
-                        conditionanalyser.conditions(klineJson, idx, conditionObj, unionValid, stockId);
+                        //conditionanalyser.conditions(klineJson, idx, conditionObj, unionValid, stockId);
+                        conditionanalyser.scanConditions(klineJson, idx, conditionObj, function(condition, obj, condObj, boolvalue) {
+                            if (undefined === condObj[condition].true_unionvalid) condObj[condition].true_unionvalid = 0;
+                            if (undefined === condObj[condition].false_unionvalid) condObj[condition].false_unionvalid = 0;
+                            // if (unionValid)
+                            // console.log("boolvalue", boolvalue, unionValid, condition, condObj[condition])
+                            if (boolvalue) {
+                                if (unionValid) condObj[condition].true_unionvalid++;
+                            } else {
+                                if (unionValid) condObj[condition].false_unionvalid++;
+                            }                        
+
+                        })
+                        
                         if (dateSections.length===0) return;
                         var keytotal = "";
                         var keywin = "";
@@ -446,3 +404,38 @@ if (cluster.isMaster) {
     
     processStock(startIdx);    
 }
+
+
+            function conditionSortFun(att1, att2, conditionObj, winPer) {
+                var wincon1 = conditionObj.win[att1];
+                var losecon1 = conditionObj.lose[att1];
+                var per1 = 0;
+
+                if (wincon1) {
+                    var truewinper1 = wincon1._true / (wincon1._true + losecon1._true);
+                    var falsewinper1 = wincon1._false / (wincon1._false + losecon1._false);
+                    var unionvalid1 = truewinper1 > falsewinper1 ? (wincon1.true_unionvalid + losecon1.true_unionvalid) : (wincon1.false_unionvalid + losecon1.false_unionvalid);
+                    var perdiff = 0.99*Math.max(truewinper1, falsewinper1) - winPer;
+                    per1 = unionvalid1 * perdiff;
+                } else {
+                    console.log(att1, wincon1, losecon1)
+                }
+
+                var wincon2 = conditionObj.win[att2];
+                var losecon2 = conditionObj.lose[att2];
+                var per2 = 0;
+                if (wincon2) {
+                    var truewinper2 = wincon2._true / (wincon2._true + losecon2._true);
+                    var falsewinper2 = wincon2._false / (wincon2._false + losecon2._false);
+                    var unionvalid2 = truewinper2 > falsewinper2 ? (wincon2.true_unionvalid + losecon2.true_unionvalid) : (wincon2.false_unionvalid + losecon2.false_unionvalid);
+                    var perdiff = 0.99*Math.max(truewinper2, falsewinper2) - winPer;
+
+                    per2 = unionvalid2 * perdiff;
+                } else {
+                    console.log(att2, wincon2, losecon2)
+                }
+
+                if (per1 > per2) return -1;
+                if (per1 < per2) return 1;
+                return 0;
+            }
