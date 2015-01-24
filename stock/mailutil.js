@@ -31,9 +31,11 @@ var mailOptions = {
 // }
 
 
-function sendEmail(subj, body) {
+function sendEmail(subj, body, to) {
     mailOptions.html = body;
     mailOptions.subject = subj
+    if (to) mailOptions.to = to;
+    
     transport.sendMail(mailOptions, function(error, response){
         if(error){
             console.log(error);

@@ -314,7 +314,93 @@ function detectGapDownStress(klineJson, idx, interval, accuracy) {
     return undefined;
 }
 
+function getSpports(klineJson, idx, price, range, unit){
+    var priceMap = {};
+    var priceArr = [];
+    var klj = klineJson[idx];
+    price = price!==undefined? price: klj.close;
+    range = range!==undefined? range: 0.1;
+    unit = unit!==undefined? unit: 0.005;
+    
+    var ceil = price;
+    var floor = price*(1-range);
+    var x = Math.ceil(100*price*unit)/100;
 
+    // console.log("x", x, klj.close)
+    var fun = function(price) {
+        if (price>ceil || price<floor) return;
+        if (priceMap[price]) {
+            priceMap[price]++;
+        } else {
+            priceMap[price] = 1;
+            priceArr.push(price);
+        }
+    }
+
+    for (var j=idx; j>=1 && idx-j<100; j--) {
+        var _klj = klineJson[j];
+        fun(_klj.close);
+        if (_klj.low !== _klj.high) {
+            fun(_klj.open);
+            fun(_klj.low);
+            fun(_klj.high);
+        }
+    }
+
+    var priceMapNew = {};
+    var priceArrNew = [];
+
+    for (var k = ceil; k>=floor+x; k-=0.01) {
+        var rangesum = 0;
+        k = Math.floor(k*100)/100;
+        for (var m = k; m>k-x; m-=0.01) {
+            m = Math.floor(m*100)/100;           
+            if (priceMap[m]) rangesum += priceMap[m];
+        }
+        priceMapNew[k] = rangesum;
+
+        var len = priceArrNew.length;
+        if (len>0 ) {
+            var pre = priceArrNew[len-1];
+            if (pre-k<x/2) {
+                if (priceMapNew[pre] <= priceMapNew[k]) {
+                    priceArrNew.pop();
+                    priceArrNew.push(k);
+                } 
+            } else {
+                priceArrNew.push(k);
+            }
+        } else {
+           priceArrNew.push(k); 
+        }
+
+    }
+
+    priceArrNew.sort(function(p1, p2){
+        if (priceMapNew[p1] > priceMapNew[p2]) return -1;
+        else if(priceMapNew[p1] < priceMapNew[p2]) return 1;
+        return 0;
+    })
+    
+    var supportArr = priceArrNew.slice(0,5);
+
+    supportArr.sort(function(p1, p2) {
+        var d1 = klj.close-p1;
+        var d2 = klj.close-p2;
+        if(d1>d2) return 1;
+        else if (d1<d2) return -1;
+        return 0;
+    })
+    for (var s=0;s<supportArr.length;s++) {
+        var p = supportArr[s];
+        supportArr[s] = priceMapNew[p]+"@"+p;
+        // console.log(p, priceMapNew[p])
+    }
+    
+    return supportArr;
+}
+
+exports.getSpports = getSpports;
 exports.leftTroughIdx = leftTroughIdx;
 exports.leftTrough = leftTrough;
 exports.lowItemIndex = lowItemIndex;

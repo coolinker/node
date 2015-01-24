@@ -126,13 +126,17 @@ function readKLineBaseSync(stockId, callback) {
       if (lineEle.length===7)  {
           count++;
           var vol = parseFloat(lineEle[5]);
+          if (vol<0) {
+            vol = 2*2147483648+vol;
+          }
+
           if (vol>0) {
               kLineJson.push({date: lineEle[0],
                 open: parseFloat(lineEle[1]), 
                 high: parseFloat(lineEle[2]),
                 low: parseFloat(lineEle[3]), 
                 close: parseFloat(lineEle[4]), 
-                volume: parseFloat(lineEle[5]), 
+                volume: vol, 
                 amount: parseFloat(lineEle[6])});
           } else {
             //console.log("==",stockId, lineEle);
@@ -158,13 +162,17 @@ function readKLineRightBaseSync(stockId) {
       if (lineEle.length===7)  {
           count++;
           var vol = parseFloat(lineEle[5]);
+          if (vol<0) {
+            vol = 2*2147483648+vol;
+          }
+          
           if (vol>0) {
               kLineJson[lineEle[0]] = {date: lineEle[0],
                 open: parseFloat(lineEle[1]), 
                 high: parseFloat(lineEle[2]),
                 low: parseFloat(lineEle[3]), 
                 close: parseFloat(lineEle[4]), 
-                volume: parseFloat(lineEle[5]), 
+                volume: vol, 
                 amount: parseFloat(lineEle[6])};
           } else {
             //console.log("==",stockId, lineEle);

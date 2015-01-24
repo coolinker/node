@@ -61,6 +61,7 @@ function exRightsDay(stockId, klineJson) {
 
         var predate = klineJson[i-1].date;
         var date = klineJson[i].date;
+        // if (!rightJson[date]) console.log(stockId, date)
         var rightinc = klineutil.increase(rightJson[predate].close, rightJson[date].open)//*rightJson[date].open/open;
 
         if (inc<-0.01 && rightinc-inc>0.003 || inc<-0.05 && rightinc>-0.03) {

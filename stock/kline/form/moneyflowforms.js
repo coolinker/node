@@ -2467,6 +2467,7 @@ function sh600716_201410 (klineJson, i) {
             || sh600716_201410_6(klineJson, i)
          )  
 }
+
 // function sh600523_201406(klineJson, i) {
 //     var obj = klineJson[i];
 //     if (obj.netsummax_r0 === undefined) return false;

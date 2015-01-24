@@ -1,16 +1,104 @@
 var klineutil = require("../klineutil");
 
+function sh600157_201412(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return true
+        && function() {
+            var lowamp = (Math.min(obj.open, obj.close)-obj.low)/obj.close;
+            if (lowamp<0.5*obj.amplitude_ave_8) return false;
+            if (obj.volume>1.2*obj.volume_ave_21) return false;
+            var price = Math.max(klineJson[i-1].close, klineJson[i].open);
+            var ploweritems = klineutil.lowerItemsIndex(klineJson, i-60, i, "low", price);
+            var llowitems = klineutil.lowerItemsIndex(klineJson, i-60, i, "low", obj.low);
+            if (!(ploweritems.length>=3 && llowitems.length===0)) return false; 
+            if ((obj.netsummax_r0+obj.netsummax_r0_netsum_r0x)<100000000) return false;
+            return true;
+        }()
+        // function() {
+        //     var lowamp = (Math.min(obj.open, obj.close)-obj.low)/obj.close;
+        //     if (lowamp<0.5*obj.amplitude_ave_8) return false;
+        //     if (obj.volume>1.1*obj.volume_ave_21) return false;
+
+        //     var price = Math.max(klineJson[i-1].close, klineJson[i].open);
+        //     var supports = klineutil.getSpports(klineJson, i-1, price);
+        //     var suparr = supports[0].split("@");
+        //     var sups = Number(suparr[0]);
+        //     var supp = Number(suparr[1]);
+        //     console.log("-==", obj.date, sups, supp, obj.low, obj.amplitude_ave_8)
+        //     return (sups>=5 && supp>obj.low) 
+        // }();
+}
+exports.sh600157_201412 = sh600157_201412;
+
+function smallRedsAndGreensA_1_0(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return !(obj.amount_ave_8<0.5*obj.amount)//12 0.799 5801/19811
+&& obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.5*obj.amount_ave_21//6 0.793 6222/21156
+&& obj.netsum_r0_below_60===0.0*obj.amount_ave_21//7 0.777 8973/26584
+&& !(obj.netsummin_r0_20<-0*obj.amount_ave_21)//3 0.760 13574/35346
+&& !(obj.netsum_r0_10<-0.02*obj.amount_ave_21)//2 0.736 24432/50772
+&& !(obj.netsummax_r0_10>0.05*obj.amount_ave_21)//3 0.702 46631/78902
+&& obj.amount_ave_21<1.5*obj.amount//2 0.669 96573/138856
+&& obj.marketCap < 3800000000//2 0.644 126945/173828
+ && function(a, b, c, d, e, f, g, h) {
+       //     return true
+        var n=i;
+        for (; n>1; n--) {
+            var inc_ave = klineJson[n].inc_ave_21;
+            if (Math.abs(klineutil.increase(klineJson[n].open, klineJson[n].close)) > inc_ave*a) {
+                break;
+            } 
+        }
+
+        return true
+            && i-n>= b
+            //&& klineutil.increase(klineJson[i-c].close_ave_8, klineJson[i].close_ave_8) > d//-klineJson[i].inc_ave_8*0.8
+            && function () {    
+            var lowerItems = klineutil.lowerItemsIndex(klineJson, i-e, i, "high", klineJson[i].low);
+            var lidx = klineutil.lowItem(klineJson, i-f, i, "low");
+            return true
+                && i-lowerItems[0] <g 
+                && klineutil.increase(lidx, klineJson[i].close) > klineJson[i].inc_ave_8*h
+        }()
+    }(3, 5, 4, 0, 80, 100, 40, 4)
+}
+exports.smallRedsAndGreensA_1_0 = smallRedsAndGreensA_1_0//Sat Jan 03 2015 09:38:16 GMT+0800 (中国标准时间)
+
+function redNGreenRed_1_0(klineJson, i) {
+    var obj = klineJson[i];
+    if (obj.netsummax_r0 === undefined) return false;
+
+    return !(obj.netsummax_r0_20>0.5*obj.amount_ave_21)//97 0.798 7344/18128
+&& !(obj.amount_ave_8<0.5*obj.amount)//61 0.791 8448/19799
+&& (obj.close_ave_8<1.2*obj.close_ave_21)//0 0.781 9363/21245
+&& !(obj.close_ave_8<obj.close_ave_21)
+&& obj.marketCap < 2500000000//0 0.708 38199/67413
+&& obj.turnover_ave_8>0.78*obj.turnover_ave_21//2 0.640 104082/140424
+ && function(a, b, c, d, e){
+            var top = klineutil.highIndexOfDownTrend(klineJson, i-1);            
+            
+            if (klineutil.increase(klineJson[top].high, obj.close) > -obj.amplitude_ave_8 * a //-inc_ave*3.5 
+                && klineutil.increase(klineJson[top].high, obj.close) <  obj.amplitude_ave_8*b) {
+                var lowerItems = klineutil.lowerItemsIndex(klineJson, top-c, top-1, "low", klineJson[top-1].high);
+                return lowerItems.length >d && lowerItems.length <e;
+            }
+             return false;
+        } (2, 1, 120, 6, 27) 
+}
+exports.redNGreenRed_1_0 = redNGreenRed_1_0//Mon Dec 29 2014 00:06:49 GMT+0800 (中国标准时间)
 
 function sidewaysCompression_1_0(klineJson, i) {
     var obj = klineJson[i];
     if (obj.netsummax_r0 === undefined) return false;
 
     return true
-    // && !(obj.netsum_r0x_80>0.1*obj.amount_ave_21)//143 0.798 7272/23028
 && obj.amount_ave_21<1.07*obj.amount_ave_8//2 0.796 7607/24033
 && !(obj.netsum_r0_10<-0.0*obj.amount_ave_21)//2 0.772 13674/34840
 && obj.netsummin_r0x_5-obj.netsummin_r0x_10<0.3*obj.amount_ave_21//0 0.748 22434/47721
-// && obj.turnover_ave_8>0.8*obj.turnover_ave_21//3 0.713 51938/95566
 && obj.netsummax_r0_10===-0.0*obj.amount_ave_21//1 0.680 89609/135555
 && obj.marketCap < 2500000000//1 0.644 202443/260716
  && !function(m, n, k) {

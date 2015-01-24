@@ -19,7 +19,7 @@ var dateSections = [new Date("01/01/2008"), new Date("01/01/2009"), new Date("01
 new Date("01/01/2012"),
 new Date("01/01/2013"), new Date("01/01/2014"), new Date("08/01/2014")]; 
 
-var klineForm = process.argv[2]?process.argv[2]:"morningStarA_1_0";
+var klineForm = process.argv[2]?process.argv[2]:"sh600157_201412";
 var intersectionKLineForm = ""//moneyFlowInOut";
 var unionKLineForm = ""//wBottomA,wBottom,headShoulderBottom,morningStarA,morningStarB,redNGreenRed,greenInRedA";
 
@@ -34,7 +34,7 @@ var stocksShowLog = [];//["SZ002158", "SH600061"];//["SH600987"];//["SZ002127"];
 var showLogDates =[]//["11/14/2011"];
 
 var stocks = klineio.getAllStockIds();
- // stocks = ['SH600802']//['SZ002371', "SZ002158", "SH600061"];
+ // stocks = ['SH600157']//['SZ002371', "SZ002158", "SH600061"];
 var __themastercount = 0;
 if (cluster.isMaster) {
     var stocksLen = stocks.length;
@@ -415,7 +415,7 @@ if (cluster.isMaster) {
                     var truewinper1 = wincon1._true / (wincon1._true + losecon1._true);
                     var falsewinper1 = wincon1._false / (wincon1._false + losecon1._false);
                     var unionvalid1 = truewinper1 > falsewinper1 ? (wincon1.true_unionvalid + losecon1.true_unionvalid) : (wincon1.false_unionvalid + losecon1.false_unionvalid);
-                    var perdiff = 0.99*Math.max(truewinper1, falsewinper1) - winPer;
+                    var perdiff = 0.999*Math.max(truewinper1, falsewinper1) - winPer;
                     per1 = unionvalid1 * perdiff;
                 } else {
                     console.log(att1, wincon1, losecon1)
@@ -428,7 +428,7 @@ if (cluster.isMaster) {
                     var truewinper2 = wincon2._true / (wincon2._true + losecon2._true);
                     var falsewinper2 = wincon2._false / (wincon2._false + losecon2._false);
                     var unionvalid2 = truewinper2 > falsewinper2 ? (wincon2.true_unionvalid + losecon2.true_unionvalid) : (wincon2.false_unionvalid + losecon2.false_unionvalid);
-                    var perdiff = 0.99*Math.max(truewinper2, falsewinper2) - winPer;
+                    var perdiff = 0.999*Math.max(truewinper2, falsewinper2) - winPer;
 
                     per2 = unionvalid2 * perdiff;
                 } else {

@@ -1,5 +1,5 @@
 var startDate = new Date("01/01/2005");
-var endDate = new Date("01/01/2015");
+var endDate = new Date("01/01/2016");
 
 var klineprocesser = require("../kline/klineprocessor").config(startDate, endDate);
 
