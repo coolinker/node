@@ -34,6 +34,10 @@ function updateMoneyFlowData(startIndex, callback) {
     var counter = 0;
     for (var i=startIndex; i<len && i<startIndex+step; i++) {
         var stockId = stocks[i];
+        if (stockId==="SH999999" || stockId === "SZ399001") {
+          counter++;
+          continue;
+        }
         (function(){
             var _stockId = stockId;
             ajaxRequest(moneyFlowUrl+_stockId.toLowerCase(), 
@@ -45,6 +49,7 @@ function updateMoneyFlowData(startIndex, callback) {
                   body = body.replace(/\{/g, "{\"");
                   body = body.replace(/\}-\{/g, "},{");
                   var json = JSON.parse(body);
+
                   json.reverse();
                   //var origjson = readMoneyFlowDateMapSync(_stockId);
                   var origjsonArr = readMoneyFlowSync(_stockId);

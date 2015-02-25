@@ -4,14 +4,17 @@ var moneyflowio = require("../moneyflow/io").config();
 
 var klineio;
 var klineformanalyser;
-var minMatch = 2;
-
+var minMatch = 1;
+var szDateMap, shDateMap;
 function config(start, end){
     klineio  = require("./klineio").config(start, end);
+    szDateMap = klineio.readKLineBaseInDateMap("SZ399001");
+    shDateMap = klineio.readKLineBaseInDateMap("SH999999");
+
     klineformanalyser = require("./form/analyser").config({
         startDate: start,
         endDate: end,
-        form: "./moneyflowforms"
+        form: "./form80.js"
     });
 
     return this;
@@ -101,7 +104,7 @@ function winOrLose(kLineJson) {
         if (!kLineJson[i].match || kLineJson[i].match.length<minMatch) continue;
 
         //kLineJson[i].stopObj = reObj;
-        for (var j=i; j<i+reObj.days; j++) {
+        for (var j=i; j<=i+reObj.days; j++) {
             if (!kLineJson[j].pending) kLineJson[j].pending = 0;
             kLineJson[j].pending++;
         }
@@ -111,7 +114,7 @@ function winOrLose(kLineJson) {
 
 function updateKLinesFromBase(match) {
     var stocks = klineio.getAllStockIds(match);
-    //stocks = ["SH600012"];
+    // stocks = ["SH600135"];
      // stocks = ["SZ000420"];
     stocks.forEach(function(stockId) {
         klineio.readKLineBaseSync(stockId, processChain);   
@@ -179,6 +182,15 @@ function processMoneyFlow(kLineJson) {
     }
 }
 
+function getMaxZSInc(date) {
+    var shlastclose = shDateMap[date].lastDayObj.close;
+    var shinc = (shDateMap[date].close - shlastclose)/shlastclose;
+
+    var szlastclose = szDateMap[date].lastDayObj.close;
+    var szinc = (szDateMap[date].close - szlastclose)/szlastclose;
+    return Math.max(shinc, szinc);
+}
+
 function processDayMoneyFlow(klineJson, i) {
     var sec = 150;
     if (i<sec) return false;
@@ -207,9 +219,12 @@ function processDayMoneyFlow(klineJson, i) {
     var netsum_r0_above_60 = 0, netsum_r0_below_60 = 0;
     var netsum_r0x_above = 0, netsum_r0x_below = 0;
     var netsum_r0x_above_60 = 0, netsum_r0x_below_60 = 0;
+    var r0_above_flowin_days = 0, r0_above_flowout_days = 0;
 
     var currentprice = klineJson[i].close;
     var netsummax_idx_r0 = -1, netsummax_idx_r0_r0x = -1;
+    var r0_flowin_days = 0;
+    var r0_flowout_days = 0;
 
     for (var j = i; j>=0 && i-j<=sec; j--) {
         var klj = klineJson[j];
@@ -286,19 +301,34 @@ function processDayMoneyFlow(klineJson, i) {
 
     if (netsummax_idx_r0===-1) console.log("error netsummax_idx_r0 should not be -1");
     
-    for (var m = i; m>=netsummax_idx_r0; m--) {
+    for (var m = i; m>0 && m>=netsummax_idx_r0; m--) {
         var klj = klineJson[m];
-
+        var klj_1 = klineJson[m-1];
         var r0x_net = klj.netamount-klj.r0_net;
         if (klineJson.length>m+1 && klineJson[m+1].exRightsDay) {
             currentprice = currentprice*klineJson[m].close/klineJson[m+1].open
             //if (klineJson[i].date==="07/21/2014") console.log("---------", klineJson[m+1].date, currentprice)
         }
 
-        var midprice = (klj.high+klj.low)/2;
+        klj.r0_net>0 ? (r0_flowin_days++) : (klj.r0_net<0?r0_flowout_days++:0);
+
+        var midprice = klj.high //(klj.high+klj.low)/2;
         if (midprice>currentprice) {
+            klj.r0_net>0 ? (r0_above_flowin_days++) : (klj.r0_net<0?r0_above_flowout_days++:0);
             netsum_r0_above += klj.r0_net;
             netsum_r0x_above += r0x_net;
+            var openp = klj.exRightsDay? klj.open: klj_1.close;
+            if (openp > klj.close && klj.r0_net>0) {
+                if (!klineJson[i].r0_above_bear_flowin_days) klineJson[i].r0_above_bear_flowin_days = 1;
+                else klineJson[i].r0_above_bear_flowin_days++;
+            }
+
+            var zsInc = getMaxZSInc(klj.date);
+            
+            if (zsInc<0 && zsInc < (klj.close - openp)/openp) {
+                if (!klineJson[i].r0_above_bear_win_days) klineJson[i].r0_above_bear_win_days = 1;
+                else klineJson[i].r0_above_bear_win_days++;
+            }
             if (i-m<60) {
                 netsum_r0_above_60 += klj.r0_net;
                 netsum_r0x_above_60 += r0x_net;
@@ -356,6 +386,11 @@ function processDayMoneyFlow(klineJson, i) {
     obj.netsum_r0x_below = netsum_r0x_below;
     obj.netsum_r0x_below_60 = netsum_r0x_below_60;
 
+    obj.r0_above_flowin_days = r0_above_flowin_days;
+    obj.r0_above_flowout_days = r0_above_flowout_days;
+    obj.r0_flowin_days = r0_flowin_days;
+    obj.r0_flowout_days = r0_flowout_days;
+    
     obj.marketCap = obj.close*obj.volume/(obj.turnover/10000)
     //console.log("netsummax_days<20", klineJson[i].amount_ave_8, klineJson[i].amount_ave_21)
 

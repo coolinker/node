@@ -2,17 +2,17 @@ var extend = require('util')._extend;
 
 var bullOrBear = "bull";
 var startDate = new Date("01/01/2010"); 
-var endDate = new Date("01/01/2015"); 
+var endDate = new Date("01/01/2016"); 
 
 var displayMinCount = 0;
-var displayInfoFromDate = new Date("06/01/2014");
-var displayInfoToDate = new Date("07/01/2015");
+var displayInfoFromDate = new Date("10/01/2014");
+var displayInfoToDate = new Date("07/01/2016");
 var displayEveryCase = false;
-var showDetailOn = "_all";
+var showDetailOn = "";
 var klineForms = "";//bullPulsing"; //"wBottom,wBottomA,headShoulderBottom,sidewaysCompression";
 
 var klineio = require("../kline/klineio").config(startDate, endDate);
-var intersectionratehelper = require("../kline/form/intersectionratehelper").config(startDate, endDate);
+//var intersectionratehelper = require("../kline/form/intersectionratehelper").config(startDate, endDate);
 
 // intersectionratehelper.getIntersectionRate(["wBottom"])
 // return;
@@ -21,7 +21,7 @@ var cluster = require('cluster');
 
 var stocks = klineio.getAllStockIds();
 //stocks = ["SZ000420"];
-var minMatch = 2;
+var minMatch = 1;
 
 if (cluster.isMaster) {
 
@@ -38,11 +38,13 @@ if (cluster.isMaster) {
     var onForkMessage = function(formsDateTotal) {
         
         for (var date in formsDateTotal) {
-            if (!masterformsDateTotal[date]) masterformsDateTotal[date] = {total:0, win:0, lose:0, pending:0, stocks:{}};
+            if (!masterformsDateTotal[date]) masterformsDateTotal[date] = {total:0, mstotal:0, win:0, lose:0, pending:0, mspending:0, stocks:{}};
             masterformsDateTotal[date].total += formsDateTotal[date].total;
+            masterformsDateTotal[date].mstotal += formsDateTotal[date].mstotal;
             masterformsDateTotal[date].win += formsDateTotal[date].win;
             masterformsDateTotal[date].lose += formsDateTotal[date].lose;
             masterformsDateTotal[date].pending += formsDateTotal[date].pending;
+            masterformsDateTotal[date].mspending += formsDateTotal[date].mspending;
             masterformsDateTotal[date].stocks = extend(masterformsDateTotal[date].stocks, formsDateTotal[date].stocks)
         }
     }
@@ -79,14 +81,17 @@ if (cluster.isMaster) {
             sortedDates.forEach(function(date) {
                 var dObj = new Date(date);
                 if (dObj < displayInfoFromDate || dObj > displayInfoToDate) return;
-                console.log(date, "(",masterformsDateTotal[date].win, masterformsDateTotal[date].lose, ")/", masterformsDateTotal[date].total,                     
-                    (masterformsDateTotal[date].win/masterformsDateTotal[date].total).toFixed(4), masterformsDateTotal[date].pending);
+                console.log(date, "(",masterformsDateTotal[date].win, masterformsDateTotal[date].lose, ")/", masterformsDateTotal[date].total
+                    +"(" + masterformsDateTotal[date].mstotal+")",                     
+                    (masterformsDateTotal[date].win/masterformsDateTotal[date].total).toFixed(4), masterformsDateTotal[date].pending+
+                    "("+masterformsDateTotal[date].mspending+")"
+                    );
 
                 if (showDetailOn==="all" || showDetailOn.indexOf(date)>-1) {
                     var stks = masterformsDateTotal[date].stocks;
                     for (var stockId in stks) {
                         var forms = stks[stockId];
-                        console.log(stockId, forms.toString(), intersectionratehelper.getIntersectionRate(forms));
+                        console.log(stockId, forms.toString());
                     }
                     
 
@@ -111,7 +116,8 @@ if (cluster.isMaster) {
     var klineformanalyser = require("../kline/form/analyser").config({
         bullorbear: bullOrBear,
         startDate: startDate,
-        endDate: endDate
+        endDate: endDate,
+        form: "./form80.js"
     });
 
 
@@ -137,8 +143,12 @@ if (cluster.isMaster) {
                 if (dt>=startDate && dt<=endDate) {
 
                     var date = kLineJson[i].date;
-                    if (!formsDateTotal[date]) formsDateTotal[date] = {total:0, win:0, lose:0, pending:0, stocks:{}};
+                    if (!formsDateTotal[date]) formsDateTotal[date] = {total:0, mstotal:0, win:0, lose:0, pending:0, mspending:0, stocks:{}};
                     formsDateTotal[date].pending += kLineJson[i].pending;
+                    if (stockId.indexOf("SZ300")===0 || kLineJson[i].marketCap<5000000000) {
+                        formsDateTotal[date].mspending += kLineJson[i].pending;
+                    }
+                    
                 }
             }
 
@@ -146,8 +156,11 @@ if (cluster.isMaster) {
                 formsHandler: function(forms, klineJson, i) {
                     if (forms.length<minMatch) return;
                     var date = klineJson[i].date;
-                    if (!formsDateTotal[date]) formsDateTotal[date] = {total:0, win:0, lose:0, pending:0, stocks:{}};
+                    if (!formsDateTotal[date]) formsDateTotal[date] = {total:0, mstotal:0, win:0, lose:0, pending:0, mspending:0, stocks:{}};
                     formsDateTotal[date].total++;
+                    if (stockId.indexOf("SZ300")===0 || kLineJson[i].marketCap<5000000000) {
+                        formsDateTotal[date].mstotal++;
+                    }
                     if (klineJson[i].winOrLose === "win") formsDateTotal[date].win++;
                     if (klineJson[i].winOrLose === "lose") formsDateTotal[date].lose++;
                     formsDateTotal[date].stocks[stockId] = forms;

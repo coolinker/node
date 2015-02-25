@@ -246,7 +246,7 @@ function winOrLoss(klineJson, start, lossStop, winStop, daysStop, resultObj) {
     var inc = increase(price, klineJson[i-1].close/exRight);
     if (resultObj) {
         resultObj.inc = inc;
-        resultObj.days = i-start;
+        resultObj.days = i-1-start;
     }
     return inc;
 }

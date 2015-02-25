@@ -30,7 +30,7 @@ function sh600157_201412(klineJson, i) {
         //     return (sups>=5 && supp>obj.low) 
         // }();
 }
-exports.sh600157_201412 = sh600157_201412;
+//exports.sh600157_201412 = sh600157_201412;
 
 function smallRedsAndGreensA_1_0(klineJson, i) {
     var obj = klineJson[i];
