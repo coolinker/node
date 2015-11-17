@@ -1,4 +1,4 @@
-var moneyflowforms = require("./moneyflowforms");
+//var moneyflowforms = require("./moneyflowforms");
 var klineutil = require("../klineutil");
 var evalFuncitonCache = {};
 var conditionMap = {};

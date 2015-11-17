@@ -5,7 +5,7 @@ var startDate = new Date("01/01/2010");
 var endDate = new Date("01/01/2016"); 
 
 var displayMinCount = 0;
-var displayInfoFromDate = new Date("10/01/2014");
+var displayInfoFromDate = new Date("01/01/2014");
 var displayInfoToDate = new Date("07/01/2016");
 var displayEveryCase = false;
 var showDetailOn = "";

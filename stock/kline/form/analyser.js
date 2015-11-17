@@ -5,7 +5,7 @@ var endDate = new Date("12/01/2015");
 
 
 var bullklineforms; // = require("./moneyflowforms");// require("./bullklineforms");
-var bearklineforms = require("./bearklineforms");
+var bearklineforms;// = require("./bearklineforms");
 
 var klineforms = undefined;
 

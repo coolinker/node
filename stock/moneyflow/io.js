@@ -1,8 +1,8 @@
 var fs = require("fs");
 var ajaxRequest = require('request');
-
+var gLastUpdateDate;// = new Date("04/09/2015");
 var moneyFlowUrl = "http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_qsfx_zjlrqs?page=1&num="
-+10+"&sort=opendate&asc=0&daima=";
++20+"&sort=opendate&asc=0&daima=";
 
 var stocks = getAllStockIds();
 //stocks = ["SH600000"];
@@ -53,6 +53,7 @@ function updateMoneyFlowData(startIndex, callback) {
                   json.reverse();
                   //var origjson = readMoneyFlowDateMapSync(_stockId);
                   var origjsonArr = readMoneyFlowSync(_stockId);
+
                   var lastday = origjsonArr.length>0
                     ? new Date(origjsonArr[origjsonArr.length-1].opendate)
                     : new Date(0);
@@ -113,6 +114,8 @@ function readMoneyFlowSync(stockId) {
             if (line.length>0) {
                 var json = JSON.parse(line);
                 if (json.turnover===0) return;
+                var date = new Date(json.opendate);
+                if (gLastUpdateDate && date > gLastUpdateDate) return;
                 // var  str = (json.netamount/10000).toFixed(2);
                 // if (str.length<8) {
                 //   for (var i=str.length; i<8; i++) {
